@@ -1,5 +1,5 @@
 {
-    "name": "Backend",
+    "name": "Backend-XeroVault",
     "dockerComposeFile":[
         "../docker-compose.yml"
     ] ,
