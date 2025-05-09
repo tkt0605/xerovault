@@ -1,0 +1,63 @@
+services:
+  xero-backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    volumes:
+      - ./backend:/backend
+    command: gunicorn config.wsgi:application --bind --timeout 120 --workers 3
+    container_name: xero-backend
+    ports:
+      - '8000:8000'
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings
+      - DATABASE_URL=postgres://takato:0605@xero-db:5432/xero_db
+      - POSTGRES_DB=xero_db
+      - POSTGRES_USER=takato
+      - POSTGRES_PASSWORD=0605
+      - POSTGRES_HOST=xero-db
+      - POSTGRES_PORT=5432
+    depends_on:
+      - xero-db
+    networks:
+     - xero-networks    
+  xero-frontend:
+    build: 
+      content: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: xero-frontend
+    portss:
+      - ' 3000:3000'
+    networks:
+      - xero-networks
+  xero-db:
+    image: postgres:16
+    container_name: xero-db
+    environment:
+      - POSTGRES_USER=takato
+      - POSTGRES_PASSWORD=0605
+      - POSTGRES_DB=xero_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - xero-db-data:/var/lib/postgresql/data
+    networks:
+      - xero-networks
+  xero-nginx:
+    build: 
+      context: ./nginx
+      dockerfile: Dockerfile.nginx
+    container_name: xero-nginx
+    ports:
+      - '80:80'
+    depends_on:
+      - xero-backend
+      - xero-frontend
+    networks:
+      - xero-networks
+volumes:
+  xero-db-data:
+networks:
+  xero-networks:
+   driver: bridge    
