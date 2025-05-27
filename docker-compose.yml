@@ -23,11 +23,11 @@ services:
      - xero-networks    
   xero-frontend:
     build: 
-      content: ./frontend
+      context: ./frontend
       dockerfile: Dockerfile.frontend
     container_name: xero-frontend
-    portss:
-      - ' 3000:3000'
+    ports:
+      - "3000:3000"
     networks:
       - xero-networks
   xero-db:
@@ -60,4 +60,4 @@ volumes:
   xero-db-data:
 networks:
   xero-networks:
-   driver: bridge    
+   driver: bridge
