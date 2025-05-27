@@ -1,1 +1,1 @@
-grant all privileges on database xero-db to postgres;
+grant all privileges on database xero_db to postgres;
