@@ -23,7 +23,7 @@ services:
      - xero-networks    
   xero-frontend:
     build: 
-      context: ./frontend
+      context: ./frontend/xerofront
       dockerfile: Dockerfile.frontend
     container_name: xero-frontend
     ports:
@@ -32,7 +32,7 @@ services:
       - xero-networks
   xero-db:
     image: postgres:16
-    container_name: xero-db
+    container_name: xero_db
     environment:
       - POSTGRES_USER=takato
       - POSTGRES_PASSWORD=0605
