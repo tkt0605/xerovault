@@ -3,7 +3,7 @@
     "dockerComposeFile":[
         "../docker-compose.yml"
     ] ,
-    "service": "Backend",
+    "service": "xero-backend",
     "workspaceFolder": "/backend",
     "extensions":[
         "ms-python.python",
@@ -11,7 +11,7 @@
         "ms-python.vscode",
         "ms-python.isort",
         "ms-python.black-formatter",
-        "ms-python.pylance", 
+        "ms-python.pylance",
     ],
     "settings": {
         "python.pythonPath": "/usr/local/bin/python3",
@@ -31,7 +31,7 @@
         "PYTHONPATH": "/backend"
     },
     "runServices": [
-        "Backend"
+        "xero-backend"
     ],
     "shutdownAction": "stopCompose",
     "initializeCommand": "echo 'Initializing the development container...'",

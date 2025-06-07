@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
-from datatime import timedelta
+from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,14 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "django.contrib.sites"
+    "django.contrib.sites",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
-    "rest_framework.authtoken"
+    "rest_framework.authtoken",
     "dj_rest_auth",
 
 ]
@@ -60,9 +60,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "allauth.account.middleware.AuthenticationMiddleware",
-    "django.middleware.csrf.CrsfViewMiddleware",
-    "django.middleware.common.CommonMiddleware",
+    # "allauth.account.middleware.AuthenticationMiddleware",
+    'allauth.account.middleware.AccountMiddleware'
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -140,7 +139,7 @@ STATIC_URL = 'staticfiles/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-AUTH_USER_MODEL='api.CustomUser'
+# AUTH_USER_MODEL='api.CustomUser'
 LOGIN_REDIRECT_URL='/'
 LOGIN_URL='/accounts/login'
 LOGOUT_REDIRECT_URL='/'
@@ -151,7 +150,6 @@ ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 APPEND_SLASH = False
 ACCOUNT_UNIQUE_EMAIL = True
-SITE_ID = 1
 AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend"
@@ -171,7 +169,7 @@ REST_AUTH_SERIALIZERS = {
 }
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ('Bearer', ),
-    "ACCESS_TOKEN_LIFETIME": timedelta(mintutes=60),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": False,
