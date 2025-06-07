@@ -1,11 +1,11 @@
 services:
   xero-backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile.backend
     volumes:
       - ./backend:/backend
-    command: gunicorn config.wsgi:application --bind --timeout 120 --workers 3
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --timeout 120 --workers 3
     container_name: xero-backend
     ports:
       - '8000:8000'
@@ -20,9 +20,9 @@ services:
     depends_on:
       - xero-db
     networks:
-     - xero-networks    
+     - xero-networks
   xero-frontend:
-    build: 
+    build:
       context: ./frontend/xerofront
       dockerfile: Dockerfile.frontend
     container_name: xero-frontend
@@ -32,7 +32,7 @@ services:
       - xero-networks
   xero-db:
     image: postgres:16
-    container_name: xero_db
+    container_name: xero-db
     environment:
       - POSTGRES_USER=takato
       - POSTGRES_PASSWORD=0605
@@ -44,13 +44,27 @@ services:
       - xero-db-data:/var/lib/postgresql/data
     networks:
       - xero-networks
+  # xero-nginx:
+  #   build:
+  #     context: ./nginx
+  #     dockerfile: Dockerfile.nginx
+  #   container_name: xero-nginx
+  #   ports:
+  #     - '80:80'
+  #   depends_on:
+  #     - xero-backend
+  #     - xero-frontend
+  #   networks:
+  #     - xero-networks
   xero-nginx:
-    build: 
-      context: ./nginx
-      dockerfile: Dockerfile.nginx
+    image: nginx:latest
     container_name: xero-nginx
     ports:
-      - '80:80'
+     - '80:80'
+    volumes:
+      - ./nginx/conf.d/default.conf/:/etc/nginx/conf.d/default.conf
+      - ./nginx/conf.d/nginx.conf:/etc/nginx/nginx.conf
+      - ./frontend/xerofront/build:/usr/share/nginx/html
     depends_on:
       - xero-backend
       - xero-frontend
