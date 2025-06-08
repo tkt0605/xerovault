@@ -33,7 +33,8 @@ ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     "corsheaders",
     'api',
-    'adminlog',
+    # 'adminlog',
+    'adminlog.apps.AdminlogConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -142,7 +143,8 @@ STATIC_URL = 'staticfiles/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL='api.CustomUser'
-ADMIN_LOG_MODEL='adminlog.LogEntry'
+# ADMIN_LOG_MODEL = 'adminlog.LogEntry'
+ADMIN_LOG_MODEL = 'adminlog.LogEntry'
 LOGIN_REDIRECT_URL='/'
 LOGIN_URL='/accounts/login'
 LOGOUT_REDIRECT_URL='/'
@@ -163,7 +165,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication"
     ),
     "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated"
+        "rest_framework.permissions.IsAuthenticated",
     ),
 }
 REST_AUTH_SERIALIZERS = {

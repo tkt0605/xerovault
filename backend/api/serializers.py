@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from .models import GeneratePublicToken, CustomUser, GenerateGroup
 from rest_framework_simplejwt.tokens import RefreshToken
 User = get_user_model()
-class RegisterSerialiser(serializers.ModelSerializer):
+class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email', 'password1', 'password2']
@@ -60,13 +60,13 @@ class LogoutSerializer(serializers.Serializer):
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'avatar', 'is_active', 'is_staff', 'is_superuser', 'date_joined']
+        fields = ['email', 'avatar', 'is_active', 'is_staff', 'is_superuser']
         read_only_fields = ['id', 'email', 'avatar', 'date_joined']
 
 class CustomUserDetairsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'avatar', 'is_active', 'is_staff', 'is_superuser', 'date_joined']
+        fields = ['email', 'avatar', 'is_active', 'is_staff', 'is_superuser',]
         read_only_fields = ['id', 'is_active', 'is_staff', 'is_superuser', 'date_joined']
 class GeneratePublicTokenSerializer(serializers.ModelSerializer):
     user = serializers.SlugRelatedField(
