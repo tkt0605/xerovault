@@ -4,6 +4,8 @@ from django.utils import timezone
 from django.conf import settings
 import uuid
 from config.settings import AUTH_USER_MODEL
+from django.utils.translation import gettext_lazy as _
+from django.utils.encoding import force_str
 
 def generate_uuid():
     return str(uuid.uuid4())
