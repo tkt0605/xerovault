@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     "corsheaders",
     'api',
+    'adminlog',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -141,6 +142,7 @@ STATIC_URL = 'staticfiles/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL='api.CustomUser'
+ADMIN_LOG_MODEL='adminlog.LogEntry'
 LOGIN_REDIRECT_URL='/'
 LOGIN_URL='/accounts/login'
 LOGOUT_REDIRECT_URL='/'

@@ -17,7 +17,7 @@ urlpatterns = [
     path('logout/', LogoutAPI.as_view(), name='logout'),
     path('login/', EmailLoginAPI.as_view(), name='login'),
     path('signup/', RegisterAPI.as_view(), name='signup'),
-    path('', include(routers.urls))
+    path('', include(router.urls))
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)
