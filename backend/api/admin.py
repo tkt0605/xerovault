@@ -1,6 +1,8 @@
 from django.contrib import admin
 from .models import CustomUser
 from django.contrib.auth.admin import UserAdmin as baseUserAdmin
+# from model.custom_token import CustomOutstandingToken
+# from model.custom_token import CustomBlackListToken
 class CustomUserAdmin(baseUserAdmin):
     list_display = ['email', 'avater', 'is_staff', 'is_active', 'is_superuser']
     list_filter = ['is_staff', 'is_active']
@@ -21,4 +23,9 @@ class CustomUserAdmin(baseUserAdmin):
     ordering = ['email',]
     readonly_fields = ['id']
 admin.site.register(CustomUser, CustomUserAdmin)
-
+# @admin.site.register(CustomOutstandingToken)
+# class CustomOutstandingTokenAdmin(admin.ModelAdmin):
+#     list_deisplay = ('user', 'jti', 'created_at', 'expires_at')
+# @admin.site.register(CustomBlackListToken)
+# class CustomBlackListTokenAdmin(admin.ModelAdmin):
+#     list_display = ('token', 'blacklisted_at')
