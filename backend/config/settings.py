@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "dj_rest_auth",
 
 ]
+SITE_ID = 1
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -139,17 +140,16 @@ STATIC_URL = 'staticfiles/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-# AUTH_USER_MODEL='api.CustomUser'
+AUTH_USER_MODEL='api.CustomUser'
 LOGIN_REDIRECT_URL='/'
 LOGIN_URL='/accounts/login'
 LOGOUT_REDIRECT_URL='/'
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION='mandatory'
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-APPEND_SLASH = False
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*','password1*', 'password2*']
+ACCOUNT_USER_MODEL_USERNAME_FIELD=None
 ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_EMAIL_VERIFICATION='mandatory'
+
 AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend"
