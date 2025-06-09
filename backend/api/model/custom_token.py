@@ -37,6 +37,6 @@ class CustomBlackListToken(models.Model):
     class Meta:
         verbose_name = 'カスタム無効トークン'
         verbose_name_plural = 'カスタム無効トークン一覧'
-        ordering = ['-created_at']
+        ordering = ['-blacklisted_at']
     def __str__(self):
         return f"{self.token}"
