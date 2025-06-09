@@ -55,19 +55,21 @@ class LogoutSerializer(serializers.Serializer):
 # class AuthUserSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = User
-#         fields = ['id', 'email', 'avatar']
+#         fields = ['id', 'email', 'avater']
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['email', 'avatar', 'is_active', 'is_staff', 'is_superuser']
-        read_only_fields = ['id', 'email', 'avatar', 'date_joined']
+        fields = ['email', 'avater', 'is_active', 'is_staff', 'is_superuser']
+        read_only_fields = ['id', 'email', 'avater', 'date_joined']
 
 class CustomUserDetairsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['email', 'avatar', 'is_active', 'is_staff', 'is_superuser',]
+        fields = ['email', 'avater', 'is_active', 'is_staff', 'is_superuser',]
         read_only_fields = ['id', 'is_active', 'is_staff', 'is_superuser', 'date_joined']
+
+
 class GeneratePublicTokenSerializer(serializers.ModelSerializer):
     user = serializers.SlugRelatedField(
         slug_field='email',
@@ -76,14 +78,17 @@ class GeneratePublicTokenSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
     class Meta:
-        mdoel = GeneratePublicToken
-        fields = ['id', 'user', 'token', 'created_at', 'expired_at']
-        read_only_fields = ['id', 'user', 'created_at', 'expired_at']
+        model = GeneratePublicToken
+        fields = ['id', 'user', 'token', 'created_at', 'expires_at']
+        read_only_fields = ['id', 'user', 'created_at', 'expires_at']
 class GeneratePublicTokenReadSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
     class Meta:
         model = GeneratePublicToken
-        fields = '__all__'
+        fields = ['id', 'user', 'token', 'created_at', 'expires_at']
+
+
+
 class GenerateGroupSerializer(serializers.ModelSerializer):
     founder = serializers.SlugRelatedField(
         slug_field='email',
@@ -93,11 +98,12 @@ class GenerateGroupSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = GenerateGroup
-        fields = ['id', 'name', 'founder', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'founder', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'founder', 'crated_at', 'updated_at']
+        read_only_fields = ['id', 'founder', 'crated_at', 'updated_at']
 class GenerateGroupReadSerializer(serializers.ModelSerializer):
     founder = CustomUserSerializer(read_only=True)
     class Meta:
         model = GenerateGroup
-        fields = '__all__'
-        read_only_fields = ['id', 'founder', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'founder', 'crated_at', 'updated_at']
+        read_only_fields = ['id', 'founder', 'crated_at', 'updated_at']
+
