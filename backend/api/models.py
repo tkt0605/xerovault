@@ -58,9 +58,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.email
 class GeneratePublicToken(models.Model):
     user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tokens')
-    token = models.CharField(max_length=255, unique=True)
+    groups = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='group_tokens', default='')
+    token = models.UUIDField(default=uuid.uuid4)
+    is_used = models.BooleanField(default=False)
+    is_valid = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
     def __str__(self):
         return self.token
     def save(self, *args, **kwargs):
@@ -68,16 +70,21 @@ class GeneratePublicToken(models.Model):
             raise ValueError('ユーザーの公開トークンは最大10個までです。')
         super().save(*args, **kwargs)
     class Meta:
+        unique_together = ('user', 'groups')
         verbose_name = 'Generate Token'
         verbose_name_plural = 'Generate Tokens'
 
 class GenerateGroup(models.Model):
-    id = models.UUIDField(primary_key=True, default=generate_uuid, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, unique=True)
-    founder = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='generater')
-    public_token = models.UUIDField(default=generate_uuid, unique=True, editable=False)
+    owner = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_group', default='')
+    members = models.ManyToManyField(AUTH_USER_MODEL, related_name='joined_name', blank=True)
+    description = models.TextField(blank=True)
+    joined_token = models.UUIDField(default=uuid.uuid4)
+    is_public = models.BooleanField(default=False)
+    requires_secret_key = models.BooleanField(default=True)
     crated_at = models.DateTimeField(auto_created=True, auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    token_expiry = models.DateTimeField(null=True, blank=True)
     def __str__(self):
         return self.name
     class Meta:

@@ -1,0 +1,14 @@
+*{
+    top: 0;
+    left: 0;
+}
+.headline{
+    position: fixed;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    width: 100%;
+    height: auto;
+    background: ;
+}
