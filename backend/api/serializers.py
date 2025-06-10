@@ -68,6 +68,29 @@ class CustomUserDetairsSerializer(serializers.ModelSerializer):
         model = User
         fields = ['email', 'avater', 'is_active', 'is_staff', 'is_superuser',]
         read_only_fields = ['id', 'is_active', 'is_staff', 'is_superuser', 'date_joined']
+class GenerateGroupSerializer(serializers.ModelSerializer):
+    owner = serializers.SlugRelatedField(
+        slug_field='email',
+        queryset=CustomUser.objects.all(),
+        required=False,
+        allow_null=True
+    )
+    members = serializers.SlugRelatedField(
+        slug_field = "email",
+        queryset=CustomUser.objects.all(),
+        required=False,
+        allow_null=True
+    )
+    class Meta:
+        model = GenerateGroup
+        fields = ['id', 'name', 'owner', 'members', 'description', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry']
+        read_only_fields = ['id', 'name', 'owner', 'members', 'description', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry']
+class GenerateGroupReadSerializer(serializers.ModelSerializer):
+    owner = CustomUserSerializer(read_only=True)
+    members=CustomUserSerializer(read_only=True)
+    class Meta:
+        model = GenerateGroup
+        fields = ['id', 'name', 'owner', 'members', 'description', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry']
 
 
 class GeneratePublicTokenSerializer(serializers.ModelSerializer):
@@ -77,33 +100,19 @@ class GeneratePublicTokenSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
     )
-    class Meta:
-        model = GeneratePublicToken
-        fields = ['id', 'user', 'token', 'created_at', 'expires_at']
-        read_only_fields = ['id', 'user', 'created_at', 'expires_at']
-class GeneratePublicTokenReadSerializer(serializers.ModelSerializer):
-    user = CustomUserSerializer(read_only=True)
-    class Meta:
-        model = GeneratePublicToken
-        fields = ['id', 'user', 'token', 'created_at', 'expires_at']
-
-
-
-class GenerateGroupSerializer(serializers.ModelSerializer):
-    founder = serializers.SlugRelatedField(
-        slug_field='email',
-        queryset=CustomUser.objects.all(),
+    groups = serializers.SlugRelatedField(
+        slug_field = "joined_token",
+        queryset=GenerateGroup.objects.all(),
         required=False,
         allow_null=True
     )
     class Meta:
-        model = GenerateGroup
-        fields = ['id', 'name', 'founder', 'crated_at', 'updated_at']
-        read_only_fields = ['id', 'founder', 'crated_at', 'updated_at']
-class GenerateGroupReadSerializer(serializers.ModelSerializer):
-    founder = CustomUserSerializer(read_only=True)
+        model = GeneratePublicToken
+        fields = ['id', 'user', 'groups', 'token', 'is_used', 'is_valid', 'created_at']
+        read_only_fields = ['id', 'user', 'groups', 'token', 'is_used', 'is_valid', 'created_at']
+class GeneratePublicTokenReadSerializer(serializers.ModelSerializer):
+    user = CustomUserSerializer(read_only=True)
+    groups = GenerateGroupReadSerializer(read_only=True)
     class Meta:
-        model = GenerateGroup
-        fields = ['id', 'name', 'founder', 'crated_at', 'updated_at']
-        read_only_fields = ['id', 'founder', 'crated_at', 'updated_at']
-
+        model = GeneratePublicToken
+        fields = ['id', 'user', 'groups', 'token', 'is_used', 'is_valid', 'created_at']
