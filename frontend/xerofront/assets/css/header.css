@@ -10,5 +10,60 @@
     z-index: 1000;
     width: 100%;
     height: auto;
-    background: ;
+    border: 1px solid rgb(201, 201, 201) ;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+.dashmenu{
+
+}
+.dash_button{
+    background: white;
+    border: 1px solid white;
+    width: 35px;
+    height: 35px;
+    border-radius: 10px;
+}
+.dash_button:hover{
+    background: rgb(235, 235, 235);
+}
+.logo-bord{
+    position: relative;
+    display: flex;
+    align-items: center;
+
+}
+.logo{
+    border-radius: 10px;
+    background: white;
+    border: 1px solid white;
+    width: 100%;
+    height: auto;
+    padding: 5px 10px;
+}
+.logo:hover{
+    background: rgb(235, 235, 235);
+}
+.logo-font{
+    font-size: 25px;
+
+}
+
+
+.icon_img{
+    width: 35px;
+  height: 35px;
+  border-radius: 0.125rem;
+  height: auto;
+  max-width: 100%;
+  background-color: var(--avatar-bgColor);
+  border-radius: var(--borderRadius-medium);
+  box-shadow: 0 0 0 1px var(--avatar-borderColor);
+  display: inline-block;
+  flex-shrink: 0;
+  line-height: 1;
+  overflow: hidden;
+  vertical-align: middle;
+  border-radius: var(--borderRadius-full, 50%) !important;
+  border: #ffffff solid 1px;
 }

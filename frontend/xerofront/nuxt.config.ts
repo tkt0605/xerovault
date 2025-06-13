@@ -22,9 +22,9 @@ export default defineNuxtConfig({
     port:3000,
     host: '0.0.0.0',
   },
-  css: [
-    "@/assets/css/main.css",
-  ],
+  // css: [
+  //   "@/assets/css/main.css",
+  // ],
   modules: [
     '@nuxtjs/i18n',
     '@pinia/nuxt',
@@ -40,5 +40,12 @@ export default defineNuxtConfig({
         optimizeTranslationDirective: false // または true（使いたい場合）
       }
     }
-  }
+  },
+  css: ['@/assets/css/tailwind.css'],
+  postcss: {
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {},
+    },
+  },
 })
