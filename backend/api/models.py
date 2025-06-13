@@ -28,12 +28,13 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=generate_uuid, editable=False)
-    avater = models.ImageField(
-        upload_to=generate_avatar_path,
-        default = 'avaters/default_avatar.png',
-        blank=True,
-        null=True,
-    )
+    # avater = models.ImageField(
+    #     upload_to=generate_avatar_path,
+    #     default = 'avaters/default_avatar.png',
+    #     blank=True,
+    #     null=True,
+    # )
+    avater = models.URLField(blank=True, null=True)
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
