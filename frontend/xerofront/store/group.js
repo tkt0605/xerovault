@@ -18,7 +18,7 @@ export const useAuthGroups = defineStore('group', {
         PrivateGroups: (state) => state.groups.filter(g => !g.is_public)
     },
     actions: {
-        async CreateGroup(name, is_public, members, text) {
+        async CreateGroup(name, is_public, members, description, tag) {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
             try {
@@ -32,7 +32,8 @@ export const useAuthGroups = defineStore('group', {
                         name: name.trim(),
                         is_public: is_public,
                         members: members,
-                        description: text.trim()
+                        description: description.trim(),
+                        tag: tag.trim()
                     })
                 });
                 if (!response.ok) {
@@ -47,6 +48,7 @@ export const useAuthGroups = defineStore('group', {
                     members: data.members,
                     related_name: data.related_name,
                     description: data.description,
+                    tag: data.tag,
                     joined_token: data.joined_token,
                     is_public: data.is_public,
                     requires_secret_key: data.requires_secret_key,
@@ -82,6 +84,7 @@ export const useAuthGroups = defineStore('group', {
                         members: data.members,
                         related_name: data.related_name,
                         description: data.description,
+                        tag: data.tag,
                         joined_token: data.joined_token,
                         is_public: data.is_public,
                         requires_secret_key: data.requires_secret_key,
@@ -96,6 +99,7 @@ export const useAuthGroups = defineStore('group', {
                     members: item.members,
                     related_name: item.related_name,
                     description: item.description,
+                    tag: item.tag,
                     joined_token: item.joined_token,
                     is_public: item.is_public,
                     requires_secret_key: item.requires_secret_key,
@@ -131,6 +135,7 @@ export const useAuthGroups = defineStore('group', {
                         members: data.members,
                         related_name: data.related_name,
                         description: data.description,
+                        tag: data.tag,
                         joined_token: data.joined_token,
                         is_public: data.is_public,
                         requires_secret_key: data.requires_secret_key,
@@ -145,6 +150,7 @@ export const useAuthGroups = defineStore('group', {
                     members: item.members,
                     related_name: item.related_name,
                     description: item.description,
+                    tag: item.tag,
                     joined_token: item.joined_token,
                     is_public: item.is_public,
                     requires_secret_key: item.requires_secret_key,

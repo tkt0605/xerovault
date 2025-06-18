@@ -57,13 +57,36 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = []
     def __str__(self):
         return self.email
+
+
+class GenerateGroup(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, unique=True)
+    owner = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_group', default='')
+    members = models.ManyToManyField(AUTH_USER_MODEL, related_name='joined_name', blank=True)
+    description = models.TextField(blank=True)
+    tag = models.CharField(max_length=256, blank=True, default='')
+    joined_token = models.UUIDField(default=uuid.uuid4)
+    is_public = models.BooleanField(default=False)
+    requires_secret_key = models.BooleanField(default=True)
+    crated_at = models.DateTimeField(auto_created=True, auto_now_add=True)
+    token_expiry = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return self.name
+    class Meta:
+        verbose_name = 'Generate Group'
+        verbose_name_plural = 'Generate Groups'
+
+
 class GeneratePublicToken(models.Model):
     user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tokens')
-    groups = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='group_tokens', default='')
+    groups = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='group_tokens', default='')
     token = models.UUIDField(default=uuid.uuid4)
     is_used = models.BooleanField(default=False)
     is_valid = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.token
     def save(self, *args, **kwargs):
@@ -75,19 +98,14 @@ class GeneratePublicToken(models.Model):
         verbose_name = 'Generate Token'
         verbose_name_plural = 'Generate Tokens'
 
-class GenerateGroup(models.Model):
+class GenerateLibrary(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=255, unique=True)
-    owner = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_group', default='')
-    members = models.ManyToManyField(AUTH_USER_MODEL, related_name='joined_name', blank=True)
+    owner = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user', default='')
+    name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    joined_token = models.UUIDField(default=uuid.uuid4)
+    tag = models.CharField(max_length=256, blank=True, default='')
     is_public = models.BooleanField(default=False)
-    requires_secret_key = models.BooleanField(default=True)
-    crated_at = models.DateTimeField(auto_created=True, auto_now_add=True)
-    token_expiry = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.name
-    class Meta:
-        verbose_name = 'Generate Group'
-        verbose_name_plural = 'Generate Groups'

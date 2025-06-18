@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import GeneratePublicToken, CustomUser, GenerateGroup
+from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
-from .serializers import RegisterSerializer, CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LoginSerializer, LogoutSerializer, GeneratePublicTokenSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GeneratePublicTokenReadSerializer
+from .serializers import RegisterSerializer, CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LoginSerializer, LogoutSerializer, GeneratePublicTokenSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GeneratePublicTokenReadSerializer, GenerateLibrarySerializer, GenerateLibraryReadSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import timedelta
 from django.contrib.auth import get_user_model
@@ -93,17 +93,47 @@ class GenerateGroupviewSet(viewsets.ModelViewSet):
             return GenerateGroupReadSerializer
         return super().get_serializer_class()
     def perform_create(self, serializer):
-        serializer.save(founder=self.request.user)
+        serializer.save(owner=self.request.user)
     @action(detail=False, methods=['post'], permission_classes = [IsAuthenticated])
     def create_group(self, request):
         serializer = GenerateGroupSerializer(data=request.data)
         if serializer.is_valid():
-            group = serializer.save(founder=self.request.user)
+            group = serializer.save(owner=self.request.user)
             return Response('グループが作成されました。', status=201)
         return Response(serializer.errors, status=400)
     @action(detail=False, methods=['get'], permission_classes = [IsAuthenticated])
     def my_groups(self, request):
         user = self.request.user
-        groups = GenerateGroup.objects.filter(founder=user)
+        groups = GenerateGroup.objects.filter(owner=user)
         serializer = GenerateGroupReadSerializer(groups, many=True)
+        return Response(serializer.data)
+
+
+class GenerateLibraryviewSet(viewsets.ModelViewSet):
+    queryset = GenerateLibrary.objects.all()
+    serializer_class = GenerateLibrarySerializer
+    permission_classesv= [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ['create', 'list']:
+            return [AllowAny()]
+        return super().get_permissions()
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return GenerateLibraryReadSerializer
+        return super().get_serializer_class()
+    def perform_create(self, serializer):
+        serializer.save(owner = self.request.user)
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def craete_library(self, request):
+        serializer = GenerateLibrarySerializer(data=request.data)
+        if serializer.is_valid():
+            library = serializer.save(owner=self.request.user)
+            return Response('ライブラリ作成されました。', status=201)
+        return Response(serializer.errors, status=400)
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def my_library(self, request):
+        user = self.request.user
+        library = GenerateLibrary.objects.filter(owner=user)
+        serializer = GenerateLibraryReadSerializer(library, many=True)
         return Response(serializer.data)

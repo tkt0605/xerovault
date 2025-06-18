@@ -4,11 +4,11 @@ export default defineNuxtConfig({
   ssr: true,
   app: {
     head: {
-      title: 'XeroVault',
+      title: 'Studio DEMO',
       meta: [
         {charset: 'utf-8'},
         {name: 'viewport', content:'width=device-width, initial-scale=1'},
-        {name: 'description', content: 'Xerovault は、Xero API 資格情報用の安全な保管庫です。'},
+        {name: 'description', content: 'Studio DEMO は、Xero API 資格情報用の安全な保管庫です。'},
         {name: 'keywords', content: 'Xero、API、資格情報、保管庫、セキュリティ'},
       ],
       link: [
