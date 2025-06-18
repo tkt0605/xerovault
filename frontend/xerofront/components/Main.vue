@@ -9,7 +9,7 @@
     <!-- 情報カードセクション -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
       <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow hover:shadow-md transition">
-        <p class="text-sm text-gray-500 dark:text-gray-400">グループ数</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">スタジオ数</p>
         <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">3</p>
       </div>
       <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow hover:shadow-md transition">

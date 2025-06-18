@@ -11,7 +11,7 @@
                             d="M.5 0a.5.5 0 0 1 .5.5v15a.5.5 0 0 1-1 0V.5A.5.5 0 0 1 .5 0M2 1.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" />
                     </svg>
                 </button>
-                <span class="text-xl font-bold text-gray-800 dark:text-white">XeroVault</span>
+                <span class="text-xl font-bold text-gray-800 dark:text-white">Studio DEMO</span>
             </div>
 
             <!-- 右側：認証状態で分岐 -->
@@ -31,7 +31,7 @@
         <div v-show="isopenInfo" id="show-info" class="fixed inset-0 z-50 bg-black bg-opacity-30 flex justify-end"
             @click.self="closeUserInfo">
             <div v-if="isAuthenticated"
-                class="mt-20 mr-6 w-80 h-48 p-6 bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl transition transform scale-100">
+                class="mt-20 mr-6 w-80 h-60 p-6 bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl transition transform scale-100">
                 <!-- モーダルヘッダー -->
                 <div class="flex items-center justify-between border-b border-gray-200 dark:border-zinc-700 pb-3 mb-4">
                     <h2 class="text-lg font-bold text-gray-800 dark:text-white">ユーザー設定</h2>
@@ -55,7 +55,14 @@
                         {{ currentUser.email }}
                     </p>
                 </div>
-
+                <div class="flex items-center gap3 mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-hammer" viewBox="0 0 16 16">
+                        <path
+                            d="M9.972 2.508a.5.5 0 0 0-.16-.556l-.178-.129a5 5 0 0 0-2.076-.783C6.215.862 4.504 1.229 2.84 3.133H1.786a.5.5 0 0 0-.354.147L.146 4.567a.5.5 0 0 0 0 .706l2.571 2.579a.5.5 0 0 0 .708 0l1.286-1.29a.5.5 0 0 0 .146-.353V5.57l8.387 8.873A.5.5 0 0 0 14 14.5l1.5-1.5a.5.5 0 0 0 .017-.689l-9.129-8.63c.747-.456 1.772-.839 3.112-.839a.5.5 0 0 0 .472-.334" />
+                    </svg>
+                    <p class="text-sm text-gray-700 dark:text-gray-200 break-all" @click="StepToken()">トークン一覧</p>
+                </div>
                 <!-- ログアウト -->
                 <button @click="logout" class="w-full text-left px-4 py-2 text-red-600 hover:text-white hover:bg-red-600
                  rounded-lg font-semibold transition">
@@ -63,6 +70,47 @@
                 </button>
             </div>
         </div>
+        <Dialog :visible="isOpenToken" @close="isOpenToken = false">
+            <template #header>
+                <h2 class="text-xl font-bold text-white">トークン一覧</h2>
+            </template>
+
+            <template #default>
+                <div v-if="tokens.length" class="space-y-4">
+                    <div v-for="token in tokens" :key="token.id"
+                        class="border border-gray-700 bg-gray-800 p-4 rounded-md">
+                        <p class="text-sm text-gray-300">トークン名: <strong>{{ token.name || '(無題)' }}</strong></p>
+                        <p class="text-sm text-gray-400 break-all">UUID: {{ token.token }}</p>
+
+                        <!-- トークンURL -->
+                        <div class="mt-2 flex items-center gap-2">
+                            <input type="text" :value="generateTokenUrl(token.token)" readonly
+                                class="flex-1 text-sm p-1 rounded bg-gray-700 text-white" />
+                            <button @click="copyUrl(generateTokenUrl(token.token))"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded">
+                                コピー
+                            </button>
+                        </div>
+
+                        <!-- QRコード -->
+                        <div class="mt-2">
+                            <qrcode-vue :value="generateTokenUrl(token.token)" :size="100" />
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else class="text-gray-400 text-center mt-4">
+                    トークンがまだ作成されていません。
+                </div>
+            </template>
+
+            <template #footer>
+                <button @click="isOpenToken = false" class="bg-blue-600 text-white px-4 py-2 rounded">
+                    閉じる
+                </button>
+            </template>
+        </Dialog>
+
     </header>
 </template>
 <script setup>
@@ -71,6 +119,9 @@ import { useAuthStore } from "~/store/auth";
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import Signup from "~/pages/auth/signup.vue";
+import Dialog from "~/components/MainDialog.vue";
+import QrcodeVue from 'qrcode.vue';
+
 const authStore = useAuthStore();
 const isopenInfo = ref(false);
 const setUserId = ref(null);
@@ -80,6 +131,8 @@ const router = useRouter();
 const isDSialogUserOpen = ref(false);
 const currentUser = computed(() => authStore.currentUser);
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+const isOpenToken = ref(false);
+// const isOpenToken = ref(false)
 
 onMounted(async () => {
     try {
@@ -121,5 +174,34 @@ const logout = async () => {
         console.error('ログアウト失敗:', error);
         alert('ログアウトに失敗しました。時間をおいて再度お願いします。');
     }
+}
+const StepToken = () => {
+    isOpenToken.value = true
+    isopenInfo.value = false
+};
+
+const tokens = ref([
+  {
+    id: 1,
+    name: 'グループ参加用',
+    token: 'fc98a9d2-7cda-4a5b-835c-xxxxxxx',
+  },
+  {
+    id: 2,
+    name: '',
+    token: '43eabfc1-fd6e-442d-b49a-yyyyyyy',
+  }
+])
+
+const baseUrl = 'https://xerovault.com/join/'
+
+function generateTokenUrl(token) {
+  return `${baseUrl}${token}`
+}
+
+function copyUrl(url) {
+  navigator.clipboard.writeText(url).then(() => {
+    alert('コピーしました')
+  })
 }
 </script>

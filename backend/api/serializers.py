@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
-from .models import GeneratePublicToken, CustomUser, GenerateGroup
+from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary
 from rest_framework_simplejwt.tokens import RefreshToken
 User = get_user_model()
 class RegisterSerializer(serializers.ModelSerializer):
@@ -78,19 +78,21 @@ class GenerateGroupSerializer(serializers.ModelSerializer):
     members = serializers.SlugRelatedField(
         slug_field = "email",
         queryset=CustomUser.objects.all(),
+        many=True,
         required=False,
         allow_null=True
     )
     class Meta:
         model = GenerateGroup
-        fields = ['id', 'name', 'owner', 'members', 'description', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry']
-        read_only_fields = ['id', 'name', 'owner', 'members', 'description', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry']
+        fields = ['id', 'name','tag' , 'owner', 'members', 'description', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry', 'updated_at']
+        # read_only_fields = ['id', 'name','tag' , 'owner', 'members', 'description', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry', 'updated_at']
+        read_only_fields = ['id', 'joined_token', 'crated_at', 'token_expiry', 'updated_at']
 class GenerateGroupReadSerializer(serializers.ModelSerializer):
     owner = CustomUserSerializer(read_only=True)
     members=CustomUserSerializer(read_only=True)
     class Meta:
         model = GenerateGroup
-        fields = ['id', 'name', 'owner', 'members', 'description', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry']
+        fields = ['id', 'name','tag' , 'owner', 'members', 'description', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry', 'updated_at']
 
 
 class GeneratePublicTokenSerializer(serializers.ModelSerializer):
@@ -102,17 +104,29 @@ class GeneratePublicTokenSerializer(serializers.ModelSerializer):
     )
     groups = serializers.SlugRelatedField(
         slug_field = "joined_token",
+
         queryset=GenerateGroup.objects.all(),
         required=False,
         allow_null=True
     )
     class Meta:
         model = GeneratePublicToken
-        fields = ['id', 'user', 'groups', 'token', 'is_used', 'is_valid', 'created_at']
-        read_only_fields = ['id', 'user', 'groups', 'token', 'is_used', 'is_valid', 'created_at']
+        fields = ['id', 'user', 'groups', 'token', 'is_used', 'is_valid', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
 class GeneratePublicTokenReadSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
     groups = GenerateGroupReadSerializer(read_only=True)
     class Meta:
         model = GeneratePublicToken
-        fields = ['id', 'user', 'groups', 'token', 'is_used', 'is_valid', 'created_at']
+        fields = ['id', 'user', 'groups', 'token', 'is_used', 'is_valid', 'created_at', 'updated_at']
+
+class GenerateLibrarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GenerateLibrary
+        fields = ['id', 'owner', 'name', 'description', 'tag', 'is_public', 'created_at', "updated_at"]
+        read_only_fields = ['id','created_at', 'updated_at']
+
+class GenerateLibraryReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GenerateLibrary
+        fields = ['id', 'owner', 'name', 'description', 'tag', 'is_public', 'created_at', "updated_at"]
