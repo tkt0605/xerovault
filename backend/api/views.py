@@ -4,13 +4,14 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary
+from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
-from .serializers import RegisterSerializer, CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LoginSerializer, LogoutSerializer, GeneratePublicTokenSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GeneratePublicTokenReadSerializer, GenerateLibrarySerializer, GenerateLibraryReadSerializer
+from .serializers import RegisterSerializer, CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LoginSerializer, LogoutSerializer, GeneratePublicTokenSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GeneratePublicTokenReadSerializer, GenerateLibrarySerializer, GenerateLibraryReadSerializer, GoalSerializer, GoalReadSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import timedelta
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 User = get_user_model()
 class EmailLoginAPI(APIView):
     permission_classes = [AllowAny]
@@ -137,3 +138,37 @@ class GenerateLibraryviewSet(viewsets.ModelViewSet):
         library = GenerateLibrary.objects.filter(owner=user)
         serializer = GenerateLibraryReadSerializer(library, many=True)
         return Response(serializer.data)
+
+class GoalViewSet(viewsets.ModelViewSet):
+    queryset = Goal.objects.all()
+    serializer_class = GoalSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in['create', 'list']:
+            return [AllowAny()]
+        return super().get_permissions()
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return GoalReadSerializer
+        return super().get_serializer_class()
+    def perform_create(self, serializer):
+        serializer.save(assignee=self.request.user)
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def create_goals(self, request):
+        serializer = GoalSerializer(data=request.data)
+        if serializer.is_valid():
+            goals = serializer.save(assignee=self.request.user)
+            return Response('Goalが作成されました。', status=201)
+        return Response(serializer.errors, status=400)
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def my_goals(self, request):
+        user = self.request.user
+        groups = GenerateGroup.objects.filter(
+            Q(owner=user) |
+            Q(members = user)
+        )
+        goals = Goal.objects.filter(group__in = groups)
+        serializer = GoalReadSerializer(goals, many=True)
+        return Response(serializer.data)
+
