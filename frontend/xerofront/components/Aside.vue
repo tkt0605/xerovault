@@ -30,12 +30,6 @@
                 class="mt-1 block w-full rounded-md bg-gray-800 border border-gray-600 text-white p-2" />
             </div>
             <div>
-              <textarea id="group-description" v-model="groupDescription" name="description"
-                placeholder="このスタジオの目的や説明を記載してください"
-                class="mt-1 block w-full rounded-md bg-gray-800 border border-gray-600 text-white p-2"
-                rows="4"></textarea>
-            </div>
-            <div>
               <label for="lib-tags" class="block text-sm font-semibold text-gray-200">タグ（カンマ区切り）</label>
               <input id="lib-tags" type="text" placeholder="例：機密, AI, レポート" v-model="groupTag"
                 class="mt-1 block w-full bg-gray-800 border border-gray-600 text-white p-2 rounded-md" />
@@ -234,7 +228,6 @@ const createNewGroup = async () => {
     return;
   }
   const GroupName = groupName.value.trim();
-  const GroupDescription = groupDescription.value.trim();
   const Tag = groupTag.value.trim();
   const members = [user.email];
   const visibility = is_group.value;
@@ -248,7 +241,6 @@ const createNewGroup = async () => {
       GroupName,
       visibility,
       members,
-      GroupDescription,
       Tag
     );
     groupList.value = await groupStore.fetchGroup();

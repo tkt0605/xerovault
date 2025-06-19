@@ -18,7 +18,7 @@ export const useAuthGroups = defineStore('group', {
         PrivateGroups: (state) => state.groups.filter(g => !g.is_public)
     },
     actions: {
-        async CreateGroup(name, is_public, members, description, tag) {
+        async CreateGroup(name, is_public, members, tag) {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
             try {
@@ -32,7 +32,6 @@ export const useAuthGroups = defineStore('group', {
                         name: name.trim(),
                         is_public: is_public,
                         members: members,
-                        description: description.trim(),
                         tag: tag.trim()
                     })
                 });
@@ -46,14 +45,11 @@ export const useAuthGroups = defineStore('group', {
                     name: data.name,
                     owner: data.owner,
                     members: data.members,
-                    related_name: data.related_name,
-                    description: data.description,
+                    goals: data.goals,
                     tag: data.tag,
                     joined_token: data.joined_token,
                     is_public: data.is_public,
-                    requires_secret_key: data.requires_secret_key,
-                    crated_at: data.crated_at,
-                    token_expiry: data.token_expiry,
+                    created_at: data.created_at,
                 }
             } catch (error) {
                 console.error('グループ作成の失敗:', error);
@@ -82,14 +78,11 @@ export const useAuthGroups = defineStore('group', {
                         name: data.name,
                         owner: data.owner,
                         members: data.members,
-                        related_name: data.related_name,
-                        description: data.description,
+                        goals: data.goals,
                         tag: data.tag,
                         joined_token: data.joined_token,
                         is_public: data.is_public,
-                        requires_secret_key: data.requires_secret_key,
-                        crated_at: data.crated_at,
-                        token_expiry: data.token_expiry,
+                        created_at: data.created_at,
                     }
                 }
                 return data.map((item) => ({
@@ -97,14 +90,11 @@ export const useAuthGroups = defineStore('group', {
                     name: item.name,
                     owner: item.owner,
                     members: item.members,
-                    related_name: item.related_name,
-                    description: item.description,
+                    goals: item.goals,
                     tag: item.tag,
                     joined_token: item.joined_token,
                     is_public: item.is_public,
-                    requires_secret_key: item.requires_secret_key,
-                    crated_at: item.crated_at,
-                    token_expiry: item.token_expiry,
+                    created_at: item.created_at,
                 }));
             } catch (error) {
                 console.error("グループ情報取得の失敗：", error);
@@ -133,14 +123,11 @@ export const useAuthGroups = defineStore('group', {
                         name: data.name,
                         owner: data.owner,
                         members: data.members,
-                        related_name: data.related_name,
-                        description: data.description,
+                        goals: data.goals,
                         tag: data.tag,
                         joined_token: data.joined_token,
                         is_public: data.is_public,
-                        requires_secret_key: data.requires_secret_key,
-                        crated_at: data.crated_at,
-                        token_expiry: data.token_expiry,
+                        created_at: data.created_at,
                     }
                 }
                 return data.map((item) => ({
@@ -148,14 +135,11 @@ export const useAuthGroups = defineStore('group', {
                     name: item.name,
                     owner: item.owner,
                     members: item.members,
-                    related_name: item.related_name,
-                    description: item.description,
+                    goals: item.goals,
                     tag: item.tag,
                     joined_token: item.joined_token,
                     is_public: item.is_public,
-                    requires_secret_key: item.requires_secret_key,
-                    crated_at: item.crated_at,
-                    token_expiry: item.token_expiry,
+                    created_at: item.created_at,
                 }));
             } catch (error) {
                 console.error('個別グループ情報取得・エラー：', error);

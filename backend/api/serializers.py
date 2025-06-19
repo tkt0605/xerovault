@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
-from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary
+from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal
 from rest_framework_simplejwt.tokens import RefreshToken
 User = get_user_model()
 class RegisterSerializer(serializers.ModelSerializer):
@@ -84,15 +84,14 @@ class GenerateGroupSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = GenerateGroup
-        fields = ['id', 'name','tag' , 'owner', 'members', 'description', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry', 'updated_at']
-        # read_only_fields = ['id', 'name','tag' , 'owner', 'members', 'description', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry', 'updated_at']
+        fields = ['id', 'name','tag' , 'owner', 'members', 'goals', 'score', 'generate_credits', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry', 'updated_at']
         read_only_fields = ['id', 'joined_token', 'crated_at', 'token_expiry', 'updated_at']
 class GenerateGroupReadSerializer(serializers.ModelSerializer):
     owner = CustomUserSerializer(read_only=True)
     members=CustomUserSerializer(read_only=True)
     class Meta:
         model = GenerateGroup
-        fields = ['id', 'name','tag' , 'owner', 'members', 'description', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry', 'updated_at']
+        fields = ['id', 'name','tag' , 'owner', 'members', 'goals', 'score', 'generate_credits', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry', 'updated_at']
 
 
 class GeneratePublicTokenSerializer(serializers.ModelSerializer):
@@ -130,3 +129,21 @@ class GenerateLibraryReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = GenerateLibrary
         fields = ['id', 'owner', 'name', 'description', 'tag', 'is_public', 'created_at', "updated_at"]
+
+
+class GoalSerializer(serializers.ModelSerializer):
+    assignee = serializers.SlugRelatedField(
+        slug_field = 'assignee',
+        queryset = CustomUser.objects.all(),
+        required = False,
+        allow_null = True
+    )
+    class Meta:
+        model = Goal
+        fields = ['group', 'description', "created_at", "deadline", "assignee", "is_concrete", "is_completed"]
+        read_only_fields = ['created_at']
+class GoalReadSerializer(serializers.ModelSerializer):
+    assignee = CustomUserSerializer(read_only = True)
+    class Meta:
+        model = Goal
+        fields = ['group', 'description', "created_at", "deadline", "assignee", "is_concrete", "is_completed"]
