@@ -87,25 +87,36 @@ class GenerateGroupviewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     def get_permissions(self):
         if self.action in ['create', 'list']:
-            return[AllowAny()]
+            return[IsAuthenticated()]
         return super().get_permissions()
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return GenerateGroupReadSerializer
         return super().get_serializer_class()
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
-    @action(detail=False, methods=['post'], permission_classes = [IsAuthenticated])
-    def create_group(self, request):
-        serializer = GenerateGroupSerializer(data=request.data)
-        if serializer.is_valid():
-            group = serializer.save(owner=self.request.user)
-            return Response('グループが作成されました。', status=201)
-        return Response(serializer.errors, status=400)
-    @action(detail=False, methods=['get'], permission_classes = [IsAuthenticated])
+    # def perform_create(self, serializer):
+    #     serializer.save(owner=self.request.user)
+    # @action(detail=False, methods=['post'], permission_classes = [IsAuthenticated])
+    def create(self, request, *args, **kwargs):
+        print('リクエストデータ:', request.data)  # ← 送信されたmembersの値を確認
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        group = serializer.save(owner=request.user)
+        try:
+            group.members.add(request.user)  # ここで例外が出る場合はリクエストに問題あり
+        except Exception as e:
+            print("members.add() で例外:", str(e))
+            raise e  # ログが表示されるようにする
+
+        group.refresh_from_db()
+        read_serializer = self.get_serializer(group)
+        return Response(read_serializer.data, status=201)
     def my_groups(self, request):
         user = self.request.user
-        groups = GenerateGroup.objects.filter(owner=user)
+        groups = GenerateGroup.objects.filter(
+            Q(owner = user) | Q(members = user)
+        ).distinct()
         serializer = GenerateGroupReadSerializer(groups, many=True)
         return Response(serializer.data)
 

@@ -60,7 +60,7 @@ class LogoutSerializer(serializers.Serializer):
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['email', 'avater', 'is_active', 'is_staff', 'is_superuser']
+        fields = ['email', 'avater']
         read_only_fields = ['id', 'email', 'avater', 'date_joined']
 
 class CustomUserDetairsSerializer(serializers.ModelSerializer):
@@ -76,22 +76,22 @@ class GenerateGroupSerializer(serializers.ModelSerializer):
         allow_null=True
     )
     members = serializers.SlugRelatedField(
-        slug_field = "email",
-        queryset=CustomUser.objects.all(),
-        many=True,
-        required=False,
-        allow_null=True
+        slug_field = 'email',
+        queryset = CustomUser.objects.all(),
+        required = False,
+        allow_null = True,
+        many = True
     )
     class Meta:
         model = GenerateGroup
-        fields = ['id', 'name','tag' , 'owner', 'members', 'goals', 'score', 'generate_credits', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry', 'updated_at']
-        read_only_fields = ['id', 'joined_token', 'crated_at', 'token_expiry', 'updated_at']
+        fields = ['id', 'name','tag' , 'owner', 'members', 'goals', 'score', 'generate_credits', 'joined_token', 'is_public', "created_at",'updated_at']
+        read_only_fields = ['id', 'joined_token', 'created_at','updated_at']
 class GenerateGroupReadSerializer(serializers.ModelSerializer):
     owner = CustomUserSerializer(read_only=True)
-    members=CustomUserSerializer(read_only=True)
+    members=CustomUserSerializer(read_only=True, many=True)
     class Meta:
         model = GenerateGroup
-        fields = ['id', 'name','tag' , 'owner', 'members', 'goals', 'score', 'generate_credits', 'joined_token', 'is_public', 'requires_secret_key', "crated_at", 'token_expiry', 'updated_at']
+        fields = ['id', 'name','tag' , 'owner', 'members', 'goals', 'score', 'generate_credits', 'joined_token', 'is_public', "created_at",'updated_at']
 
 
 class GeneratePublicTokenSerializer(serializers.ModelSerializer):
