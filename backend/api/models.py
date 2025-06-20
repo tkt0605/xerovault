@@ -90,7 +90,7 @@ class GenerateGroup(models.Model):
         members_points = self.members.count()
         vague_goals_points = self.goals.filter(is_concrete=False, is_completed=False).count() * VAGUE_GOAL_WEIGHT
         concreate_goals_points = self.goals.filter(is_concrete=True, is_completed=False).count()*CONCRETE_GOAL_WEIGHT
-        completed_goals_points = self.goals.filter(is_complete = True).count()*COMPLETED_GOAL_WEIGHT
+        completed_goals_points = self.goals.filter(is_completed = True).count()*COMPLETED_GOAL_WEIGHT
 
         calculated_score = BASE_SCORE + members_points + vague_goals_points + concreate_goals_points + completed_goals_points
         new_score = min(calculated_score, MAX_SCORE)
@@ -102,7 +102,6 @@ class Goal(models.Model):
     group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='目標')
     description = models.TextField("目標内容")
     created_at = models.DateTimeField("作成日", auto_now_add=True)
-
     deadline = models.DateField('締め切り', null=True, blank=True, help_text='この目標の締め切り')
     assignee = models.ForeignKey(
         AUTH_USER_MODEL,

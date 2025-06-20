@@ -229,7 +229,7 @@ const createNewGroup = async () => {
   }
   const GroupName = groupName.value.trim();
   const Tag = groupTag.value.trim();
-  const members = [user.email];
+  // const members = [user?.email];
   const visibility = is_group.value;
   if (!GroupName) {
     alert('スタジオ名を入力してください。');
@@ -237,15 +237,15 @@ const createNewGroup = async () => {
   }
   try {
     openGroupDailog.value = false;
-    const createG = await groupStore.CreateGroup(
+    const createStudio = await groupStore.CreateGroup(
       GroupName,
       visibility,
-      members,
       Tag
     );
+    console.log('作成結果：', createStudio);
     groupList.value = await groupStore.fetchGroup();
     console.log('Studioが作成されました。');
-    return router.push(`/studio/${createG.id}`);
+    return router.push(`/studio/${createStudio.id}`);
   } catch (error) {
     console.error('スタジオ作成失敗：', error);
     throw error;
