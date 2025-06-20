@@ -166,3 +166,12 @@ class GenerateLibrary(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.name
+
+class ConnectLibrary(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    target = models.ForeignKey(GenerateLibrary, on_delete=models.CASCADE, related_name='対象ライブラリ', default='')
+    group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name="接続先スタジオ", default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.target

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
-from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal
+from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary
 from rest_framework_simplejwt.tokens import RefreshToken
 User = get_user_model()
 class RegisterSerializer(serializers.ModelSerializer):
@@ -133,7 +133,7 @@ class GenerateLibraryReadSerializer(serializers.ModelSerializer):
 
 class GoalSerializer(serializers.ModelSerializer):
     assignee = serializers.SlugRelatedField(
-        slug_field = 'assignee',
+        slug_field = 'email',
         queryset = CustomUser.objects.all(),
         required = False,
         allow_null = True
@@ -147,3 +147,36 @@ class GoalReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Goal
         fields = ['group', 'description', "created_at", "deadline", "assignee", "is_concrete", "is_completed"]
+
+class ConnectLibrarySerializer(serializers.ModelSerializer):
+    target = serializers.SlugRelatedField(
+        slug_field = "name",
+        queryset = GenerateLibrary.objects.all(),
+        required = False,
+        allow_null = True
+    )
+    group = serializers.SlugRelatedField(
+        slug_field = 'name',
+        queryset = GenerateGroup.objects.all(),
+        required = False,
+        allow_null = True
+    )
+    class Meta:
+        model = ConnectLibrary
+        fields = [
+            'id',
+            'target',
+            'group',
+            'created_at'
+        ]
+class ConnectLibraryReadSerializer(serializers.ModelSerializer):
+    target = GenerateLibrarySerializer(read_only=True)
+    group = GenerateGroupSerializer(read_only = True)
+    class Meta:
+        model = ConnectLibrary
+        fields = [
+            'id',
+            'target',
+            'group',
+            'created_at'
+        ]

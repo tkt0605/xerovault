@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal
+from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
-from .serializers import RegisterSerializer, CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LoginSerializer, LogoutSerializer, GeneratePublicTokenSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GeneratePublicTokenReadSerializer, GenerateLibrarySerializer, GenerateLibraryReadSerializer, GoalSerializer, GoalReadSerializer
+from .serializers import RegisterSerializer, CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LoginSerializer, LogoutSerializer, GeneratePublicTokenSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GeneratePublicTokenReadSerializer, GenerateLibrarySerializer, GenerateLibraryReadSerializer, GoalSerializer, GoalReadSerializer, ConnectLibrarySerializer, ConnectLibraryReadSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import timedelta
 from django.contrib.auth import get_user_model
@@ -183,3 +183,43 @@ class GoalViewSet(viewsets.ModelViewSet):
         serializer = GoalReadSerializer(goals, many=True)
         return Response(serializer.data)
 
+
+class ConnectLibraryViewSet(viewsets.ModelViewSet):
+    queryset = ConnectLibrary.objects.all()
+    serializer_class = ConnectLibrarySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ['create', 'list']:
+            return {IsAuthenticated()}
+        return super().get_permissions()
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return ConnectLibraryReadSerializer
+        return super().get_serializer_class()
+    def create(self, request, *args, **kwargs):
+        user = self.request.user
+        print('リクエストデータ：', request.data)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        group =GenerateGroup.objects.get(id = request.data['group'])
+        library = GenerateLibrary.objects.get(id=request.data['target'])
+        if group.owner != user and user or group.members.all():
+            return Response({"error": "グループに参加していません。"}, status=403)
+        if library.owner != user:
+            return Response({"error": "あなたのライブラリではありません。"}, status=403)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=201)
+    def my_Connecter(self, request):
+        user = self.request.user
+        groups = GenerateGroup.objects.filter(
+            Q(owner = user) | Q(members = user)
+        )
+        librarys = GenerateLibrary.objects.filter(
+            owner = user
+        )
+        connecter = ConnectLibrary.objects.filter(
+            group__in = groups, target__in = librarys
+        )
+        serializer = ConnectLibraryReadSerializer(connecter, many=True)
+        return Response(serializer.data)
