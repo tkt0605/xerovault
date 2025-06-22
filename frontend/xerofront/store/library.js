@@ -8,7 +8,7 @@ export const useAuthLibrary = defineStore('library', {
         libraries: [],
     }),
     actions: {
-        async CreateLibraries(name, description, tag, is_public){
+        async CreateLibraries(name, tag, is_public){
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
             try{
@@ -20,7 +20,6 @@ export const useAuthLibrary = defineStore('library', {
                     },
                     body: JSON.stringify({
                         name: name.trim(),
-                        description: description.trim(),
                         tag: tag.trim(),
                         is_public: is_public
                     })
@@ -33,9 +32,9 @@ export const useAuthLibrary = defineStore('library', {
                 return {
                     id: data.id,
                     name: data.name,
-                    description: data.description,
                     tag: data.tag,
                     is_public: data.is_public,
+                    owner: data.owner,
                     created_at: data.created_at,
                     updated_at: data.updated_at,
                 }
@@ -64,8 +63,8 @@ export const useAuthLibrary = defineStore('library', {
                     return {
                         id: data.id,
                         name: data.name,
-                        description: data.description,
                         tag: data.tag,
+                        owner: data.owner,
                         is_public: data.is_public,
                         created_at: data.created_at,
                         updated_at: data.updated_at
@@ -74,8 +73,9 @@ export const useAuthLibrary = defineStore('library', {
                 return data.map((item) => ({
                     id: item.id,
                     name: item.name,
-                    description: item.description,
                     tag: item.tag,
+                    is_public: item.is_public,
+                    owner: item.owner,
                     created_at: item.created_at,
                     updated_at: item.updated_at
                 }));
@@ -88,7 +88,7 @@ export const useAuthLibrary = defineStore('library', {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
             try{
-                const response = await fetch(`${config.public.apiBase}librarys/`, {
+                const response = await fetch(`${config.public.apiBase}librarys/${id}`, {
                     method: "GET",
                     headers: {
                         "Content-type": "application/json",
@@ -104,9 +104,9 @@ export const useAuthLibrary = defineStore('library', {
                     return {
                         id: data.id,
                         name: data.name,
-                        description: data.description,
                         tag: data.tag,
                         is_public: data.is_public,
+                        owner: data.owner,
                         created_at: data.created_at,
                         updated_at: data.updated_at
                     }
@@ -114,8 +114,9 @@ export const useAuthLibrary = defineStore('library', {
                 return data.map((item) => ({
                     id: item.id,
                     name: item.name,
-                    description: item.description,
                     tag: item.tag,
+                    owner: item.owner,
+                    is_public: item.is_public,
                     created_at: item.created_at,
                     updated_at: item.updated_at
                 }));
