@@ -58,14 +58,15 @@
                         {{ currentUser.email }}
                     </p>
                 </div>
-                <div class="flex items-center gap3 mb-6">
+                <button class="flex gap-3 w-full text-left px-4 py-2 text-white-600 hover:text-white hover:bg-gray-600
+                 rounded-lg font-semibold transition" @click="StepToken()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                         class="bi bi-hammer" viewBox="0 0 16 16">
                         <path
                             d="M9.972 2.508a.5.5 0 0 0-.16-.556l-.178-.129a5 5 0 0 0-2.076-.783C6.215.862 4.504 1.229 2.84 3.133H1.786a.5.5 0 0 0-.354.147L.146 4.567a.5.5 0 0 0 0 .706l2.571 2.579a.5.5 0 0 0 .708 0l1.286-1.29a.5.5 0 0 0 .146-.353V5.57l8.387 8.873A.5.5 0 0 0 14 14.5l1.5-1.5a.5.5 0 0 0 .017-.689l-9.129-8.63c.747-.456 1.772-.839 3.112-.839a.5.5 0 0 0 .472-.334" />
                     </svg>
-                    <p class="text-sm text-gray-700 dark:text-gray-200 break-all" @click="StepToken()">トークン一覧</p>
-                </div>
+                    <p class="text-sm text-gray-700 dark:text-gray-200 break-all">トークン一覧</p>
+                </button>
                 <!-- ログアウト -->
                 <button @click="logout" class="w-full text-left px-4 py-2 text-red-600 hover:text-white hover:bg-red-600
                  rounded-lg font-semibold transition">
