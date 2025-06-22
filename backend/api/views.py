@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary
+from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, GroupNotification
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
 from .serializers import RegisterSerializer, CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LoginSerializer, LogoutSerializer, GeneratePublicTokenSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GeneratePublicTokenReadSerializer, GenerateLibrarySerializer, GenerateLibraryReadSerializer, GoalSerializer, GoalReadSerializer, ConnectLibrarySerializer, ConnectLibraryReadSerializer
@@ -12,6 +12,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from rest_framework import status
 User = get_user_model()
 class EmailLoginAPI(APIView):
     permission_classes = [AllowAny]
@@ -93,9 +94,6 @@ class GenerateGroupviewSet(viewsets.ModelViewSet):
         if self.action == 'retrieve':
             return GenerateGroupReadSerializer
         return super().get_serializer_class()
-    # def perform_create(self, serializer):
-    #     serializer.save(owner=self.request.user)
-    # @action(detail=False, methods=['post'], permission_classes = [IsAuthenticated])
     def create(self, request, *args, **kwargs):
         print('リクエストデータ:', request.data)  # ← 送信されたmembersの値を確認
 
@@ -112,6 +110,48 @@ class GenerateGroupviewSet(viewsets.ModelViewSet):
         group.refresh_from_db()
         read_serializer = self.get_serializer(group)
         return Response(read_serializer.data, status=201)
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def add_members(self, request, id=None):
+        group = self.get_object()
+        email = self.request.user
+        if group.owner != email:
+            return Response({'detail': 'あなたには、メンバーの追加権限を持ってません。'})
+        if not group:
+            return Response({'detail': 'groupが存在しません。'}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            user = CustomUser.objects.get(email=email)
+            target = GenerateGroup.objects.get(owner=group.owner)
+            if user in target.members.all():
+                return Response({'detail': "すべにメンバーです。"}, status=400)
+            target.members.add(user)
+            GroupNotification.objects.create(
+                group=group,
+                message=f"{user.email}がメンバーに追加されました。"
+            )
+            return Response({'detail': f'{email}を追加しました。'})
+        except CustomUser.DoesNotExist:
+            return Response({'detail': 'ユーザーが存在しません。'}, status=404)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def join(self, request, pk=None):
+        user = self.request.user
+        # token = request.data.get('token')
+        token = request.query_params.get('token')
+        if not token:
+            return Response({'detail': 'トークンが必要です。'}, status=400)
+        try:
+            group = GenerateGroup.objects.get(join_token=token)
+        except GenerateGroup.DoesNotExist:
+            return Response({'detail': '無効トークンです。'}, status=404)
+        if user in group.members.all():
+            return Response({'detail': 'すでに参加しています。'}, status=400)
+        group.members.add(user)
+        group.save()
+        GroupNotification.objects.create(
+            group = group,
+            message = f"{user.email}がグループに参加しました。"
+        )
+        return Response({'detail': f"{group.name}に参加しました。"}, status=200)
     def my_groups(self, request):
         user = self.request.user
         groups = GenerateGroup.objects.filter(

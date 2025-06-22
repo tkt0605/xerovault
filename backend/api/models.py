@@ -73,7 +73,7 @@ class GenerateGroup(models.Model):
     members = models.ManyToManyField(AUTH_USER_MODEL, related_name='joined_name', blank=True)
     goals = models.ManyToManyField("Goal", blank=True)
     tag = models.CharField(max_length=256, blank=True, default='')
-    joined_token = models.UUIDField(default=uuid.uuid4)
+    joined_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     is_public = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_created=True, auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -175,3 +175,11 @@ class ConnectLibrary(models.Model):
 
     def __str__(self):
         return self.target
+
+class GroupNotification(models.Model):
+    group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return super().__str__()

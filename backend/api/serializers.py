@@ -120,16 +120,22 @@ class GeneratePublicTokenReadSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'groups', 'token', 'is_used', 'is_valid', 'created_at', 'updated_at']
 
 class GenerateLibrarySerializer(serializers.ModelSerializer):
+    owner = serializers.SlugRelatedField(
+        slug_field = 'email',
+        queryset = CustomUser.objects.all(),
+        required = False,
+        allow_null = True
+    )
     class Meta:
         model = GenerateLibrary
-        fields = ['id', 'owner', 'name', 'description', 'tag', 'is_public', 'created_at', "updated_at"]
+        fields = ['id', 'owner', 'name', 'tag', 'is_public', 'created_at', "updated_at"]
         read_only_fields = ['id','created_at', 'updated_at']
 
 class GenerateLibraryReadSerializer(serializers.ModelSerializer):
+    owner = CustomUserSerializer(read_only = True)
     class Meta:
         model = GenerateLibrary
-        fields = ['id', 'owner', 'name', 'description', 'tag', 'is_public', 'created_at', "updated_at"]
-
+        fields = ['id', 'owner', 'name', 'tag', 'is_public', 'created_at', "updated_at"]
 
 class GoalSerializer(serializers.ModelSerializer):
     assignee = serializers.SlugRelatedField(

@@ -11,7 +11,10 @@
                             d="M.5 0a.5.5 0 0 1 .5.5v15a.5.5 0 0 1-1 0V.5A.5.5 0 0 1 .5 0M2 1.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" />
                     </svg>
                 </button>
-                <span class="text-xl font-bold text-gray-800 dark:text-white">Studio DEMO</span>
+                <button @click="goHome"
+                    class="text-xl font-bold text-gray-800 dark:text-white hover:underline hover:text-blue-600 transition">
+                    Studio DEMO
+                </button>
             </div>
 
             <!-- 右側：認証状態で分岐 -->
@@ -116,6 +119,8 @@
 <script setup>
 import "~/assets/css/header.css";
 import { useAuthStore } from "~/store/auth";
+import { useAuthGroups } from "~/store/group";
+import { useAuthLibrary } from "~/store/library";
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import Signup from "~/pages/auth/signup.vue";
@@ -123,6 +128,8 @@ import Dialog from "~/components/MainDialog.vue";
 import QrcodeVue from 'qrcode.vue';
 
 const authStore = useAuthStore();
+const groupStore = useAuthGroups();
+const libraryStore = useAuthLibrary();
 const isopenInfo = ref(false);
 const setUserId = ref(null);
 const user = ref(null);
@@ -142,6 +149,8 @@ onMounted(async () => {
             try {
                 user.value = await authStore.getUserInfo();
                 console.log('ユーザー情報取得：', user.value);
+                // await groupStore.fetchGroup();
+                // await libraryStore.FetchLibrary();
             } catch (error) {
                 console.error('ユーザー情報の取得失敗:', error);
                 throw error;
@@ -181,27 +190,30 @@ const StepToken = () => {
 };
 
 const tokens = ref([
-  {
-    id: 1,
-    name: 'グループ参加用',
-    token: 'fc98a9d2-7cda-4a5b-835c-xxxxxxx',
-  },
-  {
-    id: 2,
-    name: '',
-    token: '43eabfc1-fd6e-442d-b49a-yyyyyyy',
-  }
+    {
+        id: 1,
+        name: 'グループ参加用',
+        token: 'fc98a9d2-7cda-4a5b-835c-xxxxxxx',
+    },
+    {
+        id: 2,
+        name: '',
+        token: '43eabfc1-fd6e-442d-b49a-yyyyyyy',
+    }
 ])
 
 const baseUrl = 'https://xerovault.com/join/'
 
 function generateTokenUrl(token) {
-  return `${baseUrl}${token}`
+    return `${baseUrl}${token}`
 }
 
 function copyUrl(url) {
-  navigator.clipboard.writeText(url).then(() => {
-    alert('コピーしました')
-  })
+    navigator.clipboard.writeText(url).then(() => {
+        alert('コピーしました')
+    })
 }
+const goHome = () => {
+    router.push('/');
+};
 </script>

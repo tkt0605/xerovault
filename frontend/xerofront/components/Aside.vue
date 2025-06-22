@@ -76,34 +76,29 @@
             <div>
               <label for="lib-name" class="block text-sm font-semibold text-gray-200">ライブラリ名 <span
                   class="text-red-400">*</span></label>
-              <input id="lib-name" type="text" placeholder="例：研究資料2025"
+              <input id="lib-name" type="text" placeholder="例：研究資料2025" v-model="libraryName"
                 class="mt-1 block w-full bg-gray-800 border border-gray-600 text-white p-2 rounded-md" />
-            </div>
-
-            <!-- 説明 -->
-            <div>
-              <label for="lib-description" class="block text-sm font-semibold text-gray-200">説明</label>
-              <textarea id="lib-description" rows="4" placeholder="このライブラリの目的や詳細..."
-                class="mt-1 block w-full bg-gray-800 border border-gray-600 text-white p-2 rounded-md"></textarea>
             </div>
 
             <!-- タグ -->
             <div>
               <label for="lib-tags" class="block text-sm font-semibold text-gray-200">タグ（カンマ区切り）</label>
-              <input id="lib-tags" type="text" placeholder="例：機密, AI, レポート"
+              <input id="lib-tags" type="text" v-model="libraryTag" placeholder="例：機密, AI, レポート"
                 class="mt-1 block w-full bg-gray-800 border border-gray-600 text-white p-2 rounded-md" />
             </div>
 
             <!-- 公開設定 -->
             <div>
-              <label class="block text-sm font-semibold text-gray-200">公開設定</label>
-              <div class="mt-2 flex gap-6">
+              <span class="block text-sm font-medium text-gray-200 mb-1">公開設定</span>
+              <div class="flex items-center gap-6">
                 <label class="inline-flex items-center">
-                  <input type="radio" name="visibility" value="public" class="form-radio text-green-500" />
+                  <input type="radio" name="visibility" class="form-radio text-green-500" v-model="is_library"
+                    :value="true" />
                   <span class="ml-2 text-gray-200">公開</span>
                 </label>
                 <label class="inline-flex items-center">
-                  <input type="radio" name="visibility" value="private" class="form-radio text-red-500" />
+                  <input type="radio" name="visibility" class="form-radio text-red-500" v-model="is_library"
+                    :value="false" />
                   <span class="ml-2 text-gray-200">非公開</span>
                 </label>
               </div>
@@ -112,7 +107,7 @@
 
         </template>
         <template #footer>
-          <button @click="openLibraryDailog = false" class="bg-green-600 text-white px-4 py-2 rounded">作成する</button>
+          <button @click="createLibrary" class="bg-green-600 text-white px-4 py-2 rounded">作成する</button>
         </template>
       </Dialog>
       <button
@@ -160,24 +155,24 @@
     <!-- スタジオ一覧 -->
     <div>
       <h2 class="text-xs text-gray-500 dark:text-gray-400 tracking-widest mb-2">スタジオ一覧</h2>
-      <div class="flex flex-col gap-2">
-        <div v-for="group in groups" :key="group.id"
-          class="px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition">
-          <NuxtLink :to="`/studio/${group.id}`">
+      <div v-for="group in groups" :key="group.id" class="flex flex-col gap-2">
+        <NuxtLink :to="`/studio/${group.id}`">
+          <div class="px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition">
             {{ group.name }}
-          </NuxtLink>
-        </div>
+          </div>
+        </NuxtLink>
       </div>
     </div>
 
     <!-- マイ・ライブラリ -->
     <div>
       <h2 class="text-xs text-gray-500 dark:text-gray-400 tracking-widest mb-2">マイ・ライブラリ</h2>
-      <div class="flex flex-col gap-2">
-        <div v-for="mylib in libraries" :key="mylib.id"
-          class="px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition">
-          {{ mylib.name }}
-        </div>
+      <div v-for="mylib in libraryList" :key="mylib.id" class="flex flex-col gap-2">
+        <NuxtLink :to="`/library/${mylib.id}`">
+          <div class="px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition">
+            {{ mylib.name }}
+          </div>
+        </NuxtLink>
       </div>
     </div>
   </aside>
@@ -187,6 +182,7 @@
 import Dialog from '~/components/MainDialog.vue';
 import { useAuthStore } from '~/store/auth';
 import { useAuthGroups } from '~/store/group';
+import { useAuthLibrary } from '~/store/library';
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 const openGroupDailog = ref(false);
@@ -194,11 +190,17 @@ const openLibraryDailog = ref(false);
 const openTokenDailog = ref(false);
 const groupStore = useAuthGroups();
 const authStore = useAuthStore();
+const libraryStore = useAuthLibrary();
 const currentUser = computed(() => authStore.currentUser);
+
 const groupName = ref("");
-const groupDescription = ref("");
 const groupTag = ref("");
 const is_group = ref(false);
+
+const libraryName = ref('');
+const libraryTag = ref('');
+const is_library = ref(false);
+
 const groupList = ref([]);
 const libraries = ref([]);
 const router = useRouter();
@@ -206,6 +208,7 @@ const router = useRouter();
 onMounted(async () => {
   try {
     groupList.value = await groupStore.fetchGroup();
+    libraries.value = await libraryStore.FetchLibrary();
   } catch (error) {
 
   }
@@ -253,5 +256,35 @@ const createNewGroup = async () => {
 };
 const groups = computed(() =>
   groupList.value.filter((item) => item.owner === authStore.user.email)
+);
+const createLibrary = async () => {
+  const user = authStore?.user;
+  if (!user) {
+    alert('ログインしてください。');
+    return;
+  }
+  const Name = libraryName.value.trim();
+  const Tag = libraryTag.value.trim();
+  const visibility = is_library.value;
+  if (!Name) {
+    alert('ライブラリ名を入力してください。');
+  }
+  try {
+    const NewLibrary = await libraryStore.CreateLibraries(
+      Name,
+      Tag,
+      visibility
+    );
+    console.log('作成結果:', NewLibrary.value);
+    libraries.value = await libraryStore.FetchLibrary();
+    console.log('ライブラリ作成完了');
+    return router.push(`/library/${NewLibrary.id}`);
+  } catch (error) {
+    console.error('作成失敗：', error);
+    throw error;
+  }
+};
+const libraryList = computed(() =>
+  libraries.value.filter((item) => item.owner === authStore.user.email)
 );
 </script>

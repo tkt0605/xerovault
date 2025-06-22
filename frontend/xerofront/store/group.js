@@ -18,7 +18,7 @@ export const useAuthGroups = defineStore('group', {
         PrivateGroups: (state) => state.groups.filter(g => !g.is_public)
     },
     actions: {
-        async CreateGroup(name, is_public,  tag) {
+        async CreateGroup(name, is_public, tag) {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
             try {
@@ -153,6 +153,57 @@ export const useAuthGroups = defineStore('group', {
                 }));
             } catch (error) {
                 console.error('個別グループ情報取得・エラー：', error);
+                throw error;
+            }
+        },
+        async AdditionalMembers(id, email) {
+            const config = useRuntimeConfig();
+            const authStore = useAuthStore();
+            try {
+                const response = await fetch(`${config.public.apiBase}groups/${id}/add_members/`, {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": 'application/json',
+                        "Authorization": `Bearer ${authStore.accessToken}`
+                    },
+                    body: JSON.stringify({
+                        email,
+                    })
+                });
+                if (!response.ok){
+                    const errorData = await response.json();
+                    console.error('エラー：', errorData);
+                    throw new Error(errorData.detail || "メンバー追加エラー");
+                }
+                const data = await response.json();
+                console.log('追加完了：', data);
+                return data;
+            } catch (error) {
+                console.error('追加失敗：', error);
+                throw error;
+            }
+        },
+        async JoinAnonymous(id, token){
+            const config = useRuntimeConfig();
+            const authStore = useAuthStore();
+            try{
+                const response = await fetch(`${config.public.apiBase}groups/${id}/join/?token=${token}`, {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": 'application/json',
+                        'Authorization': `Bearer ${authStore.accessToken}`
+                    }
+                });
+                if (!response.ok){
+                    const errorData = await response.json();
+                    console.error('スタジオの紹介失敗：', errorData);
+                    throw new Error(errorData.detail || "参加失敗");
+                }
+                const data = await response.json();
+                console.log('参加完了：', data);
+                return data;
+            }catch(error){
+                console.error('参加失敗：', error);
                 throw error;
             }
         }
