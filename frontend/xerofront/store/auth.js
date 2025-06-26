@@ -32,7 +32,11 @@ export const useAuthStore = defineStore("auth", {
             const router = useRouter();
             const refreshTokens = localStorage.getItem('refresh_token');
             if (!refreshTokens) {
-                console.error('リフレッシュトークンがありません。ログインしてくださ             try {
+                console.error('リフレッシュトークンがありません。ログインしてください。');
+                router.push('/auth/login');
+                throw new Error("リフレッシュトークンが存在していません。");
+            }
+            try {
                 const response = await fetch(`${config.public.apiBase}token/refresh/`, {
                     method: "POST",
                     headers: {
