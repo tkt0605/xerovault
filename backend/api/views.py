@@ -14,6 +14,10 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from rest_framework import status
 from .utils.crypto import encrypt_invite
+from django.shortcuts import get_object_or_404
+import uuid, time
+
+
 User = get_user_model()
 class EmailLoginAPI(APIView):
     permission_classes = [AllowAny]
@@ -64,6 +68,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=200)
         return Response(serializer.errors, status=400)
+    
 class GeneratePublicTokenViewSet(viewsets.ModelViewSet):
     queryset = GeneratePublicToken.objects.all()
     serializer_class = GeneratePublicTokenSerializer
@@ -83,6 +88,20 @@ class GeneratePublicTokenViewSet(viewsets.ModelViewSet):
             token = serializer.save()
             return Response({'token': token.token}, status=201)
         return Response(serializer.errors, status=400)
+class InviteCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        group_id = request.data.get("group_id")
+        expire_in = int(request.data.get('expire_in', 3600))
+        group = get_object_or_404(GenerateGroup, id = group_id, owner = request.user)
+        token = str(uuid.uuid4())
+        exp = int(time.time()) + expire_in
+
+        group.joined_token = token
+        group.save()
+
+        encrypted = encrypt_invite({'token': token, 'exp': exp})
+        return Response({'encrypted_data': encrypted})
 class GenerateGroupviewSet(viewsets.ModelViewSet):
     queryset = GenerateGroup.objects.all()
     serializer_class = GenerateGroupSerializer

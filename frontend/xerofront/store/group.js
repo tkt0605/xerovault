@@ -206,6 +206,6 @@ export const useAuthGroups = defineStore('group', {
                 console.error('参加失敗：', error);
                 throw error;
             }
-        }
+        },
     }
 })

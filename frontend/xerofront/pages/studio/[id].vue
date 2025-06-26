@@ -117,6 +117,15 @@
                         </div>
                     </div>
                     <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 space-y-3">
+                        <div
+                            class="flex items-center justify-between gap-2 bg-zinc-100 dark:bg-zinc-700 p-3 rounded-lg shadow-inner">
+                            <input type="text" :value="invterURL" readonly
+                                class="w-full px-3 py-2 text-sm rounded-md text-gray-800 dark:text-white bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 focus:outline-none" />
+                            <button @click="copyToClipboard(invterURL)"
+                                class="px-3 py-1 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md transition">
+                                コピー
+                            </button>
+                        </div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">このコードをコピーして共有してください。</p>
                         <div
                             class="flex items-center justify-between gap-2 bg-zinc-100 dark:bg-zinc-600 p-3 rounded shadow">
@@ -150,6 +159,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { errorMessages } from 'vue/compiler-sfc';
 import { QrcodeCanvas } from 'qrcode.vue';
 import { QrcodeSvg } from 'qrcode.vue';
+import { useRuntimeConfig } from "#app";
 import Dialog from '~/components/MainDialog.vue';
 const route = useRoute();
 const router = useRouter();
@@ -187,10 +197,27 @@ const closeQRdialog = () => {
     openQRdailog.value = false;
 }
 const JoinCreateForm = async () => {
+    const config = useRuntimeConfig();
     const routeId = route.params.id;
-    const token = uuidv4();
+    const authStore = useAuthStore();
     const baseUrl = window.location.origin;
-    invterURL.value = `${baseUrl}/studio/${routeId}/join?data=${token}`;
+    const response = await fetch(`${config.public.apiBase}invite/create/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authStore.accessToken}`
+        },
+        body: JSON.stringify({
+            group_id: routeId,
+            expire_in: 3600
+        })
+    });
+    if (!response.ok) {
+        throw new Error(`サーバーエラー: ${response.status}`);
+    }
+    const res = await response.json();
+    const encryptedData = res.encrypted_data;
+    invterURL.value = `${baseUrl}/studio/${routeId}/join?data=${encodeURIComponent(encryptedData)}`;
     localStorage.setItem(`${group.name}_${routeId}`, invterURL.value);
     const inviteTokens = localStorage.getItem(`${group.name}_${routeId}`);
     if (inviteTokens) {
@@ -200,7 +227,7 @@ const JoinCreateForm = async () => {
         console.error('招待URL・トークンの作成失敗');
     }
 };
-const RemoveQR = async() => {
+const RemoveQR = async () => {
     const routeId = route.params.id;
     const key = `${group.name}_${routeId}`;
     const inviteTokens = localStorage.getItem(key);
@@ -209,7 +236,7 @@ const RemoveQR = async() => {
         isJoinToStudioUrl.value = false;
         openQRdailog.value = false
         console.log('削除成功');
-    }else{
+    } else {
         console.warn('削除失敗');
     }
 };

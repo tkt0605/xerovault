@@ -1,5 +1,5 @@
 <template>
-  
+
   <main class="flex-1 p-6 bg-gray-50 dark:bg-zinc-800 min-h-screen">
     <!-- トップセクション -->
     <div class="mb-6">
@@ -17,7 +17,7 @@
         <p class="text-sm text-gray-500 dark:text-gray-400">ライブラリ数</p>
         <p class="text-2xl font-bold text-green-600 dark:text-green-400">12</p>
       </div>
-      <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow hover:shadow-md transition">
+      <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow hover:shadow-md transition" @click=''>
         <p class="text-sm text-gray-500 dark:text-gray-400">未読通知</p>
         <p class="text-2xl font-bold text-red-600 dark:text-red-400">5</p>
       </div>

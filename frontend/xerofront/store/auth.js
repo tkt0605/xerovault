@@ -168,7 +168,11 @@ export const useAuthStore = defineStore("auth", {
         async logout() {
             const config = useRuntimeConfig();
             try {
-                const refreshTokens = this.refreshToken;
+                const refreshTokens = localStorage.getItem('refresh_token');
+                if (!refreshTokens){
+                    this.clearAuth();
+                    console.log('トークンをクリアしました。');
+                }
                 const response = await fetch(`${config.public.apiBase}token/logout/`, {
                     method: 'POST',
                     headers: {
