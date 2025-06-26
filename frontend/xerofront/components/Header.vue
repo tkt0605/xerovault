@@ -4,15 +4,23 @@
         <div class="flex items-center justify-between">
             <!-- 左側：メニューアイコンとロゴ -->
             <div class="flex items-center gap-4">
-                <button class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 transition">
+                <!-- <button  class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
                         class="bi bi-bar-chart-steps text-gray-700 dark:text-gray-200" viewBox="0 0 16 16">
                         <path
                             d="M.5 0a.5.5 0 0 1 .5.5v15a.5.5 0 0 1-1 0V.5A.5.5 0 0 1 .5 0M2 1.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" />
                     </svg>
+                </button> -->
+                <button class="md:hidden" @click="$emit('toggle-sidebar')">
+                    <!-- ハンバーガーアイコン -->
+                    <svg class="w-6 h-6 text-gray-700 dark:text-white" fill="none" stroke="currentColor"
+                        stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
                 </button>
+                <!-- <button class="md:hidden mb-4 text-right w-full text-gray-500" @click="$emit('close')">✕</button> -->
                 <button @click="goHome"
-                    class="text-xl font-bold text-gray-800 dark:text-white hover:underline hover:text-blue-600 transition">
+                    class="text-xl font-bold text-gray-800 dark:text-white hover:underline hover:text-blue-600 transition px-4">
                     Studio DEMO
                 </button>
             </div>
@@ -140,6 +148,7 @@ const isDSialogUserOpen = ref(false);
 const currentUser = computed(() => authStore.currentUser);
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const isOpenToken = ref(false);
+const isSidebarOpen = ref(false);
 // const isOpenToken = ref(false)
 
 onMounted(async () => {

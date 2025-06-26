@@ -13,6 +13,7 @@ from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from rest_framework import status
+from .utils.crypto import encrypt_invite
 User = get_user_model()
 class EmailLoginAPI(APIView):
     permission_classes = [AllowAny]
@@ -132,11 +133,12 @@ class GenerateGroupviewSet(viewsets.ModelViewSet):
         except CustomUser.DoesNotExist:
             return Response({'detail': 'ユーザーが存在しません。'}, status=404)
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def join(self, request, pk=None):
         user = self.request.user
         # token = request.data.get('token')
-        token = request.query_params.get('token')
+        encrypted = request.query_params.get('data')
+        token, error = encrypt_invite(encrypted)
         if not token:
             return Response({'detail': 'トークンが必要です。'}, status=400)
         try:
