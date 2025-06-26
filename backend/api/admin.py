@@ -16,7 +16,7 @@ class CustomUserAdmin(baseUserAdmin):
         ),
     )
     add_fieldsets = (
-        (None,{'fields': ('email','avater' , 'password1', 'password2', 'is_staff', 'is_active', 'is_superuser')}),
+        (None,{'fields': ('email','avater', 'approver', 'password1', 'password2', 'is_staff', 'is_active', 'is_superuser')}),
     )
     search_fields = ['email',]
     ordering = ['email',]

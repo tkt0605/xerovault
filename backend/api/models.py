@@ -44,6 +44,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=generate_uuid, editable=False)
     avater = models.URLField(blank=True, null=True)
     email = models.EmailField(unique=True)
+    approver = models.ManyToManyField(AUTH_USER_MODEL, related_name='freind_name', blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -65,7 +66,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = []
     def __str__(self):
         return self.email
-
 class GenerateGroup(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, unique=True)
@@ -73,7 +73,7 @@ class GenerateGroup(models.Model):
     members = models.ManyToManyField(AUTH_USER_MODEL, related_name='joined_name', blank=True)
     goals = models.ManyToManyField("Goal", blank=True)
     tag = models.CharField(max_length=256, blank=True, default='')
-    joined_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    joined_token = models.CharField(max_length=36, unique=True, null=True, blank=True, help_text="UUID形式の招待トークン")
     is_public = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_created=True, auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

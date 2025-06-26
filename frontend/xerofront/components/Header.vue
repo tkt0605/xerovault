@@ -68,12 +68,7 @@
                 </div>
                 <button class="flex gap-3 w-full text-left px-4 py-2 text-white-600 hover:text-white hover:bg-gray-600
                  rounded-lg font-semibold transition" @click="StepToken()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                        class="bi bi-hammer" viewBox="0 0 16 16">
-                        <path
-                            d="M9.972 2.508a.5.5 0 0 0-.16-.556l-.178-.129a5 5 0 0 0-2.076-.783C6.215.862 4.504 1.229 2.84 3.133H1.786a.5.5 0 0 0-.354.147L.146 4.567a.5.5 0 0 0 0 .706l2.571 2.579a.5.5 0 0 0 .708 0l1.286-1.29a.5.5 0 0 0 .146-.353V5.57l8.387 8.873A.5.5 0 0 0 14 14.5l1.5-1.5a.5.5 0 0 0 .017-.689l-9.129-8.63c.747-.456 1.772-.839 3.112-.839a.5.5 0 0 0 .472-.334" />
-                    </svg>
-                    <p class="text-sm text-gray-700 dark:text-gray-200 break-all">トークン一覧</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-200 break-all">マイ・トークン</p>
                 </button>
                 <!-- ログアウト -->
                 <button @click="logout" class="w-full text-left px-4 py-2 text-red-600 hover:text-white hover:bg-red-600
@@ -82,46 +77,41 @@
                 </button>
             </div>
         </div>
-        <Dialog :visible="isOpenToken" @close="isOpenToken = false">
-            <template #header>
-                <h2 class="text-xl font-bold text-white">トークン一覧</h2>
-            </template>
+<Dialog :visible="isOpenToken" @close="isOpenToken = false">
+  <template #header>
+    <h2 class="text-xl font-bold text-gray-800 dark:text-white">私のトークン</h2>
+  </template>
 
-            <template #default>
-                <div v-if="tokens.length" class="space-y-4">
-                    <div v-for="token in tokens" :key="token.id"
-                        class="border border-gray-700 bg-gray-800 p-4 rounded-md">
-                        <p class="text-sm text-gray-300">トークン名: <strong>{{ token.name || '(無題)' }}</strong></p>
-                        <p class="text-sm text-gray-400 break-all">UUID: {{ token.token }}</p>
+  <template #default>
+    <div v-if="tokens.length" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div v-for="token in tokens" :key="token.id"
+        class="bg-zinc-50 dark:bg-zinc-800 p-4 rounded-lg shadow-sm flex flex-col items-center text-center space-y-3">
 
-                        <!-- トークンURL -->
-                        <div class="mt-2 flex items-center gap-2">
-                            <input type="text" :value="generateTokenUrl(token.token)" readonly
-                                class="flex-1 text-sm p-1 rounded bg-gray-700 text-white" />
-                            <button @click="copyUrl(generateTokenUrl(token.token))"
-                                class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded">
-                                コピー
-                            </button>
-                        </div>
+        <!-- QRコード -->
+        <qrcode-vue :value="generateTokenUrl(token.token)" :size="120" class="rounded shadow" />
 
-                        <!-- QRコード -->
-                        <div class="mt-2">
-                            <qrcode-vue :value="generateTokenUrl(token.token)" :size="100" />
-                        </div>
-                    </div>
-                </div>
+        <!-- トークン文字列 -->
+        <p class="text-xs break-all text-gray-500 dark:text-gray-400">
+          {{ token.token }}
+        </p>
 
-                <div v-else class="text-gray-400 text-center mt-4">
-                    トークンがまだ作成されていません。
-                </div>
-            </template>
+        <!-- コピー -->
+        <button @click="copyUrl(generateTokenUrl(token.token))"
+          class="text-sm px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition">
+          コピーする
+        </button>
+      </div>
+    </div>
 
-            <template #footer>
-                <button @click="isOpenToken = false" class="bg-blue-600 text-white px-4 py-2 rounded">
-                    閉じる
-                </button>
-            </template>
-        </Dialog>
+    <div v-else class="text-gray-500 dark:text-gray-400 text-center mt-6">
+      トークンがまだ作成されていません。
+    </div>
+  </template>
+
+  <template #footer>
+  </template>
+</Dialog>
+
 
     </header>
 </template>
@@ -185,15 +175,16 @@ const signup = () => {
     router.push('/auth/aignup');
 };
 const logout = async () => {
+    console.log('refreshToken:', authStore.refreshToken);
     try {
         await authStore.logout();
-        console.log('   ログアウト成功');
+        console.log('ログアウト成功');
         router.push('/auth/login');
     } catch (error) {
         console.error('ログアウト失敗:', error);
         alert('ログアウトに失敗しました。時間をおいて再度お願いします。');
     }
-}
+};
 const StepToken = () => {
     isOpenToken.value = true
     isopenInfo.value = false
@@ -205,11 +196,6 @@ const tokens = ref([
         name: 'グループ参加用',
         token: 'fc98a9d2-7cda-4a5b-835c-xxxxxxx',
     },
-    {
-        id: 2,
-        name: '',
-        token: '43eabfc1-fd6e-442d-b49a-yyyyyyy',
-    }
 ])
 
 const baseUrl = 'https://xerovault.com/join/'

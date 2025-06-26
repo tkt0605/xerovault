@@ -6,20 +6,20 @@
                 <div class="mb-4">
                     <label class="block mb-1 text-gray-600">メールアドレス</label>
                     <input v-model="email" type="email" required
-                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                        class="text-black w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
                 </div>
                 <div class="mb-4">
                     <label class="block mb-1 text-gray-600">パスワード</label>
                     <input v-model="password" type="password" required
-                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                        class="text-black w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
                 </div>
                 <div class="mb-6">
                     <label class="block mb-1 text-gray-600">パスワード（確認）</label>
                     <input v-model="confirmPassword" type="password" required
-                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                        class="text-black w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
                 </div>
                 <button type="submit"
-                    class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition duration-200">登録する</button>
+                    class="text-black w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition duration-200">登録する</button>
             </form>
             <p class="mt-4 text-center text-sm text-gray-600">
                 すでにアカウントをお持ちの方は

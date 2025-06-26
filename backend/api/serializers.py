@@ -7,22 +7,16 @@ User = get_user_model()
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['email', 'password1', 'password2']
+        fields = ['email', 'password']
         extra_kwargs = {
             'email': {'required': True, 'allow_blank': False},
-            'password1': {'required': True, 'allow_blank': False},
-            'password2': {'required': True, 'allow_blank': False},
+            'password': {'required': True, 'allow_blank': False}
         }
-
-    def validate(self, attrs):
-        if attrs['password1'] != attrs['password2']:
-            raise serializers.ValidationError(_("パスワードが一致しません。"))
-        return attrs
 
     def create(self, validated_data):
         user = User.objects.create_user(
             email=validated_data['email'],
-            password=validated_data['password1'],
+            password=validated_data['password'],
         )
         return user
 class EmailLoginSerializer(serializers.Serializer):
@@ -66,7 +60,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 class CustomUserDetairsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['email', 'avater', 'is_active', 'is_staff', 'is_superuser',]
+        fields = ['email', 'avater','approver' , 'is_active', 'is_staff', 'is_superuser',]
         read_only_fields = ['id', 'is_active', 'is_staff', 'is_superuser', 'date_joined']
 class GenerateGroupSerializer(serializers.ModelSerializer):
     owner = serializers.SlugRelatedField(
