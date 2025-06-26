@@ -1,7 +1,13 @@
 <template>
-  <aside class="w-72 min-h-screen bg-white dark:bg-zinc-900 border-r dark:border-zinc-700 p-4 flex flex-col gap-6">
+  <aside :class="[
+      'w-72 min-h-screen bg-white dark:bg-zinc-900 border-r dark:border-zinc-700 p-4 flex flex-col gap-6 ',
+      isOpen ? 'translate-x-0' : '-translate-x-full',
+      'fixed md:static inset-y-0 left-0 z-40 md:translate-x-0'
+    ]"
+    >
+
     <!-- 操作ボタン -->
-    <div class="flex flex-col gap-3">
+    <div class="flex flex-col gap-3 mb-4">
       <button
         class="w-full flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-800 bg-gray-200 hover:bg-gray-300 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600 rounded transition">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
@@ -12,53 +18,16 @@
       </button>
       <button
         class="w-full flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded transition"
-        @click="GroupDailog()">
+        @click="$emit('Group-dialog')">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
         </svg>
         新しいスタジオ
       </button>
-      <Dialog :visible="openGroupDailog" @close="openGroupDailog = false">
-        <template #header>
-          <h2 class="text-xl font-bold">スタジオ新規作成</h2>
-        </template>
-        <template #default>
-          <div class="space-y-4">
-            <div>
-              <input id="group-name" type="text" placeholder="スタジオ名を入力" v-model="groupName"
-                class="mt-1 block w-full rounded-md bg-gray-800 border border-gray-600 text-white p-2" />
-            </div>
-            <div>
-              <label for="lib-tags" class="block text-sm font-semibold text-gray-200">タグ（カンマ区切り）</label>
-              <input id="lib-tags" type="text" placeholder="例：機密, AI, レポート" v-model="groupTag"
-                class="mt-1 block w-full bg-gray-800 border border-gray-600 text-white p-2 rounded-md" />
-            </div>
-            <div>
-              <span class="block text-sm font-medium text-gray-200 mb-1">公開設定</span>
-              <div class="flex items-center gap-6">
-                <label class="inline-flex items-center">
-                  <input type="radio" name="visibility" class="form-radio text-green-500" v-model="is_group"
-                    :value="true" />
-                  <span class="ml-2 text-gray-200">公開</span>
-                </label>
-                <label class="inline-flex items-center">
-                  <input type="radio" name="visibility" class="form-radio text-red-500" v-model="is_group"
-                    :value="false" />
-                  <span class="ml-2 text-gray-200">非公開</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-        </template>
-        <template #footer>
-          <button @click="createNewGroup()" class="bg-blue-600 text-white px-4 py-2 rounded">作成する</button>
-        </template>
-      </Dialog>
       <button
         class="w-full flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded transition"
-        @click="LibraryDailog">
+        @click="$emit('Library-dialog')">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round"
@@ -66,90 +35,15 @@
         </svg>
         ライブラリ新規作成
       </button>
-      <Dialog :visible="openLibraryDailog" @close="openLibraryDailog = false">
-        <template #header>
-          <h2 class="text-xl font-bold">ライブラリ新規作成</h2>
-        </template>
-        <template #default>
-          <div class="space-y-5">
-            <!-- ライブラリ名 -->
-            <div>
-              <label for="lib-name" class="block text-sm font-semibold text-gray-200">ライブラリ名 <span
-                  class="text-red-400">*</span></label>
-              <input id="lib-name" type="text" placeholder="例：研究資料2025" v-model="libraryName"
-                class="mt-1 block w-full bg-gray-800 border border-gray-600 text-white p-2 rounded-md" />
-            </div>
-
-            <!-- タグ -->
-            <div>
-              <label for="lib-tags" class="block text-sm font-semibold text-gray-200">タグ（カンマ区切り）</label>
-              <input id="lib-tags" type="text" v-model="libraryTag" placeholder="例：機密, AI, レポート"
-                class="mt-1 block w-full bg-gray-800 border border-gray-600 text-white p-2 rounded-md" />
-            </div>
-
-            <!-- 公開設定 -->
-            <div>
-              <span class="block text-sm font-medium text-gray-200 mb-1">公開設定</span>
-              <div class="flex items-center gap-6">
-                <label class="inline-flex items-center">
-                  <input type="radio" name="visibility" class="form-radio text-green-500" v-model="is_library"
-                    :value="true" />
-                  <span class="ml-2 text-gray-200">公開</span>
-                </label>
-                <label class="inline-flex items-center">
-                  <input type="radio" name="visibility" class="form-radio text-red-500" v-model="is_library"
-                    :value="false" />
-                  <span class="ml-2 text-gray-200">非公開</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-        </template>
-        <template #footer>
-          <button @click="createLibrary" class="bg-green-600 text-white px-4 py-2 rounded">作成する</button>
-        </template>
-      </Dialog>
       <button
         class="w-full flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 rounded transition"
-        @click="TokenDialog">
+        @click="$emit('Token-dialog')">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         トークン新規作成
       </button>
-      <Dialog :visible="openTokenDailog" @close="openTokenDailog = false">
-        <template #header>
-          <h2 class="text-xl font-bold">トークン新規作成</h2>
-        </template>
-        <template #default>
-          <div class="space-y-5">
-            <!-- 対象スタジオ -->
-            <div>
-              <label for="target-group" class="block text-sm font-semibold text-gray-200">対象スタジオ</label>
-              <select id="target-group" v-model="selectedGroup"
-                class="mt-1 w-full bg-gray-800 text-white border border-gray-600 p-2 rounded-md">
-                <option value="">選択してください</option>
-                <option v-for="group in groupList" :key="group.id" :value="group.id">
-                  {{ group.name }}
-                </option>
-              </select>
-            </div>
-
-            <!-- 備考（モデルにはないがUI補助） -->
-            <div>
-              <label for="note" class="block text-sm font-semibold text-gray-200">メモ（任意）</label>
-              <textarea id="note" v-model="note" rows="2" placeholder="このトークンの目的などを記入..."
-                class="mt-1 w-full bg-gray-800 text-white border border-gray-600 p-2 rounded-md"></textarea>
-            </div>
-          </div>
-        </template>
-        <template #footer>
-          <button @click="createNewGroup"
-            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md">作成する</button>
-        </template>
-      </Dialog>
     </div>
 
     <!-- スタジオ一覧 -->
@@ -179,32 +73,21 @@
 </template>
 
 <script setup>
-import Dialog from '~/components/MainDialog.vue';
 import { useAuthStore } from '~/store/auth';
 import { useAuthGroups } from '~/store/group';
 import { useAuthLibrary } from '~/store/library';
 import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-const openGroupDailog = ref(false);
-const openLibraryDailog = ref(false);
-const openTokenDailog = ref(false);
+defineProps({
+  isOpen: {
+    type: Boolean,
+    default: true,
+  }
+});
 const groupStore = useAuthGroups();
 const authStore = useAuthStore();
 const libraryStore = useAuthLibrary();
-const currentUser = computed(() => authStore.currentUser);
-
-const groupName = ref("");
-const groupTag = ref("");
-const is_group = ref(false);
-
-const libraryName = ref('');
-const libraryTag = ref('');
-const is_library = ref(false);
-
 const groupList = ref([]);
 const libraries = ref([]);
-const router = useRouter();
-
 onMounted(async () => {
   try {
     groupList.value = await groupStore.fetchGroup();
@@ -212,78 +95,11 @@ onMounted(async () => {
   } catch (error) {
 
   }
-})
+});
 
-const GroupDailog = () => {
-  openGroupDailog.value = true
-};
-const LibraryDailog = () => {
-  openLibraryDailog.value = true;
-};
-const TokenDialog = () => {
-  openTokenDailog.value = true
-};
-
-const createNewGroup = async () => {
-  const user = authStore?.user;
-  if (!user) {
-    alert('ログインしてください。');
-    return;
-  }
-  const GroupName = groupName.value.trim();
-  const Tag = groupTag.value.trim();
-  // const members = [user?.email];
-  const visibility = is_group.value;
-  if (!GroupName) {
-    alert('スタジオ名を入力してください。');
-    return;
-  }
-  try {
-    openGroupDailog.value = false;
-    const createStudio = await groupStore.CreateGroup(
-      GroupName,
-      visibility,
-      Tag
-    );
-    console.log('作成結果：', createStudio);
-    groupList.value = await groupStore.fetchGroup();
-    console.log('Studioが作成されました。');
-    return router.push(`/studio/${createStudio.id}`);
-  } catch (error) {
-    console.error('スタジオ作成失敗：', error);
-    throw error;
-  }
-};
 const groups = computed(() =>
   groupList.value.filter((item) => item.owner === authStore.user.email)
 );
-const createLibrary = async () => {
-  const user = authStore?.user;
-  if (!user) {
-    alert('ログインしてください。');
-    return;
-  }
-  const Name = libraryName.value.trim();
-  const Tag = libraryTag.value.trim();
-  const visibility = is_library.value;
-  if (!Name) {
-    alert('ライブラリ名を入力してください。');
-  }
-  try {
-    const NewLibrary = await libraryStore.CreateLibraries(
-      Name,
-      Tag,
-      visibility
-    );
-    console.log('作成結果:', NewLibrary.value);
-    libraries.value = await libraryStore.FetchLibrary();
-    console.log('ライブラリ作成完了');
-    return router.push(`/library/${NewLibrary.id}`);
-  } catch (error) {
-    console.error('作成失敗：', error);
-    throw error;
-  }
-};
 const libraryList = computed(() =>
   libraries.value.filter((item) => item.owner === authStore.user.email)
 );
