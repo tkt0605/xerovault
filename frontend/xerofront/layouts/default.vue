@@ -101,33 +101,19 @@
       </Dialog>
       <Dialog :visible="openTokenDailog" @close="openTokenDailog = false">
         <template #header>
-          <h2 class="text-xl font-bold">トークン新規作成</h2>
+          <h2 class="text-xl font-bold">ユーザー・リクエスト</h2>
         </template>
         <template #default>
           <div class="space-y-5">
-            <!-- 対象スタジオ -->
             <div>
-              <label for="target-group" class="block text-sm font-semibold text-gray-200">対象スタジオ</label>
-              <select id="target-group" v-model="selectedGroup"
-                class="mt-1 w-full bg-gray-800 text-white border border-gray-600 p-2 rounded-md">
-                <option value="">選択してください</option>
-                <option v-for="group in groupList" :key="group.id" :value="group.id">
-                  {{ group.name }}
-                </option>
-              </select>
-            </div>
-
-            <!-- 備考（モデルにはないがUI補助） -->
-            <div>
-              <label for="note" class="block text-sm font-semibold text-gray-200">メモ（任意）</label>
-              <textarea id="note" v-model="note" rows="2" placeholder="このトークンの目的などを記入..."
-                class="mt-1 w-full bg-gray-800 text-white border border-gray-600 p-2 rounded-md"></textarea>
+              <p class="text-sm font-semibold text-gray-300">ユーザー追加</p>
+              <input id="note" v-model="InviteeEmail" placeholder="追加するユーザーのメールアドレス..." class="mt-1 w-full bg-gray-800 text-white border border-gray-600 p-2 rounded-md"/>
             </div>
           </div>
         </template>
         <template #footer>
-          <button @click="createNewGroup"
-            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md">作成する</button>
+          <button @click="AddNewFreind"
+            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md">友達に追加</button>
         </template>
       </Dialog>
     </div>
@@ -142,6 +128,7 @@ import '~/assets/css/index.css';
 import Dialog from '~/components/MainDialog.vue';
 import { useAuthStore } from '~/store/auth';
 import { useAuthGroups } from '~/store/group';
+import { useAuthFreinds } from '~/store/freind';
 import { useAuthLibrary } from '~/store/library';
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -153,6 +140,7 @@ onMounted(async () => {
   try {
     groupList.value = await groupStore.fetchGroup();
     libraries.value = await libraryStore.FetchLibrary();
+    friends.value = await friendStore.fetchFreind();
   } catch (error) {
 
   }
@@ -160,6 +148,7 @@ onMounted(async () => {
 const groupStore = useAuthGroups();
 const authStore = useAuthStore();
 const libraryStore = useAuthLibrary();
+const friendStore = useAuthFreinds();
 const currentUser = computed(() => authStore.currentUser);
 
 const groupName = ref("");
@@ -170,8 +159,13 @@ const libraryName = ref('');
 const libraryTag = ref('');
 const is_library = ref(false);
 
+const InviteeEmail = ref('');
+const is_invite = ref(false);
+
 const groupList = ref([]);
 const libraries = ref([]);
+const friends = ref([]);
+const targetList = ref([1, 2, 3, 4, 5]);
 const router = useRouter();
 const toggleSidebar = () => {
   isSidebarOpen.value = true;
@@ -254,5 +248,21 @@ const createLibrary = async () => {
 const libraryList = computed(() =>
   libraries.value.filter((item) => item.owner === authStore.user.email)
 );
+const AddNewFreind = async() => {
+  const userId = authStore.user.id;
+  const TargetEmail = InviteeEmail.value.trim();
 
+  try{
+    const invite = await friendStore.sendFriendRequest(TargetEmail);
+    const result = await friendStore.approveFriendInvite(invite.token || invite.id);
+
+    console.log('結果：', result);
+    friends.value = await friendStore.fetchFreind();
+    openTokenDailog.value = false;
+    console.log('友達リクエスト送信済み');
+  }catch(err){
+    console.error('リクエスト送信失敗：', err);
+    throw err;
+  }
+};
 </script>
