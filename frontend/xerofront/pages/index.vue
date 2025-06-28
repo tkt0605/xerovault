@@ -17,7 +17,7 @@
         <p class="text-sm text-gray-500 dark:text-gray-400">ライブラリ数</p>
         <p class="text-2xl font-bold text-green-600 dark:text-green-400">12</p>
       </div>
-      <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow hover:shadow-md transition" @click=''>
+      <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow hover:shadow-md transition" @click='JampToInviting'>
         <p class="text-sm text-gray-500 dark:text-gray-400">未読通知</p>
         <p class="text-2xl font-bold text-red-600 dark:text-red-400">5</p>
       </div>
@@ -38,8 +38,18 @@
 <script setup>
 import { useAuthStore } from '~/store/auth';
 import { ref, onMounted } from 'vue';
-const authStore = useAuthStore();
+import { useRoute, useRouter } from 'vue-router';
 
+import { useAuthFreinds } from '~/store/freind';
+const authStore = useAuthStore();
+const route = useRoute();
+const router = useRouter();
+const friendStore = useAuthFreinds();
 const currentUser = computed(()=>authStore.currentUser);
+
+
+const JampToInviting = async() => {
+  return router.push(`/invite/${authStore.user.id}`);
+};
 </script>
 

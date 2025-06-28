@@ -9,8 +9,8 @@ from django.utils.translation import gettext_lazy as _
 from django.utils.encoding import force_str
 from django.db.models.signals import post_save, post_delete, m2m_changed
 from django.dispatch import receiver
-
-
+from datetime import timedelta
+import datetime
 # --- 定数定義: スコアのルールと重み付けを定義 ---
 BASE_SCORE = 100  # デフォルトのスコア
 MAX_SCORE = 1000  # スコアの上限
@@ -44,7 +44,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=generate_uuid, editable=False)
     avater = models.URLField(blank=True, null=True)
     email = models.EmailField(unique=True)
-    approver = models.ManyToManyField(AUTH_USER_MODEL, related_name='freind_name', blank=True)
+    approver = models.ManyToManyField('self', blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -66,6 +66,22 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = []
     def __str__(self):
         return self.email
+def get_default_expired():
+    return timezone.now() + timedelta(hours=24)
+class InviteAppover(models.Model):
+    token = models.UUIDField(default=uuid.uuid4, unique=True)
+    inviter = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
+    invitee = models.ForeignKey( AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='group_invite_received', null=True, blank=True)
+    is_approved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(default=get_default_expired)
+    def __str__(self) -> str:
+        return f"{self.inviter}が{self.invitee}をリスト追加"
+    @property
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+    class Meta:
+        ordering = ['-created_at']
 class GenerateGroup(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, unique=True)

@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, GroupNotification
+from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, GroupNotification, InviteAppover
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
-from .serializers import RegisterSerializer, CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LoginSerializer, LogoutSerializer, GeneratePublicTokenSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GeneratePublicTokenReadSerializer, GenerateLibrarySerializer, GenerateLibraryReadSerializer, GoalSerializer, GoalReadSerializer, ConnectLibrarySerializer, ConnectLibraryReadSerializer
+from .serializers import RegisterSerializer, CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LoginSerializer, LogoutSerializer, GeneratePublicTokenSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GeneratePublicTokenReadSerializer, GenerateLibrarySerializer, GenerateLibraryReadSerializer, GoalSerializer, GoalReadSerializer, ConnectLibrarySerializer, ConnectLibraryReadSerializer, InviteAppoverSerializer, InviteApproverReadSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import timedelta
 from django.contrib.auth import get_user_model
@@ -68,7 +68,13 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=200)
         return Response(serializer.errors, status=400)
-    
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def approver_add(self, request):
+        user = request.user
+        approver = user.approver.all()
+        serializer = self.get_serializer(approver, many=True)
+        return Response(serializer.data)
+
 class GeneratePublicTokenViewSet(viewsets.ModelViewSet):
     queryset = GeneratePublicToken.objects.all()
     serializer_class = GeneratePublicTokenSerializer
@@ -284,3 +290,41 @@ class ConnectLibraryViewSet(viewsets.ModelViewSet):
         )
         serializer = ConnectLibraryReadSerializer(connecter, many=True)
         return Response(serializer.data)
+
+
+class InviteAppoverViewSet(viewsets.ModelViewSet):
+    queryset = InviteAppover.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = InviteAppoverSerializer
+
+    def get_permissions(self):
+        if self.action in ['list', 'create']:
+            return {IsAuthenticated()}
+        return super().get_permissions()
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return InviteApproverReadSerializer
+        return super().get_serializer_class()
+    def perform_create(self, serializer):
+        serializer.save(inviter=self.request.user)
+    @action(detail=True, methods=['post'], url_path='approver')
+    def approver_invite(self, request, *args, **kwargs):
+        invite = self.get_object()
+        if invite.expires_at:
+            return Response({'error': 'この招待リンクは期限切れです。'}, status=400)
+        if invite.is_approved:
+            return Response({'error': 'このリンクは既に利用されています。'}, status=400)
+        invite.invitee = request.user
+        invite.is_approved = True
+        invite.save()
+        return Response(self.get_serializer(invite).data, status=200)
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def my_friends(self, request):
+        user = self.request.user
+        my_list = InviteAppover.objects.filter(
+            Q(inviter=user)
+        )
+        serializer = InviteApproverReadSerializer(my_list, many=True)
+        return Response(serializer.data)
+
+
