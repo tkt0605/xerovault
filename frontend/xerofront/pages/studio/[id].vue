@@ -34,10 +34,32 @@
             <!-- オーナー情報 -->
             <div>
                 <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">オーナー</h3>
+            </div>
+            <div style="position: relative; align-items: center; display: flex; justify-content: space-between;">
                 <span
-                    class="text-xs bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-100 px-3 py-1 rounded-full">
-                    {{ group.owner?.email }}
+                    class="text-xs text-zinc-800 dark:text-zinc-100 px-3 py-1 rounded-full">
+                    <!-- {{ group.owner?.email }} -->
+                    <img :src="group.owner?.avater" alt="User Avatar"
+                        class="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-gray-300 hover:border-blue-500 transition" />
                 </span>
+                <div class="text-sm text-gray-600 dark:text-gray-300 break-all flex justify-between rounded p-2 gap-16">
+                    <div></div>
+                    <div v-if="!isJoinToStudioUrl">
+                        <button @click="JoinCreateForm()"
+                            class="flex items-center gap-1 px-3 py-1 text-xs text-green-600 hover:text-white border border-green-600 hover:bg-green-600 rounded-full transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                            招待リンクを作成する
+                        </button>
+                    </div>
+                    <div v-else>
+                        <button @click="QRdialog"
+                            class="text-xs text-blue-600 hover:text-white border border-blue-600 hover:bg-blue-600 px-3 py-1 rounded-full transition">
+                            招待QRコードを表示
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- スコア & ゴール -->
@@ -60,8 +82,9 @@
                 <div class="bg-zinc-50 dark:bg-zinc-800 rounded p-4 flex flex-wrap items-center justify-between gap-2">
                     <div class="flex flex-wrap gap-2">
                         <span v-for="member in group.members" :key="member"
-                            class="text-xs bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-100 px-3 py-1 rounded-full">
-                            {{ member.email }}
+                            class="text-xs text-zinc-800 dark:text-zinc-100 px-3 py-1 rounded-full">
+                            <img :src="member.avater" alt="User Avatar"
+                                class="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-gray-300 hover:border-blue-500 transition" />
                         </span>
                     </div>
                     <button @click="addMember"
@@ -72,35 +95,74 @@
                         メンバーを追加する
                     </button>
                 </div>
-            </div>
-
-            <!-- トークン表示 -->
-            <div class="text-sm text-gray-600 dark:text-gray-300 break-all flex justify-between rounded p-2">
-                <div></div>
-                <div v-if="!isJoinToStudioUrl">
-                    <button @click="JoinCreateForm()"
-                        class="flex items-center gap-1 px-3 py-1 text-xs text-green-600 hover:text-white border border-green-600 hover:bg-green-600 rounded-full transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                        </svg>
-                        招待リンクを作成する
-                    </button>
+                <div
+                    class="flex justify-between text-xs text-gray-500 dark:text-gray-400 border-b pt-4 border-gray-200 dark:border-zinc-600">
+                    <span>作成: {{ formatDate(group.created_at) }}</span>
+                    <span>更新: {{ formatDate(group.updated_at) }}</span>
                 </div>
-                <div v-else>
-                    <button @click="QRdialog"
-                        class="text-xs text-blue-600 hover:text-white border border-blue-600 hover:bg-blue-600 px-3 py-1 rounded-full transition">
-                        招待QRコードを表示
-                    </button>
-                </div>
-            </div>
-
-            <!-- 作成/更新日時 -->
-            <div
-                class="flex justify-between text-xs text-gray-500 dark:text-gray-400 border-t pt-4 border-gray-200 dark:border-zinc-600">
-                <span>作成: {{ formatDate(group.created_at) }}</span>
-                <span>更新: {{ formatDate(group.updated_at) }}</span>
             </div>
         </div>
+        <div class="max-w-3xl w-full mx-auto bg-white dark:bg-zinc-900  p-6 space-y-6 shadow">
+            <div class="space-y-4">
+                <div v-for="goal in goals" :key="goal.id"
+                    class="bg-gray-800 border border-gray-700 rounded-2xl p-4 shadow-md hover:shadow-lg transition duration-300">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-lg font-semibold text-white mb-2">{{ goal.header || '見出し無し' }}</h3>
+                        <img :src="goal.assignee.avater" alt="User Avatar"
+                            class="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-gray-300 hover:border-blue-500 transition" />
+                    </div>
+                    <small class="text-gray-500 mt-2">{{ formatDate(goal.created_at) }}</small>
+                    <p class="text-gray-300 text-sm">{{ goal.description }}</p>
+                    <small class="text-gray-500 mt-2">
+                        <span v-if="goal.deadline">締め切り: {{ formatDate(goal.deadline) }}</span>
+                        <span v-else>締め切りなし</span>
+                    </small>
+                </div>
+            </div>
+        </div>
+        <Dialog :visible="openGoalDialog" @close="openGoalDialog = false">
+            <template #header>
+                <h2 class="text-xl font-bold text-white">🎯 ゴールの作成</h2>
+            </template>
+
+            <template #default>
+                <div class="space-y-6">
+                    <!-- ゴール名 -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-300 mb-1">ゴール名</label>
+                        <input v-model="goalHead" type="text" placeholder="例：週に1回プロトタイプを提出"
+                            class="w-full bg-gray-800 text-white border border-gray-600 px-4 py-2 rounded-md focus:outline-none focus:ring focus:border-blue-500" />
+                    </div>
+
+                    <!-- ゴールの説明 -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-300 mb-1">詳細な説明</label>
+                        <textarea v-model="goalDescription" rows="4" placeholder="このゴールの目的や背景、達成のためのアプローチなどを書いてください。"
+                            class="w-full bg-gray-800 text-white border border-gray-600 px-4 py-2 rounded-md focus:outline-none focus:ring focus:border-blue-500 resize-none"></textarea>
+                    </div>
+
+                    <!-- 締め切り日 -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-300 mb-1">締め切り日（任意）</label>
+                        <input v-model="goalDeadline" type="date"
+                            class="w-full bg-gray-800 text-white border border-gray-600 px-4 py-2 rounded-md focus:outline-none focus:ring focus:border-blue-500" />
+                    </div>
+                </div>
+            </template>
+
+            <template #footer>
+                <div class="flex justify-end gap-3 mt-4">
+                    <button @click="openGoalDialog = false"
+                        class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+                        キャンセル
+                    </button>
+                    <button @click="submitGoal"
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                        作成する
+                    </button>
+                </div>
+            </template>
+        </Dialog>
 
         <!-- QRコード Dialog -->
         <Dialog :visible="openQRdailog" @close="openQRdailog = false">
@@ -144,6 +206,10 @@
                 </div>
             </template>
             <template #footer>
+                <button @click="closeQRdialog"
+                    class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+                    キャンセル
+                </button>
                 <button @click="RemoveQR()" class="">QRを削除する。</button>
             </template>
         </Dialog>
@@ -153,6 +219,7 @@
 <script setup>
 import { useAuthStore } from '~/store/auth';
 import { useAuthGroups } from '~/store/group';
+import { useGoalStore } from '~/store/goal';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, onMounted } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
@@ -165,10 +232,16 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const authGroup = useAuthGroups();
+const authGoal = useGoalStore()
 const group = ref([]);
+const goals = ref([]);
 const isJoinToStudioUrl = ref(false);
 const invterURL = ref('');
 const openQRdailog = ref(false);
+const goalHead = ref('');
+const goalDescription = ref('');
+const goalDeadline = ref('');
+const openGoalDialog = ref(false);
 const isSidebarOpen = ref(false);
 const toggleSidebar = () => {
     isSidebarOpen.value = !isSidebarOpen.value
@@ -179,6 +252,7 @@ onMounted(async () => {
         console.log('セッション複合完了');
         const routeId = route.params.id;
         group.value = await authGroup.fetchGroupId(routeId);
+        goals.value = await authGoal.fetchGoalsByGroup(routeId);
         const key = `${group.name}_${route.params.id}`;
         const storedUrl = localStorage.getItem(key);
         if (storedUrl) {
@@ -251,6 +325,41 @@ const copyToClipboard = async () => {
     } catch (err) {
         console.error("コピーに失敗:", err);
         alert("コピーに失敗しました。");
+    }
+};
+const CreateGoal = () => {
+    openGoalDialog.value = true;
+}
+const submitGoal = () => {
+    const group = route.params.id;
+    if (!group) {
+        console.error('グループがしてされていません。');
+        return;
+    }
+    const goal_header = goalHead.value.trim();
+    const goal_description = goalDescription.value.trim();
+    const goal_deadline = goalDeadline.value;
+    try {
+
+        if (!goal_header || !goal_description || !goal_deadline) {
+            console.error('ゴールの情報が不完全です。');
+            return;
+        }
+        const newGoal = authGoal.CreateGoal(group, goal_header, goal_description, goal_deadline);
+        goals.value = authGoal.fetchGoals();
+        if (goals.value) {
+            console.log('新しいゴールが作成されました:', newGoal);
+            console.log('目標の作成に成功しました。');
+            openGoalDialog.value = false;
+            goalHead.value = '';
+            goalDescription.value = '';
+            goalDeadline.value = '';
+        } else {
+            console.error('目標の作成に失敗しました。')
+        }
+    } catch (err) {
+        console.error('目標の作成中にエラーが発生しました:', err);
+        throw err;
     }
 };
 </script>

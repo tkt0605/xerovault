@@ -132,6 +132,12 @@ class GenerateLibraryReadSerializer(serializers.ModelSerializer):
         fields = ['id', 'owner', 'name', 'tag', 'is_public', 'created_at', "updated_at"]
 
 class GoalSerializer(serializers.ModelSerializer):
+    group = serializers.SlugRelatedField(
+        slug_field = 'id',
+        queryset = GenerateGroup.objects.all(),
+        required = False,
+        allow_null = True
+    )
     assignee = serializers.SlugRelatedField(
         slug_field = 'email',
         queryset = CustomUser.objects.all(),
@@ -140,13 +146,14 @@ class GoalSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = Goal
-        fields = ['group', 'description', "created_at", "deadline", "assignee", "is_concrete", "is_completed"]
+        fields = ['group','header', 'description', "created_at", "deadline", "assignee", "is_concrete", "is_completed"]
         read_only_fields = ['created_at']
 class GoalReadSerializer(serializers.ModelSerializer):
+    group = GenerateGroupSerializer(read_only=True)
     assignee = CustomUserSerializer(read_only = True)
     class Meta:
         model = Goal
-        fields = ['group', 'description', "created_at", "deadline", "assignee", "is_concrete", "is_completed"]
+        fields = ['group','header' , 'description', "created_at", "deadline", "assignee", "is_concrete", "is_completed"]
 
 class ConnectLibrarySerializer(serializers.ModelSerializer):
     target = serializers.SlugRelatedField(

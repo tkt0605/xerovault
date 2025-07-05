@@ -116,6 +116,7 @@ class GenerateGroup(models.Model):
             print(f"グループ '{self.name}' のスコアが {self.score} に更新されました。")
 class Goal(models.Model):
     group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='目標')
+    header = models.CharField('目標タイトル', max_length=255, help_text='この目標のタイトル', default='', blank=True, null=True)
     description = models.TextField("目標内容")
     created_at = models.DateTimeField("作成日", auto_now_add=True)
     deadline = models.DateField('締め切り', null=True, blank=True, help_text='この目標の締め切り')

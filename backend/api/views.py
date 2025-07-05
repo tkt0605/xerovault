@@ -249,7 +249,12 @@ class GoalViewSet(viewsets.ModelViewSet):
         goals = Goal.objects.filter(group__in = groups)
         serializer = GoalReadSerializer(goals, many=True)
         return Response(serializer.data)
-
+    def get_queryset(self):
+        queryset = Goal.objects.all()
+        group_id = self.request.query_params.get('group')
+        if group_id:
+            return self.queryset.filter(group=group_id)
+        return queryset
 
 class ConnectLibraryViewSet(viewsets.ModelViewSet):
     queryset = ConnectLibrary.objects.all()
