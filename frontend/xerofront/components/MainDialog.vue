@@ -10,7 +10,7 @@
       </slot>
 
       <div class="mt-6 flex justify-end gap-3">
-        <button @click="$emit('close')" class="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded">閉じる</button>
+        <!-- <button @click="$emit('close')" class="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded">閉じる</button> -->
         <slot name="footer" />
       </div>
     </div>

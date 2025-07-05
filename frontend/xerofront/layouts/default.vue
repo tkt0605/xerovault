@@ -11,7 +11,9 @@
       <!-- サイドバー -->
       <aside>
         <!-- <aside class="hidden md:block"> -->
-        <Aside @toggle-sidebar="toggleSidebar" @Token-dialog="TokenDialog()" @Library-dialog="LibraryDailog()"  @Group-dialog="GroupDailog"  :isOpen="isSidebarOpen" @close="isSidebarOpen = false" class=" overflow-y-auto hidden md:block" />
+        <Aside @toggle-sidebar="toggleSidebar" @Token-dialog="TokenDialog()" @Library-dialog="LibraryDailog()"
+          @Group-dialog="GroupDailog" :isOpen="isSidebarOpen" @close="isSidebarOpen = false"
+          class=" overflow-y-auto hidden md:block" />
       </aside>
 
       <!-- メインビュー -->
@@ -52,6 +54,10 @@
 
         </template>
         <template #footer>
+          <button @click="openGroupDailog = false"
+            class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+            キャンセル
+          </button>
           <button @click="createNewGroup()" class="bg-blue-600 text-white px-4 py-2 rounded">作成する</button>
         </template>
       </Dialog>
@@ -96,6 +102,10 @@
 
         </template>
         <template #footer>
+          <button @click="openLibraryDailog = false"
+            class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+            キャンセル
+          </button>
           <button @click="createLibrary" class="bg-green-600 text-white px-4 py-2 rounded">作成する</button>
         </template>
       </Dialog>
@@ -107,11 +117,16 @@
           <div class="space-y-5">
             <div>
               <p class="text-sm font-semibold text-gray-300">ユーザー追加</p>
-              <input id="note" v-model="InviteeEmail" placeholder="追加するユーザーのメールアドレス..." class="mt-1 w-full bg-gray-800 text-white border border-gray-600 p-2 rounded-md"/>
+              <input id="note" v-model="InviteeEmail" placeholder="追加するユーザーのメールアドレス..."
+                class="mt-1 w-full bg-gray-800 text-white border border-gray-600 p-2 rounded-md" />
             </div>
           </div>
         </template>
         <template #footer>
+          <button @click="openTokenDailog = false"
+            class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+            キャンセル
+          </button>
           <button @click="AddNewFreind"
             class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md">友達に追加</button>
         </template>
@@ -248,11 +263,11 @@ const createLibrary = async () => {
 const libraryList = computed(() =>
   libraries.value.filter((item) => item.owner === authStore.user.email)
 );
-const AddNewFreind = async() => {
+const AddNewFreind = async () => {
   const userId = authStore.user.id;
   const TargetEmail = InviteeEmail.value.trim();
 
-  try{
+  try {
     const invite = await friendStore.sendFriendRequest(TargetEmail);
     const result = await friendStore.approveFriendInvite(invite.token || invite.id);
 
@@ -260,7 +275,7 @@ const AddNewFreind = async() => {
     friends.value = await friendStore.fetchFreind();
     openTokenDailog.value = false;
     console.log('友達リクエスト送信済み');
-  }catch(err){
+  } catch (err) {
     console.error('リクエスト送信失敗：', err);
     throw err;
   }
