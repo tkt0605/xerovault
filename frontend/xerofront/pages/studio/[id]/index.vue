@@ -1,122 +1,106 @@
 <template>
-    <main class="flex-1  overflow-y-auto">
-        <div class="max-w-3xl w-full mx-auto bg-white dark:bg-zinc-900  p-6 space-y-6 shadow">
-
-            <!-- タイトルとステータス -->
-            <div class="flex justify-between items-start flex-wrap gap-4">
-                <div>
-                    <div
-                        class="text-lg font-bold text-white bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-2 rounded-full shadow">
+    <main class="text-black dark:text-white min-h-screen md:ml-72 ml-0 relative flex-1 overflow-y-auto"
+        :class="{ 'bg-white': !$colorMode?.value || $colorMode?.value === 'light', 'bg-black': $colorMode?.value === 'dark' }"
+        :style="{
+            backgroundImage: $colorMode?.value === 'dark'
+                ? `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url(${group.background_image || '/default-bg.jpg'})`
+                : `linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.9)), url(${group.background_image || '/default-bg.jpg'})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backdropFilter: 'blur(8px)'
+        }">
+        <div class="dark:bg-zinc-800 backdrop-blur-md min-h-screen py-12">
+            <div class="max-w-4xl mx-auto px-6 space-y-12">
+                <!-- タイトル -->
+                <div class="text-center space-y-2">
+                    <h1 class="text-4xl font-extrabold text-transparent bg-clip-text"
+                        :class="$colorMode?.value === 'dark' ? 'bg-gradient-to-r from-cyan-400 to-indigo-400' : 'bg-gradient-to-r from-blue-500 to-indigo-600'">
                         {{ group.name }}
+                    </h1>
+                    <div class="flex justify-center gap-3 text-sm">
+                        <span
+                            :class="$colorMode?.value === 'dark' ? 'bg-zinc-800/80 text-white' : 'bg-zinc-100 text-gray-800'"
+                            class="px-3 py-1 rounded-full">
+                            #{{ group.tag || 'タグ未設定' }}
+                        </span>
+                        <span :class="group.is_public
+                            ? ($colorMode?.value === 'dark' ? 'bg-green-600/80 text-white' : 'bg-green-200 text-green-800')
+                            : ($colorMode?.value === 'dark' ? 'bg-red-600/80 text-white' : 'bg-red-200 text-red-800')"
+                            class="px-3 py-1 rounded-full">
+                            {{ group.is_public ? '公開中' : '非公開' }}
+                        </span>
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <span
-                        class="text-xs font-medium px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 rounded-full">
-                        #{{ group.tag || 'タグ未設定' }}
-                    </span>
-                    <span
-                        :class="group.is_public ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'"
-                        class="text-xs font-semibold px-3 py-1 rounded-full inline-flex items-center gap-1">
-                        <svg v-if="group.is_public" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        {{ group.is_public ? '公開中' : '非公開' }}
-                    </span>
-                </div>
-            </div>
 
-            <!-- オーナー情報 -->
-            <div>
-                <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">オーナー</h3>
-            </div>
-            <div style="position: relative; align-items: center; display: flex; justify-content: space-between;">
-                <span
-                    class="text-xs text-zinc-800 dark:text-zinc-100 px-3 py-1 rounded-full">
-                    <!-- {{ group.owner?.email }} -->
-                    <img :src="group.owner?.avater" alt="User Avatar"
-                        class="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-gray-300 hover:border-blue-500 transition" />
-                </span>
-                <div class="text-sm text-gray-600 dark:text-gray-300 break-all flex justify-between rounded p-2 gap-16">
-                    <div></div>
-                    <div v-if="!isJoinToStudioUrl">
-                        <button @click="JoinCreateForm()"
-                            class="flex items-center gap-1 px-3 py-1 text-xs text-green-600 hover:text-white border border-green-600 hover:bg-green-600 rounded-full transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                            </svg>
+                <!-- オーナー -->
+                <div class="flex items-center justify-between gap-6">
+                    <div class="flex items-center gap-4">
+                        <img :src="group.owner?.avater"
+                            class="w-14 h-14 rounded-full border-2 border-white shadow-lg object-cover" alt="Avatar" />
+                        <div class="dark:bg-black text-sm">オーナー</div>
+                    </div>
+                    <div>
+                        <button v-if="!isJoinToStudioUrl" @click="JoinCreateForm"
+                            class="px-4 py-2 rounded-full border border-green-500 text-green-600 hover:bg-green-500 hover:text-white transition">
                             招待リンクを作成する
                         </button>
-                    </div>
-                    <div v-else>
-                        <button @click="QRdialog"
-                            class="text-xs text-blue-600 hover:text-white border border-blue-600 hover:bg-blue-600 px-3 py-1 rounded-full transition">
+                        <button v-else @click="QRdialog"
+                            class="px-4 py-2 rounded-full border border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white transition">
                             招待QRコードを表示
                         </button>
                     </div>
                 </div>
-            </div>
 
-            <!-- スコア & ゴール -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div
-                    class="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-600 p-4 rounded-xl shadow-sm text-center">
-                    <p class="text-xs text-gray-500 dark:text-gray-400">スコア</p>
-                    <p class="text-xl font-semibold text-blue-600 dark:text-blue-400 mt-1">{{ group.score }}</p>
-                </div>
-                <button @click="CreateGoal"
-                    class="flex flex-col justify-center items-center border border-dashed border-gray-300 dark:border-zinc-500 p-4 rounded-xl text-gray-500 hover:border-blue-500 hover:text-blue-600 transition">
-                    ゴールの追加
-                    <span class="text-xs mt-1">このスタジオでの目標を作成</span>
-                </button>
-            </div>
-
-            <!-- メンバー一覧 -->
-            <div>
-                <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">参加者一覧</h3>
-                <div class="bg-zinc-50 dark:bg-zinc-800 rounded p-4 flex flex-wrap items-center justify-between gap-2">
-                    <div class="flex flex-wrap gap-2">
-                        <span v-for="member in group.members" :key="member"
-                            class="text-xs text-zinc-800 dark:text-zinc-100 px-3 py-1 rounded-full">
-                            <img :src="member.avater" alt="User Avatar"
-                                class="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-gray-300 hover:border-blue-500 transition" />
-                        </span>
+                <!-- スコア & ゴール -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="dark:bg-blackshadow-inner p-6 rounded-xl text-center border border-zinc-200">
+                        <p class="text-sm" :class="$colorMode?.value === 'dark' ? 'text-zinc-400' : 'text-zinc-500'">スコア
+                        </p>
+                        <p class="text-3xl font-bold mt-2">{{ group.score }}</p>
                     </div>
-                    <button @click="addMember"
-                        class="flex items-center gap-1 px-3 py-1 text-xs text-blue-600 hover:text-white border border-blue-600 hover:bg-blue-600 rounded-full transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                        </svg>
-                        メンバーを追加する
+                    <button @click="CreateGoal"
+                        class="border-2 border-dashed border-zinc-300 hover:border-blue-400 hover:text-blue-500 text-zinc-600 dark:text-zinc-300 p-6 rounded-xl text-center transition">
+                        ゴールの追加
+                        <div class="text-xs mt-1">このスタジオでの目標を作成</div>
                     </button>
                 </div>
-                <div
-                    class="flex justify-between text-xs text-gray-500 dark:text-gray-400 border-b pt-4 border-gray-200 dark:border-zinc-600">
+
+                <!-- 参加者 -->
+                <div>
+                    <h2 class="text-lg font-semibold mb-2">参加者一覧</h2>
+                    <div :class="$colorMode?.value === 'dark' ? 'bg-zinc-800/70' : 'bg-zinc-100'"
+                        class="dark:bg-zinc-900 flex flex-wrap gap-4 p-4 rounded-xl">
+                        <img v-for="member in group.members" :key="member" :src="member.avater"
+                            class="w-10 h-10 rounded-full border-2 border-white hover:border-blue-400 transition object-cover"
+                            alt="Member" />
+                    </div>
+                </div>
+
+                <!-- タイムスタンプ -->
+                <div class="text-xs text-zinc-500 flex justify-between pt-6">
                     <span>作成: {{ formatDate(group.created_at) }}</span>
                     <span>更新: {{ formatDate(group.updated_at) }}</span>
                 </div>
-            </div>
-        </div>
-        <div class="max-w-3xl w-full mx-auto bg-white dark:bg-zinc-900  p-6 space-y-6 shadow">
-            <div class="space-y-4">
-                <div v-for="goal in goals" :key="goal.id"
-                    class="bg-gray-800 border border-gray-700 rounded-2xl p-4 shadow-md hover:shadow-lg transition duration-300">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-lg font-semibold text-white mb-2">{{ goal.header || '見出し無し' }}</h3>
-                        <img :src="goal.assignee.avater" alt="User Avatar"
-                            class="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-gray-300 hover:border-blue-500 transition" />
+
+                <!-- ゴールリスト -->
+                <div class="space-y-6">
+                    <h2 class="text-lg font-semibold">ゴール一覧</h2>
+                    <div v-for="goal in goals" :key="goal.id"
+                        :class="$colorMode?.value === 'dark' ? 'bg-zinc-800/80 text-white' : 'bg-white text-gray-900'"
+                        class="p-6  shadow-md dark:bg-zinc-800 hover:shadow-lg transition border-b border-zinc-500">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-xl font-bold dark:text-white">{{ goal.header || '見出し無し' }}</h3>
+                            <img :src="goal.assignee.avater"
+                                class="w-10 h-10 rounded-full border-2 border-white object-cover" alt="Assignee" />
+                        </div>
+                        <p :class="$colorMode?.value === 'dark' ? 'text-zinc-300' : 'text-white'" class="text-sm">
+                            {{ goal.description || '説明がありません。' }}
+                        </p>
+                        <small class="block mt-2 text-xs"
+                            :class="$colorMode?.value === 'dark' ? 'text-zinc-400' : 'text-gray-500'">
+                            {{ goal.deadline ? '締め切り: ' + formatDate(goal.deadline) : '締め切りなし' }}
+                        </small>
                     </div>
-                    <small class="text-gray-500 mt-2">{{ formatDate(goal.created_at) }}</small>
-                    <p class="text-gray-300 text-sm">{{ goal.description }}</p>
-                    <small class="text-gray-500 mt-2">
-                        <span v-if="goal.deadline">締め切り: {{ formatDate(goal.deadline) }}</span>
-                        <span v-else>締め切りなし</span>
-                    </small>
                 </div>
             </div>
         </div>
@@ -126,26 +110,26 @@
             </template>
 
             <template #default>
-                <div class="space-y-6">
+                <div class="space-y-6 py-2">
                     <!-- ゴール名 -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-300 mb-1">ゴール名</label>
+                        <label class="block text-sm font-semibold text-gray-100 mb-1">ゴール名</label>
                         <input v-model="goalHead" type="text" placeholder="例：週に1回プロトタイプを提出"
-                            class="w-full bg-gray-800 text-white border border-gray-600 px-4 py-2 rounded-md focus:outline-none focus:ring focus:border-blue-500" />
+                            class="w-full bg-gray-800 text-white border border-gray-600 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
 
                     <!-- ゴールの説明 -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-300 mb-1">詳細な説明</label>
+                        <label class="block text-sm font-semibold text-gray-100 mb-1">詳細な説明</label>
                         <textarea v-model="goalDescription" rows="4" placeholder="このゴールの目的や背景、達成のためのアプローチなどを書いてください。"
-                            class="w-full bg-gray-800 text-white border border-gray-600 px-4 py-2 rounded-md focus:outline-none focus:ring focus:border-blue-500 resize-none"></textarea>
+                            class="w-full bg-gray-800 text-white border border-gray-600 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"></textarea>
                     </div>
 
                     <!-- 締め切り日 -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-300 mb-1">締め切り日（任意）</label>
-                        <input v-model="goalDeadline" type="date"
-                            class="w-full bg-gray-800 text-white border border-gray-600 px-4 py-2 rounded-md focus:outline-none focus:ring focus:border-blue-500" />
+                        <label class="block text-sm font-semibold text-gray-100 mb-1">締め切り日（任意）</label>
+                        <input v-model="goalDeadline" type="date" :min="new Date().toISOString().split('T')[0]"
+                            class="w-full bg-gray-800 text-white border border-gray-600 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
                 </div>
             </template>
@@ -163,6 +147,7 @@
                 </div>
             </template>
         </Dialog>
+
 
         <!-- QRコード Dialog -->
         <Dialog :visible="openQRdailog" @close="openQRdailog = false">
@@ -214,7 +199,6 @@
             </template>
         </Dialog>
     </main>
-    <!-- </div> -->
 </template>
 <script setup>
 import { useAuthStore } from '~/store/auth';
@@ -228,6 +212,7 @@ import { QrcodeCanvas } from 'qrcode.vue';
 import { QrcodeSvg } from 'qrcode.vue';
 import { useRuntimeConfig } from "#app";
 import Dialog from '~/components/MainDialog.vue';
+const colorMode = useColorMode()
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
@@ -291,7 +276,9 @@ const JoinCreateForm = async () => {
     }
     const res = await response.json();
     const encryptedData = res.encrypted_data;
+    console.log('暗号化されたデータ:', encryptedData);
     invterURL.value = `${baseUrl}/studio/${routeId}/join?data=${encodeURIComponent(encryptedData)}`;
+    console.log('複合化された招待URL:', decodeURIComponent(encryptedData));
     localStorage.setItem(`${group.name}_${routeId}`, invterURL.value);
     const inviteTokens = localStorage.getItem(`${group.name}_${routeId}`);
     if (inviteTokens) {

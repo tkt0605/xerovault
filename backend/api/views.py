@@ -13,7 +13,7 @@ from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from rest_framework import status
-from .utils.crypto import encrypt_invite
+from .utils.crypto import encrypt_invite, decrypt_invite
 from django.shortcuts import get_object_or_404
 import uuid, time
 
@@ -158,16 +158,24 @@ class GenerateGroupviewSet(viewsets.ModelViewSet):
         except CustomUser.DoesNotExist:
             return Response({'detail': 'ユーザーが存在しません。'}, status=404)
 
-    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], url_path='join')
     def join(self, request, pk=None):
         user = self.request.user
-        # token = request.data.get('token')
+        token = request.data.get('token')
         encrypted = request.query_params.get('data')
-        token, error = encrypt_invite(encrypted)
+        if not encrypted:
+            return Response({'detail': "トークンが必要です。"}, status=400)
+        token = decrypt_invite(encrypted)
+
         if not token:
             return Response({'detail': 'トークンが必要です。'}, status=400)
         try:
-            group = GenerateGroup.objects.get(join_token=token)
+            group = self.get_object()
+            if group.joined_token != token['token']:
+                return Response({'detail': '無効トークンです。'}, status=400)
+            if token.get('exp') and int(time.time()) > token['exp']:
+                return Response({'detail': 'トークンの有効期限が切れています。'}, status=400)
+            # group = GenerateGroup.objects.get(join_token=token)
         except GenerateGroup.DoesNotExist:
             return Response({'detail': '無効トークンです。'}, status=404)
         if user in group.members.all():
@@ -179,11 +187,12 @@ class GenerateGroupviewSet(viewsets.ModelViewSet):
             message = f"{user.email}がグループに参加しました。"
         )
         return Response({'detail': f"{group.name}に参加しました。"}, status=200)
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def my_groups(self, request):
         user = self.request.user
         groups = GenerateGroup.objects.filter(
-            Q(owner = user) | Q(members = user)
-        ).distinct()
+            Q(members=user)
+        )
         serializer = GenerateGroupReadSerializer(groups, many=True)
         return Response(serializer.data)
 

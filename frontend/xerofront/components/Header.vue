@@ -1,16 +1,9 @@
 <template>
-    <header class="bg-white dark:bg-zinc-900 shadow-md px-6 py-4">
+    <header class="bg-white dark:bg-black  px-6 py-4 s-50">
         <!-- ヘッダー本体 -->
         <div class="flex items-center justify-between">
             <!-- 左側：メニューアイコンとロゴ -->
             <div class="flex items-center gap-4">
-                <!-- <button  class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                        class="bi bi-bar-chart-steps text-gray-700 dark:text-gray-200" viewBox="0 0 16 16">
-                        <path
-                            d="M.5 0a.5.5 0 0 1 .5.5v15a.5.5 0 0 1-1 0V.5A.5.5 0 0 1 .5 0M2 1.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" />
-                    </svg>
-                </button> -->
                 <button class="md:hidden" @click="$emit('toggle-sidebar')">
                     <!-- ハンバーガーアイコン -->
                     <svg class="w-6 h-6 text-gray-700 dark:text-white" fill="none" stroke="currentColor"
@@ -18,7 +11,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
-                <!-- <button class="md:hidden mb-4 text-right w-full text-gray-500" @click="$emit('close')">✕</button> -->
                 <button @click="goHome"
                     class="text-xl font-bold text-gray-800 dark:text-white hover:underline hover:text-blue-600 transition px-4">
                     Studio DEMO
@@ -42,7 +34,7 @@
         <div v-show="isopenInfo" id="show-info" class="fixed inset-0 z-50 bg-black bg-opacity-30 flex justify-end"
             @click.self="closeUserInfo">
             <div v-if="isAuthenticated"
-                class="mt-20 mr-6 w-80 h-60 p-6 bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl transition transform scale-100">
+                class="mt-20 mr-6 w-80 h-48 p-6 bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl transition transform scale-100">
                 <!-- モーダルヘッダー -->
                 <div class="flex items-center justify-between border-b border-gray-200 dark:border-zinc-700 pb-3 mb-4">
                     <h2 class="text-lg font-bold text-gray-800 dark:text-white">ユーザー設定</h2>
@@ -66,10 +58,6 @@
                         {{ currentUser.email }}
                     </p>
                 </div>
-                <button class="flex gap-3 w-full text-left px-4 py-2 text-white-600 hover:text-white hover:bg-gray-600
-                 rounded-lg font-semibold transition" @click="StepToken()">
-                    <p class="text-sm text-gray-700 dark:text-gray-200 break-all">マイ・トークン</p>
-                </button>
                 <!-- ログアウト -->
                 <button @click="logout" class="w-full text-left px-4 py-2 text-red-600 hover:text-white hover:bg-red-600
                  rounded-lg font-semibold transition">
@@ -77,41 +65,6 @@
                 </button>
             </div>
         </div>
-<Dialog :visible="isOpenToken" @close="isOpenToken = false">
-  <template #header>
-    <h2 class="text-xl font-bold text-gray-800 dark:text-white">私のトークン</h2>
-  </template>
-
-  <template #default>
-    <div v-if="tokens.length" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <div v-for="token in tokens" :key="token.id"
-        class="bg-zinc-50 dark:bg-zinc-800 p-4 rounded-lg shadow-sm flex flex-col items-center text-center space-y-3">
-
-        <!-- QRコード -->
-        <qrcode-vue :value="generateTokenUrl(token.token)" :size="120" class="rounded shadow" />
-
-        <!-- トークン文字列 -->
-        <p class="text-xs break-all text-gray-500 dark:text-gray-400">
-          {{ token.token }}
-        </p>
-
-        <!-- コピー -->
-        <button @click="copyUrl(generateTokenUrl(token.token))"
-          class="text-sm px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition">
-          コピーする
-        </button>
-      </div>
-    </div>
-
-    <div v-else class="text-gray-500 dark:text-gray-400 text-center mt-6">
-      トークンがまだ作成されていません。
-    </div>
-  </template>
-
-  <template #footer>
-  </template>
-</Dialog>
-
 
     </header>
 </template>

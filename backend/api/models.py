@@ -27,6 +27,10 @@ def generate_avatar_path(instance, filename):
     ext=filename.split('.')[-1]
     filename=f'avatar.{ext}'
     return f'avatars/{instance.id}/{filename}'
+def generate_avatar_url(email):
+    """メールアドレスを基にアバター URL を生成"""
+    seed = email.split("@")[0] if email else "default"
+    return f"https://api.dicebear.com/7.x/identicon/svg?seed={seed}"
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -64,6 +68,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(default=timezone.now, editable=False)
     USERNAME_FIELD='email'
     REQUIRED_FIELDS = []
+    def save(self, *args, **kwargs):
+        if not self.avater:
+            self.avater = generate_avatar_url(self.email)
+        super().save(*args, **kwargs)
     def __str__(self):
         return self.email
 def get_default_expired():

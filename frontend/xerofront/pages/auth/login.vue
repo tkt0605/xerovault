@@ -30,7 +30,9 @@ const route = useRoute();
 const router = useRouter();
 const email = ref('')
 const password = ref('')
-
+definePageMeta({
+  layout: 'auth',
+});
 const handleLogin = async () => {
   // TODO: 認証API呼び出し
   try{
