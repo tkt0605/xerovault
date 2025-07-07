@@ -1,11 +1,8 @@
 <template>
-  <aside :class="[
-      'w-72 min-h-screen bg-white dark:bg-zinc-900 border-r dark:border-zinc-700 p-4 flex flex-col gap-6 ',
-      isOpen ? 'translate-x-0' : '-translate-x-full',
-      'fixed md:static inset-y-0 left-0 z-40 md:translate-x-0'
-    ]"
-    >
-
+  <aside
+  class="hidden md:block md:fixed md:top-16 md:left-0 md:z-40 md:w-72 md:h-[calc(100vh-4rem)] md:overflow-y-auto
+         bg-white dark:bg-black border-r dark:border-zinc-700 p-4 flex flex-col gap-6"
+  >
     <!-- 操作ボタン -->
     <div class="flex flex-col gap-3 mb-4">
       <button
@@ -35,21 +32,12 @@
         </svg>
         ライブラリ新規作成
       </button>
-      <button
-        class="w-full flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 rounded transition"
-        @click="$emit('Token-dialog')">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        マイ・リスト新規追加
-      </button>
     </div>
 
     <!-- スタジオ一覧 -->
     <div>
       <h2 class="text-xs text-gray-500 dark:text-gray-400 tracking-widest mb-2">スタジオ一覧</h2>
-      <div v-for="group in groups" :key="group.id" class="flex flex-col gap-2">
+      <div v-for="group in groupList" :key="group.id" class="flex flex-col gap-2">
         <NuxtLink :to="`/studio/${group.id}`">
           <div class="px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition">
             {{ group.name }}
@@ -91,15 +79,18 @@ const libraries = ref([]);
 onMounted(async () => {
   try {
     groupList.value = await groupStore.fetchGroup();
+    console.log('グループ一覧:', groupList.value);
     libraries.value = await libraryStore.FetchLibrary();
   } catch (error) {
 
   }
 });
 
-const groups = computed(() =>
-  groupList.value.filter((item) => item.owner === authStore.user.email)
-);
+const groups = computed(()=>{
+  if (!groupList.value || !Array.isArray(groupList.value.members) || !authStore.currentUser)
+  return false;
+  // return groupList.value.members.some(member => member.email === authStore.user.email);
+});
 const libraryList = computed(() =>
   libraries.value.filter((item) => item.owner === authStore.user.email)
 );

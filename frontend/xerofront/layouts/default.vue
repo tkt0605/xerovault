@@ -1,19 +1,24 @@
 <template>
-  <div class="flex flex-col min-h-screen bg-gray-50 dark:bg-zinc-800 text-gray-800 dark:text-white">
+  <div class="flex flex-col h-screen bg-gray-50 dark:bg-zinc-800 text-gray-800 dark:text-white">
 
     <!-- ヘッダー：上部固定 -->
-    <header class="shadow bg-white dark:bg-zinc-900 sticky top-0 z-50">
+    <header class="sticky top-0 z-50 bg-white dark:bg-zinc-900 shadow">
       <Header @toggle-sidebar="toggleSidebar" />
     </header>
 
-    <!-- メインコンテンツ：サイドバー＋本文 -->
+    <!-- コンテンツ本体：サイドバー + メインビュー -->
     <div class="flex flex-1 overflow-hidden">
+
       <!-- サイドバー -->
-      <aside>
-        <!-- <aside class="hidden md:block"> -->
-        <Aside @toggle-sidebar="toggleSidebar" @Token-dialog="TokenDialog()" @Library-dialog="LibraryDailog()"
-          @Group-dialog="GroupDailog" :isOpen="isSidebarOpen" @close="isSidebarOpen = false"
-          class=" overflow-y-auto hidden md:block" />
+      <aside class="hidden md:block">
+        <Aside
+          @toggle-sidebar="toggleSidebar"
+          @Token-dialog="TokenDialog()"
+          @Library-dialog="LibraryDailog()"
+          @Group-dialog="GroupDailog"
+          :isOpen="isSidebarOpen"
+          @close="isSidebarOpen = false"
+        />
       </aside>
 
       <!-- メインビュー -->

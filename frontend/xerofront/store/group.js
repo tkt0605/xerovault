@@ -62,7 +62,7 @@ export const useAuthGroups = defineStore('group', {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
             try {
-                const response = await fetch(`${config.public.apiBase}groups/`, {
+                const response = await fetch(`${config.public.apiBase}groups/my_groups/`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",

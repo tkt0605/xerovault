@@ -28,6 +28,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/i18n',
     '@pinia/nuxt',
+    '@nuxtjs/color-mode'
   ],
   runtimeConfig: {
     public: {
@@ -48,4 +49,9 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
-})
+  colorMode: {
+    preference: 'system', // 'dark' または 'light' にもできる
+    fallback: 'light',
+    classSuffix: '',       // クラス名に `-dark` などのサフィックスをつけない
+  }
+});

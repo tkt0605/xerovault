@@ -38,6 +38,9 @@ const confirmPassword = ref('');
 const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
+definePageMeta({
+  layout: 'auth',
+});
 const handleSignup = async () => {
     if (password.value !== confirmPassword.value) {
         alert('パスワードが一致しません')
