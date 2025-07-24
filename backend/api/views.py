@@ -232,7 +232,7 @@ class GoalViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        if self.action in['create', 'list']:
+        if self.action in['create', 'list', 'my_goals']:
             return [AllowAny()]
         return super().get_permissions()
     def get_serializer_class(self):
