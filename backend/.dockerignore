@@ -1,0 +1,32 @@
+# バイナリ・キャッシュ類
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 仮想環境
+venv/
+.env
+*.env
+
+# OSやIDEのゴミファイル
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# ログ・デバッグ
+*.log
+
+# マイグレーションファイル（任意）
+**/migrations/*.pyc
+**/migrations/__pycache__/
+
+# テストデータや一時ファイル（任意）
+*.sqlite3
+*.bak
+
+## django・/static /mediaヂィレクトリ
+static/
+media/ 
