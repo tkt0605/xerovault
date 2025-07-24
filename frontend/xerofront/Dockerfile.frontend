@@ -8,13 +8,13 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # ✅ パッケージJSONのみをまずコピー（キャッシュ効かせるため）
-COPY ./frontend/xerofront/package*.json ./
+COPY package*.json ./
 
 # ✅ コンテナ内で依存インストール（重要！ホストと切り離す）
 RUN npm install
 
 # ✅ 残りをすべてコピー（コードや .nuxt, .output 除外するには .dockerignore）
-COPY ./frontend/xerofront/ .
+COPY ./ .
 
 # ✅ ポート開放
 EXPOSE 3000
