@@ -3,7 +3,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.backend
-    platfform: linux/amd64
+    platform: linux/amd64
     dns:
       - 8.8.8.8
     env_file:
