@@ -29,6 +29,7 @@ services:
     build:
       context: ./frontend/xerofront
       dockerfile: Dockerfile.frontend
+    platform: linux/amd64
     container_name: xero-frontend
     volumes:
       - ./frontend/xerofront:/frontend/xerofront

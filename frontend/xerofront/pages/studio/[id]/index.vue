@@ -54,9 +54,9 @@
                 <!-- スコア & ゴール -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div class="dark:bg-blackshadow-inner p-6 rounded-xl text-center border border-zinc-200">
-                        <p class="text-sm" :class="$colorMode?.value === 'dark' ? 'text-zinc-400' : 'text-zinc-500'">スコア
+                        <p class="text-sm" :class="$colorMode?.value === 'dark' ? 'text-bule-400' : 'text-bule-500'">スコア
                         </p>
-                        <p class="text-3xl font-bold mt-2">{{ group.score }}</p>
+                        <p class="text-3xl text-blue-500 font-bold mt-2">{{ group.score }}</p>
                     </div>
                     <button @click="CreateGoal"
                         class="border-2 border-dashed border-zinc-300 hover:border-blue-400 hover:text-blue-500 text-zinc-600 dark:text-zinc-300 p-6 rounded-xl text-center transition">
