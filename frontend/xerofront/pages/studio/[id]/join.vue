@@ -75,9 +75,9 @@ const JoinToStudio = async () => {
             console.log('スタジオ参加成功：', response.data);
             joinSuccess.value = true;
             setTimeout(() => {
+                isJoining.value = false;
                 router.push(`/studio/${studioid}`);
             }, 2000);
-            isJoining.value = false;
         }
     } catch (error) {
         console.error('スタジオ参加失敗：', error);

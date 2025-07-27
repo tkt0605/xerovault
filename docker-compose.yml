@@ -32,8 +32,8 @@ services:
       dockerfile: Dockerfile.frontend
     platform: linux/amd64
     container_name: xero-frontend
-    # volumes:
-    #   - ./frontend/xerofront:/frontend/xerofront
+    volumes:
+      - ./frontend/xerofront:/frontend/xerofront
     ports:
       - "3000:3000"
     dns:

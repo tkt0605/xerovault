@@ -207,5 +207,32 @@ export const useAuthGroups = defineStore('group', {
                 throw error;
             }
         },
+        async DeleteMember(id, membersId) {
+            const config = useRuntimeConfig();
+            const authStore =useAuthStore();
+            try{
+                const response = await fetch(`${config.public.apiBase}groups/${id}/remove_members/${membersId}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${authStore.accessToken}`
+                    },
+                    // body: JSON.stringify({
+                    //     email: EmailUrlEncode,
+                    // })
+                });
+                if (!response.ok){
+                    const errorText = await response.text();
+                    console.error('メンバー削除エラー:', errorText);
+                    throw new Error("メンバー削除失敗");                    
+                }
+                console.log('メンバー削除完了');
+                const data = await response.json();
+                return data;
+            }catch(error){
+                console.error('メンバー削除失敗:', error);
+                throw error;
+            }
+        },
     }
 })
