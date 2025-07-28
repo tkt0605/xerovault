@@ -207,11 +207,11 @@ export const useAuthGroups = defineStore('group', {
                 throw error;
             }
         },
-        async DeleteMember(id, membersId) {
+        async DeleteMember(id, memberId) {
             const config = useRuntimeConfig();
             const authStore =useAuthStore();
             try{
-                const response = await fetch(`${config.public.apiBase}groups/${id}/remove_members/${membersId}/`, {
+                const response = await fetch(`${config.public.apiBase}groups/${id}/remove-member/${memberId}/`, {
                     method: 'DELETE',
                     headers: {
                         "Content-Type": "application/json",

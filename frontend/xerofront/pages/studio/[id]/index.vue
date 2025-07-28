@@ -33,13 +33,23 @@
                         </span>
                     </div>
                 </div>
-
-                <!-- オーナー -->
                 <div class="flex items-center justify-between gap-6">
-                    <div class="flex items-center gap-4">
+                    <div
+                        class="flex flex-col sm:flex-row items-center sm:items-start gap-4 bg-gradient-to-r from-zinc-700 to-zinc-800 p-4 rounded-xl shadow-lg border border-zinc-600">
                         <img :src="group.owner?.avater"
-                            class="w-14 h-14 rounded-full border-2 border-white shadow-lg object-cover" alt="Avatar" />
+                            class="w-20 h-20 sm:w-14 sm:h-14 rounded-full border-2 border-blue-500 object-cover"
+                            alt="オーナーのアバター" />
+                        <div class="text-center sm:text-left">
+                            <p class="hidden sm:block text-white text-base sm:text-lg font-bold break-all">
+                                {{ group.owner?.email || 'オーナー名未設定' }}
+                            </p>
+                            <span
+                                class="inline-block mt-2 text-xs text-purple-200 bg-purple-700/60 px-2 py-0.5 rounded-full">
+                                👑 グループオーナー
+                            </span>
+                        </div>
                     </div>
+
                     <div>
                         <button v-if="!isJoinToStudioUrl" @click="JoinCreateForm"
                             class="px-4 py-2 rounded-full border border-green-500 text-green-600 hover:bg-green-500 hover:text-white transition">
@@ -51,60 +61,44 @@
                         </button>
                     </div>
                 </div>
-
-                <!-- スコア & ゴール -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div class="dark:bg-blackshadow-inner p-6 rounded-xl text-center border border-zinc-200">
-                        <p class="text-sm" :class="$colorMode?.value === 'dark' ? 'text-bule-400' : 'text-bule-500'">スコア
+                <div
+                    class="flex flex-col sm:flex-row w-full divide-y sm:divide-y-0 sm:divide-x divide-gray-600 rounded-xl overflow-hidden border border-zinc-600 bg-zinc-800 shadow">
+                    <div class="flex-1 min-w-0 p-6 text-center">
+                        <p class="text-sm text-blue-400">スコア</p>
+                        <p class="text-3xl font-extrabold text-blue-500 mt-2 tracking-wide">
+                            {{ group.score }}
                         </p>
-                        <p class="text-3xl text-blue-500 font-bold mt-2">{{ group.score }}</p>
                     </div>
+                    <button @click="ShowMember"
+                        class="flex-1 min-w-0 p-6 text-center hover:bg-zinc-700 transition text-white">
+                        <p class="text-sm text-purple-400">メンバー数</p>
+                        <p class="text-2xl font-extrabold text-purple-500 mt-2 tracking-wide">
+                            {{ group.members?.length || 0 }} 人
+                        </p>
+                    </button>
                     <button @click="CreateGoal"
-                        class="border-2 border-dashed border-zinc-300 hover:border-blue-400 hover:text-blue-500 text-zinc-600 dark:text-zinc-300 p-6 rounded-xl text-center transition">
-                        ゴールの追加
-                        <div class="text-xs mt-1">このスタジオでの目標を作成</div>
+                        class="flex-1 min-w-0 p-6 text-center hover:bg-zinc-700 transition text-white">
+                        <p class="text-lg text-red-400 font-semibold">＋ゴールの追加</p>
+                        <p class="text-sm text-white-400 mt-1">このスタジオでの目標を作成</p>
                     </button>
                 </div>
 
-                <!-- 参加者 -->
-                <div>
-                    <h2 class="text-lg font-semibold mb-2">参加者一覧 | メンバー</h2>
-                    <div :class="$colorMode?.value === 'dark' ? 'bg-zinc-800/70' : 'bg-zinc-100'"
-                        class="dark:bg-zinc-900 flex flex-wrap gap-4 p-4 rounded-xl">
-                        <div v-for="member in group.members" :key="member" class="flex items-center justify-between">
-                            <img :src="member.avater"
-                                class="w-10 h-10 rounded-full border-2 border-white hover:border-blue-400 transition object-cover"
-                                alt="Member" />
-                            <button @click="isDeleteAlart( member.id)" class="text-red-500 hover:underline">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                    class="bi bi-feather" viewBox="0 0 16 16">
-                                    <path
-                                        d="M15.807.531c-.174-.177-.41-.289-.64-.363a3.8 3.8 0 0 0-.833-.15c-.62-.049-1.394 0-2.252.175C10.365.545 8.264 1.415 6.315 3.1S3.147 6.824 2.557 8.523c-.294.847-.44 1.634-.429 2.268.005.316.05.62.154.88q.025.061.056.122A68 68 0 0 0 .08 15.198a.53.53 0 0 0 .157.72.504.504 0 0 0 .705-.16 68 68 0 0 1 2.158-3.26c.285.141.616.195.958.182.513-.02 1.098-.188 1.723-.49 1.25-.605 2.744-1.787 4.303-3.642l1.518-1.55a.53.53 0 0 0 0-.739l-.729-.744 1.311.209a.5.5 0 0 0 .443-.15l.663-.684c.663-.68 1.292-1.325 1.763-1.892.314-.378.585-.752.754-1.107.163-.345.278-.773.112-1.188a.5.5 0 0 0-.112-.172M3.733 11.62C5.385 9.374 7.24 7.215 9.309 5.394l1.21 1.234-1.171 1.196-.027.03c-1.5 1.789-2.891 2.867-3.977 3.393-.544.263-.99.378-1.324.39a1.3 1.3 0 0 1-.287-.018Zm6.769-7.22c1.31-1.028 2.7-1.914 4.172-2.6a7 7 0 0 1-.4.523c-.442.533-1.028 1.134-1.681 1.804l-.51.524zm3.346-3.357C9.594 3.147 6.045 6.8 3.149 10.678c.007-.464.121-1.086.37-1.806.533-1.535 1.65-3.415 3.455-4.976 1.807-1.561 3.746-2.36 5.31-2.68a8 8 0 0 1 1.564-.173" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- タイムスタンプ -->
                 <div class="text-xs text-zinc-500 flex justify-between pt-6">
                     <span>作成: {{ formatDate(group.created_at) }}</span>
                     <span>更新: {{ formatDate(group.updated_at) }}</span>
                 </div>
 
                 <!-- ゴールリスト -->
-                <div class="space-y-6">
+                <div class="space-y-4">
                     <div v-for="goal in goals" :key="goal.id"
                         :class="$colorMode?.value === 'dark' ? 'bg-zinc-800/80 text-white' : 'bg-white text-gray-900'"
-                        class="p-6  shadow-md dark:bg-zinc-800 hover:shadow-lg transition border-b border-zinc-500">
-                        <div class="flex items-center justify-between mb-3">
-                            <h3 class="text-xl font-bold dark:text-white">{{ goal.header || '見出し無し' }}</h3>
-                            <img :src="goal.assignee.avater"
+                        class="p-2 shadow-md dark:bg-zinc-800 hover:shadow-lg transition border-b border-zinc-500">
+                        <div class="flex items-center gap-2">
+                            <img :src="goal.assignee?.avater"
                                 class="w-10 h-10 rounded-full border-2 border-white object-cover" alt="Assignee" />
+                            <h3 class="text-xl font-bold dark:text-white">{{ goal.header || '見出し無し' }}</h3>
                         </div>
-                        <p :class="$colorMode?.value === 'dark' ? 'text-zinc-300' : 'text-white'" class="text-sm">
-                            {{ goal.description || '説明がありません。' }}
-                        </p>
                         <small class="block mt-2 text-xs"
                             :class="$colorMode?.value === 'dark' ? 'text-zinc-400' : 'text-gray-500'">
                             {{ goal.deadline ? '締め切り: ' + formatDate(goal.deadline) : '締め切りなし' }}
@@ -149,8 +143,8 @@
                         class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
                         キャンセル
                     </button>
-                    <button @click="submitGoal"
-                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                    <button @click="submitGoal()"
+                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
                         作成する
                     </button>
                 </div>
@@ -207,6 +201,60 @@
                 <button @click="RemoveQR()" class="">QRを削除する。</button>
             </template>
         </Dialog>
+        <Dialog :visible="isShowMember" @close="isShowMember = false">
+            <!-- ヘッダー -->
+            <template #header>
+                <div class="flex items-center justify-between px-2 py-1 border-b border-zinc-700">
+                    <h2 class="text-xl font-bold text-white tracking-wide">メンバー</h2>
+                    <button @click="closeShowMember" class="text-gray-400 hover:text-red-500 transition-colors"
+                        aria-label="ダイアログを閉じる">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor"
+                            class="bi bi-backspace" viewBox="0 0 16 16">
+                            <path
+                                d="M5.83 5.146a.5.5 0 0 0 0 .708L7.975 8l-2.147 2.146a.5.5 0 0 0 .707.708l2.147-2.147 2.146 2.147a.5.5 0 0 0 .707-.708L9.39 8l2.146-2.146a.5.5 0 0 0-.707-.708L8.683 7.293 6.536 5.146a.5.5 0 0 0-.707 0z" />
+                            <path
+                                d="M13.683 1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-7.08a2 2 0 0 1-1.519-.698L.241 8.65a1 1 0 0 1 0-1.302L5.084 1.7A2 2 0 0 1 6.603 1zm-7.08 1a1 1 0 0 0-.76.35L1 8l4.844 5.65a1 1 0 0 0 .759.35h7.08a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z" />
+                        </svg>
+                    </button>
+                </div>
+            </template>
+
+            <!-- メンバーカード一覧 -->
+            <template #default>
+                <!-- メンバーカード -->
+                <div v-for="member in group.members" :key="member.id"
+                    class="flex items-center justify-between p-4 rounded-lg bg-black-800 border border-zinc-700 shadow hover:bg-zinc-700 transition space-x-4.">
+
+                    <!-- 左側：アバターと情報 -->
+                    <div class="flex items-center space-x-4">
+                        <!-- アバター -->
+                        <img :src="member.avater"
+                            class="w-12 h-12 rounded-full border-2 border-white object-cover shadow" alt="Member" />
+
+                        <!-- 情報 -->
+                        <div>
+                            <p class="text-white text-sm font-medium break-all">
+                                {{ member.username || member.email || '不明なユーザー' }}
+                            </p>
+                            <p class="inline-block mt-2 text-xs text-white-200 bg-green-700 px-2 py-0.5 rounded-full">メンバー</p>
+                        </div>
+                    </div>
+
+                    <!-- 右側：削除ボタン -->
+                    <button @click="isDeleteAlart(member.id)" class="text-red-500 hover:text-red-400 transition"
+                        title="このメンバーを削除">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                            class="bi bi-trash" viewBox="0 0 16 16">
+                            <path
+                                d="M5.5 5.5A.5.5 0 0 1 6 5h4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0V6H6v6.5a.5.5 0 0 1-1 0v-7z" />
+                            <path fill-rule="evenodd"
+                                d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1 0-2H5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1h2.5a1 1 0 0 1 1 1z" />
+                        </svg>
+                    </button>
+                </div>
+
+            </template>
+        </Dialog>
     </main>
 </template>
 <script setup>
@@ -237,10 +285,12 @@ const goalDescription = ref('');
 const goalDeadline = ref('');
 const openGoalDialog = ref(false);
 const isSidebarOpen = ref(false);
+const isShowMember = ref(false);
 const isJoined = ref(false);
 const toggleSidebar = () => {
     isSidebarOpen.value = !isSidebarOpen.value
 };
+const currentUser = computed(() => authStore.currentUser);
 onMounted(async () => {
     try {
         await authStore.restoreSession();
@@ -264,6 +314,12 @@ const QRdialog = () => {
 }
 const closeQRdialog = () => {
     openQRdailog.value = false;
+}
+const closeShowMember = () => {
+    isShowMember.value = false;
+}
+const ShowMember = () => {
+    isShowMember.value = true;
 }
 const JoinCreateForm = async () => {
     const config = useRuntimeConfig();
@@ -327,7 +383,7 @@ const copyToClipboard = async () => {
 const CreateGoal = () => {
     openGoalDialog.value = true;
 }
-const submitGoal = () => {
+const submitGoal = async () => {
     const group = route.params.id;
     if (!group) {
         console.error('グループがしてされていません。');
@@ -342,8 +398,8 @@ const submitGoal = () => {
             console.error('ゴールの情報が不完全です。');
             return;
         }
-        const newGoal = authGoal.CreateGoal(group, goal_header, goal_description, goal_deadline);
-        goals.value = authGoal.fetchGoals();
+        const newGoal = await authGoal.CreateGoal(group, goal_header, goal_description, goal_deadline);
+        goals.value = await authGoal.fetchGoals();
         if (goals.value) {
             console.log('新しいゴールが作成されました:', newGoal);
             console.log('目標の作成に成功しました。');
@@ -359,31 +415,38 @@ const submitGoal = () => {
         throw err;
     }
 };
+const MemberCounter = computed(() => {
+    return group.value.members ? group.value.members.length : 0;
+});
 const isDeleteAlart = (memberId) => {
-    if (confirm(`本当にメンバー「${memberId}」を削除しますか？`)) {
-        removeMember(memberId);
-        RemoveQR();
-        console.log('メンバーの削除が完了 | 招待トークンも削除されました。');
+    if (currentUser.email === group.owner.email) {
+        if (confirm(`本当にメンバー「${memberId}」を削除しますか？`)) {
+            removeMember(memberId);
+            RemoveQR();
+            console.log('メンバーの削除が完了 | 招待トークンも削除されました。');
+        } else {
+            console.log('メンバーの削除がキャンセルされました。');
+        }
     } else {
-        console.log('メンバーの削除がキャンセルされました。');
+        alert('あなたはこのスタジオのオーナーではありません。メンバーを削除する権限がありません。');
     }
 };
-const removeMember = async(memberId) => {
+const removeMember = async (memberId) => {
     const groupId = route.params.id;
     console.log("メンバーID：", memberId);
-    try{
+    try {
         const response = await authGroup.DeleteMember(groupId, memberId);
-        if (response){
+        if (response) {
             console.log('メンバーの削除完了:', response);
             // メンバー削除後の更新処理
             group.value = await authGroup.fetchGroupId(groupId);
             goals.value = await authGoal.fetchGoalsByGroup(groupId);
             return route.push(`/studio/${groupId}`);
-        }else{
+        } else {
             console.error('メンバーの削除に失敗しました。');
             throw new Error('メンバーの削除・失敗:');
         }
-    }catch(error){
+    } catch (error) {
         console.error('メンバーの削除中にエラー発生:', error);
         throw error;
     }

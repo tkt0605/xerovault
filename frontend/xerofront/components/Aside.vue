@@ -40,7 +40,7 @@
       <div v-for="group in groupList" :key="group.id" class="flex flex-col gap-2">
         <NuxtLink :to="`/studio/${group.id}`">
           <div class="px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition">
-            {{ group.name }}
+           # {{ group.name }}
           </div>
         </NuxtLink>
       </div>

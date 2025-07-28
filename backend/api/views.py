@@ -195,8 +195,8 @@ class GenerateGroupviewSet(viewsets.ModelViewSet):
         )
         serializer = GenerateGroupReadSerializer(groups, many=True)
         return Response(serializer.data)
-    @action(detail=True, methods=['delete'], permission_classes=[IsAuthenticated], url_path='remove-member/(?P<user_id>[^/.]+)') 
-    def remove_member(self, request, user_id=None):
+    @action(detail=True, methods=['delete'], permission_classes=[IsAuthenticated], url_path='remove-member/(?P<user_id>[0-9a-f-]+)') 
+    def remove_member(self, request, pk=None, user_id=None):
         group = self.get_object()
         if request.user != group.owner:
             return Response({'detail': 'あなたには、メンバー削除の権限がありません。'}, status=403)
@@ -205,7 +205,7 @@ class GenerateGroupviewSet(viewsets.ModelViewSet):
             group.members.remove(user_to_remove)
             return Response({'detail': f'{user_to_remove.email}を削除しました。'}, status=200)
         except User.DoesNotExist:
-            return Response({'detail': 'ユーザーが存在しません。'}, status=404) 
+            return Response({'detail': 'ユーザーが存在しません。'}, status=404)
 
 class GenerateLibraryviewSet(viewsets.ModelViewSet):
     queryset = GenerateLibrary.objects.all()
@@ -237,7 +237,7 @@ class GenerateLibraryviewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class GoalViewSet(viewsets.ModelViewSet):
-    queryset = Goal.objects.all()
+    queryset = Goal.objects.all().order_by('-created_at')
     serializer_class = GoalSerializer
     permission_classes = [IsAuthenticated]
 
