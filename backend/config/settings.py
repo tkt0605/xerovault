@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "corsheaders",
     'api',
     # 'adminlog',
+    'django_extensions',
     'adminlog.apps.AdminlogConfig',
     'django.contrib.admin',
     'django.contrib.auth',

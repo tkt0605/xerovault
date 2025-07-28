@@ -16,3 +16,4 @@ psycopg2-binary>=2.9
 pillow>=11.2.1
 # pycrypto>=2.6.1
 pycryptodome>=3.23.0
+django-extensions>=4.1

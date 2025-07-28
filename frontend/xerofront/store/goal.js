@@ -4,9 +4,9 @@ import { useAuthStore } from './auth';
 export const useGoalStore = defineStore('goal',  {
     state: () => ({
         goals: [],
-        goalHead: '',
-        goalDescription: '',
-        goalDeadline: '',
+        // goalHead: '',
+        // goalDescription: '',
+        // goalDeadline: '',
     }),
     actions: {
         async CreateGoal(group, name, description, deadline) {
@@ -21,7 +21,7 @@ export const useGoalStore = defineStore('goal',  {
                     },
                     body: JSON.stringify({
                         group: group,
-                        name: name.trim(),
+                        name: name,
                         description: description.trim(),
                         deadline: deadline,
                     })
@@ -32,9 +32,6 @@ export const useGoalStore = defineStore('goal',  {
                     throw new Error(errorData.detail || '目標の作成失敗');
                 }
                 const data = await response.json();
-                this.goalDeadline = deadline;
-                this.goalHead = name;
-                this.goalDescription = description;
                 return data;
             }catch(error){
                 console.error('目標の作成失敗：', error);

@@ -146,14 +146,14 @@ class GoalSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = Goal
-        fields = ['group','header', 'description', "created_at", "deadline", "assignee", "is_concrete", "is_completed"]
+        fields = ['id', 'group','header', 'description', "created_at", "deadline", "assignee", "is_concrete", "is_completed"]
         read_only_fields = ['created_at']
 class GoalReadSerializer(serializers.ModelSerializer):
     group = GenerateGroupSerializer(read_only=True)
     assignee = CustomUserSerializer(read_only = True)
     class Meta:
         model = Goal
-        fields = ['group','header' , 'description', "created_at", "deadline", "assignee", "is_concrete", "is_completed"]
+        fields = ['id', 'group','header' , 'description', "created_at", "deadline", "assignee", "is_concrete", "is_completed"]
 
 class ConnectLibrarySerializer(serializers.ModelSerializer):
     target = serializers.SlugRelatedField(
