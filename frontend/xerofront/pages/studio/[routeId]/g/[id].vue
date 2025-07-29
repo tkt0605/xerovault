@@ -1,6 +1,8 @@
 <template>
     <div>
-
+        <div>
+            {{ goal.header }}
+        </div>
     </div>
 </template>
 <script setup>
@@ -15,8 +17,8 @@ const goalStore = useGoalStore();
 const router = useRouter();
 const route = useRoute();
 const goal = ref([]);
+const goalId = route.params.id;
 onMounted(async () => {
-    const goalId = route.params.id;
     try{
         await authStore.restoreSession();
         console.log('セッション複合成功');

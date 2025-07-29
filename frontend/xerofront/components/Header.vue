@@ -13,7 +13,7 @@
                 </button>
                 <button @click="goHome"
                     class="text-xl font-bold text-gray-800 dark:text-white hover:underline hover:text-blue-600 transition px-4">
-                    XeroVault
+                    Virtual Studio
                 </button>
             </div>
 
