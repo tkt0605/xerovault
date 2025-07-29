@@ -38,7 +38,7 @@ const libraryStore = useAuthLibrary();
 const route = useRoute();
 const router = useRouter();
 const token = ref(route.query.data);
-const studioid = route.params.id;
+const routeId = route.params.routeId;
 const group = ref([]);
 const isJoining = ref(false);
 const joinSuccess = ref(false);
@@ -49,8 +49,8 @@ onMounted(async () => {
         return;
     }
     try {
-        console.log('スタジオID：', studioid);
-        group.value = await groupStore.fetchGroupId(studioid);
+        console.log('スタジオID：', routeId);
+        group.value = await groupStore.fetchGroupId(routeId);
     } catch (error) {
         console.error('参加エラー：', error);
         throw error;
@@ -62,7 +62,7 @@ const Isyourmember = computed(() => {
 });
 const JoinToStudio = async () => {
     isJoining.value = true;
-    const studioid = route.params.id;
+    const routeId = route.params.routeId;
     const tokenValue = token.value.trim();
     if (!tokenValue) {
         console.error('トークンが入力されていません。');
@@ -70,13 +70,13 @@ const JoinToStudio = async () => {
         return;
     }
     try {
-        const response = await groupStore.JoinAnonymous(studioid, tokenValue);
+        const response = await groupStore.JoinAnonymous(routeId, tokenValue);
         if (response.status === 200) {
             console.log('スタジオ参加成功：', response.data);
             joinSuccess.value = true;
             setTimeout(() => {
                 isJoining.value = false;
-                router.push(`/studio/${studioid}`);
+                router.push(`/studio/${routeId}`);
             }, 2000);
         }
     } catch (error) {

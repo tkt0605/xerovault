@@ -123,6 +123,7 @@ class GenerateGroup(models.Model):
             self.save(update_fields=['score'])
             print(f"グループ '{self.name}' のスコアが {self.score} に更新されました。")
 class Goal(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='目標')
     header = models.CharField('目標タイトル', max_length=255, help_text='この目標のタイトル', default='', blank=True, null=True)
     description = models.TextField("目標内容")
