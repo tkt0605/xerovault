@@ -9,7 +9,7 @@ export const useGoalStore = defineStore('goal',  {
         // goalDeadline: '',
     }),
     actions: {
-        async CreateGoal(group, name, description, deadline) {
+        async CreateGoal(group, header, description, deadline) {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
             try{
@@ -21,7 +21,7 @@ export const useGoalStore = defineStore('goal',  {
                     },
                     body: JSON.stringify({
                         group: group,
-                        name: name,
+                        header: header,
                         description: description.trim(),
                         deadline: deadline,
                     })
@@ -98,12 +98,12 @@ export const useGoalStore = defineStore('goal',  {
                     }
                 });
                 if (!response.ok){
-                    const errorData = await response.json();
+                    const errorData = await response.text();
                     console.error('サーバーからのエラー：', errorData);
-                    throw new Error(errorData.detail || '個別の目標情報の取得失敗');
+                    throw new Error('個別の目標情報の取得失敗');
                 }
                 const data = await response.json();
-                this.goals = data;
+                // this.goals = data;
                 return data;
             }catch(error){
                 console.error('個別の目標情報・取得失敗：', error);

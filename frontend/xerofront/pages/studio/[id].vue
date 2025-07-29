@@ -1,5 +1,5 @@
 <template>
-    <main class="text-black dark:text-white min-h-screen md:ml-72 ml-0 relative flex-1 overflow-y-auto"
+    <main class="text-black dark:text-white  md:ml-72 ml-0 relative flex-1 overflow-y-auto"
         :class="{ 'bg-white': !$colorMode?.value || $colorMode?.value === 'light', 'bg-black': $colorMode?.value === 'dark' }"
         :style="{
             backgroundImage: $colorMode?.value === 'dark'
@@ -9,7 +9,7 @@
             backgroundPosition: 'center',
             backdropFilter: 'blur(8px)'
         }">
-        <div class="dark:bg-zinc-800 backdrop-blur-md min-h-screen py-12">
+        <div class="dark:bg-zinc-800 backdrop-blur-md  py-4">
             <div class="max-w-4xl mx-auto px-6 space-y-12">
                 <!-- タイトル -->
                 <div class="text-center space-y-2">
