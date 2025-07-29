@@ -92,19 +92,26 @@
                 <!-- ゴールリスト -->
                 <div class="space-y-4">
                     <div v-for="goal in goals" :key="goal.id"
-                        :class="$colorMode?.value === 'dark' ? 'bg-zinc-800/80 text-white' : 'bg-white text-gray-900'"
-                        class="p-2 shadow-md dark:bg-zinc-800 hover:shadow-lg transition border-b border-zinc-500">
-                        <div class="flex items-center gap-2">
-                            <img :src="goal.assignee?.avater"
-                                class="w-10 h-10 rounded-full border-2 border-white object-cover" alt="Assignee" />
-                            <h3 class="text-xl font-bold dark:text-white">{{ goal.header || '見出し無し' }}</h3>
+                        class="p-4 rounded-xl border border-zinc-700 shadow hover:shadow-xl transition-all duration-200 flex flex-col gap-2 bg-zinc-800 text-white">
+                        <!-- 上段：アバターとタイトル -->
+                        <div @click="PushToNextpage(goal.id)">
+                            <div class="flex items-center gap-4">
+                                <img :src="goal.assignee?.avater"
+                                    class="w-12 h-12 rounded-full border-2 border-blue-400 object-cover shadow"
+                                    alt="Assignee" />
+                                <h3 class="text-lg sm:text-xl font-semibold tracking-wide break-all">
+                                    {{ goal.header || '見出し無し' }}
+                                </h3>
+                            </div>
+
+                            <!-- 締切情報 -->
+                            <div class="text-sm text-zinc-400 mt-1">
+                                {{ goal.deadline ? '📅 締め切り: ' + formatDate(goal.deadline) : '📅 締め切りなし' }}
+                            </div>
                         </div>
-                        <small class="block mt-2 text-xs"
-                            :class="$colorMode?.value === 'dark' ? 'text-zinc-400' : 'text-gray-500'">
-                            {{ goal.deadline ? '締め切り: ' + formatDate(goal.deadline) : '締め切りなし' }}
-                        </small>
                     </div>
                 </div>
+
             </div>
         </div>
         <Dialog :visible="openGoalDialog" @close="openGoalDialog = false">
@@ -236,7 +243,8 @@
                             <p class="text-white text-sm font-medium break-all">
                                 {{ member.username || member.email || '不明なユーザー' }}
                             </p>
-                            <p class="inline-block mt-2 text-xs text-white-200 bg-green-700 px-2 py-0.5 rounded-full">メンバー</p>
+                            <p class="inline-block mt-2 text-xs text-white-200 bg-green-700 px-2 py-0.5 rounded-full">
+                                メンバー</p>
                         </div>
                     </div>
 
@@ -287,6 +295,7 @@ const openGoalDialog = ref(false);
 const isSidebarOpen = ref(false);
 const isShowMember = ref(false);
 const isJoined = ref(false);
+const routeId = route.params.id;
 const toggleSidebar = () => {
     isSidebarOpen.value = !isSidebarOpen.value
 };
@@ -309,6 +318,13 @@ onMounted(async () => {
         throw error;
     }
 });
+const PushToNextpage = async(id) => {
+    try{
+        router.push(`/studio/${routeId}/g/${id}`);
+    }catch(err){
+        console.error("アクセス失敗：", err);
+    }
+};
 const QRdialog = () => {
     openQRdailog.value = true;
 }
