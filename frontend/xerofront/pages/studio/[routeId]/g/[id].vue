@@ -19,13 +19,13 @@
                         </button>
                     </div>
                 </div>
-                <div class="bg-zinc-900 border border-zinc-700 rounded-b-lg p-6 shadow-inner">
+                <div class="bg-zinc-900 border border-zinc-700  p-6 shadow-inner">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-6">
                         <div class="flex items-center gap-4">
                             <img :src="goal.assignee?.avater" alt="Avatar"
-                                class="w-14 h-14 rounded-full border-2 border-white object-cover shadow" />
+                                class="w-10 h-10 rounded-full border-2 border-white object-cover shadow" />
                             <div>
-                                <h1 class="text-2xl sm:text-3xl font-bold tracking-wide">
+                                <h1 class="text-2xl sm:text-2xl font-bold tracking-wide">
                                     {{ goal.header || '無題の目標' }}
                                 </h1>
                                 <p class="text-sm text-purple-300">

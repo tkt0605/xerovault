@@ -12,7 +12,7 @@
                     </svg>
                 </button>
                 <button @click="goHome"
-                    class="text-xl font-bold text-gray-800 dark:text-white hover:underline hover:text-blue-600 transition px-4">
+                    class="text-xl font-bold text-purple-500 dark:text-purple-500 hover:underline hover:text-blue-600 transition px-4">
                     Virtual Studio
                 </button>
             </div>
