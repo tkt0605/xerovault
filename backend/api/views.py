@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, GroupNotification, InviteAppover
+from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, GroupNotification, InviteAppover, Message
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
-from .serializers import RegisterSerializer, CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LoginSerializer, LogoutSerializer, GeneratePublicTokenSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GeneratePublicTokenReadSerializer, GenerateLibrarySerializer, GenerateLibraryReadSerializer, GoalSerializer, GoalReadSerializer, ConnectLibrarySerializer, ConnectLibraryReadSerializer, InviteAppoverSerializer, InviteApproverReadSerializer
+from .serializers import RegisterSerializer,MessageSerializer,MessageReadSerializer , CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LogoutSerializer, GeneratePublicTokenSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GeneratePublicTokenReadSerializer, GenerateLibrarySerializer, GenerateLibraryReadSerializer, GoalSerializer, GoalReadSerializer, ConnectLibrarySerializer, ConnectLibraryReadSerializer, InviteAppoverSerializer, InviteApproverReadSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import timedelta
 from django.contrib.auth import get_user_model
@@ -15,7 +15,7 @@ from django.db.models import Q
 from rest_framework import status
 from .utils.crypto import encrypt_invite, decrypt_invite
 from django.shortcuts import get_object_or_404
-import uuid, time
+import uuid,time
 
 
 User = get_user_model()
@@ -280,10 +280,10 @@ class ConnectLibraryViewSet(viewsets.ModelViewSet):
     serializer_class = ConnectLibrarySerializer
     permission_classes = [IsAuthenticated]
 
-    def get_permissions(self):
-        if self.action in ['create', 'list']:
-            return {IsAuthenticated()}
-        return super().get_permissions()
+    # def get_permissions(self):
+    #     if self.action in ['create', 'list']:
+    #         return {IsAuthenticated()}
+    #     return super().get_permissions()
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return ConnectLibraryReadSerializer
@@ -321,10 +321,10 @@ class InviteAppoverViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = InviteAppoverSerializer
 
-    def get_permissions(self):
-        if self.action in ['list', 'create']:
-            return {IsAuthenticated()}
-        return super().get_permissions()
+    # def get_permissions(self):
+    #     if self.action in ['list', 'create']:
+    #         return {IsAuthenticated()}
+    #     return super().get_permissions()
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return InviteApproverReadSerializer
@@ -351,4 +351,21 @@ class InviteAppoverViewSet(viewsets.ModelViewSet):
         serializer = InviteApproverReadSerializer(my_list, many=True)
         return Response(serializer.data)
 
-
+class MessageViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = MessageSerializer
+    def get_queryset(self):
+        queryset = Message.objects.all()
+        group_id = self.request.query_params.get('group')
+        if group_id:
+            return self.queryset.filter(group=group_id)
+        return queryset
+    def get_queryset(self):
+        user = self.request.user
+        return Message.objects.filter(Q(group__owner = user) | Q(group__members = user)).order_by('-created_at')
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return MessageReadSerializer
+        return super().get_serializer_class()
+    def perform_create(self, serializer):
+        serializer.save(auther=self.request.user)

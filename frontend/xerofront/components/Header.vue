@@ -11,10 +11,12 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
-                <button @click="goHome"
-                    class="text-xl font-bold text-purple-500 dark:text-purple-500 hover:underline hover:text-blue-600 transition px-4">
-                    Virtual Studio
+                <button @click="goHome" class="group">
+                    <div class="text-2xl font-extrabold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-500 dark:from-purple-300 dark:to-blue-400 group-hover:from-indigo-400 group-hover:to-blue-600 transition-all duration-300 px-4 py-2">
+                        Virtual Studio
+                    </div>
                 </button>
+
             </div>
 
             <!-- 右側：認証状態で分岐 -->

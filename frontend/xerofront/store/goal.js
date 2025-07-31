@@ -55,7 +55,6 @@ export const useGoalStore = defineStore('goal',  {
                     throw new Error(errorData.detail || '目標情報の取得失敗');
                 }
                 const data = await response.json();
-                this.goals = data;
                 return data;
             }catch(error){
                 console.error('目標情報・取得失敗：', error);
@@ -79,7 +78,6 @@ export const useGoalStore = defineStore('goal',  {
                     throw new Error(errorData.detail || '個別の目標情報の取得失敗');
                 }
                 const data = await response.json();
-                this.goals = data;
                 return data;
             }catch(error){
                 console.error('個別の目標情報・取得失敗：', error);
