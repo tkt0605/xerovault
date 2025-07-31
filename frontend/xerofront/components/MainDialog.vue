@@ -1,25 +1,8 @@
-<!-- <template>
-  <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 ">
-    <div class="bg-white dark:bg-zinc-800 p-6 rounded-xl shadow-lg max-w-md w-full">
-      <slot name="header">
-        <h2 class="text-lg font-semibold mb-4">デフォルトタイトル</h2>
-      </slot>
-
-      <slot>
-        <div>内容がここに入ります。</div>
-      </slot>
-
-      <div class="mt-6 flex justify-end gap-3">
-        <slot name="footer" />
-      </div>
-    </div>
-  </div>
-</template> -->
 <template>
   <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40">
-    <div class="bg-white dark:bg-zinc-800 w-[90%] max-w-lg rounded-xl shadow-xl border border-zinc-700">
+    <div class="bg-white dark:bg-zinc-800 w-[90%] max-w-lg rounded-xl shadow-xl border dark:border-zinc-700 border-zinc-200">
       <!-- ヘッダー -->
-      <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-600">
+      <div class="flex items-center justify-between px-6 py-4 border-b dark:border-zinc-700 border-zinc-200">
         <slot name="header">
           <h2 class="text-lg font-semibold text-zinc-100">ダイアログ</h2>
         </slot>
@@ -38,7 +21,7 @@
       </div>
 
       <!-- フッター -->
-      <div class="px-6 py-4 border-t border-zinc-700 flex justify-end gap-3">
+      <div class="px-6 py-4 border-t dark:border-zinc-700 border-zinc-200 flex justify-end gap-3">
         <slot name="footer" />
       </div>
     </div>

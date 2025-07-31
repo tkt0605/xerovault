@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
-from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, InviteAppover
+from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, InviteAppover, Message
 from rest_framework_simplejwt.tokens import RefreshToken
 User = get_user_model()
 class RegisterSerializer(serializers.ModelSerializer):
@@ -219,4 +219,39 @@ class InviteApproverReadSerializer(serializers.ModelSerializer):
         model = InviteAppover
         fields = [
             'token', 'group', 'inviter', 'invitee', 'is_approved', 'created_at', 'expires_at'
+        ]
+
+class MessageSerializer(serializers.ModelSerializer):
+    group = serializers.SlugRelatedField(
+        slug_field ='id',
+        queryset=GenerateGroup.objects.all(),
+        required = False,
+        allow_null = True
+    )
+    goal = serializers.SlugRelatedField(
+        slug_field = 'id',
+        queryset=Goal.objects.all(),
+        required = False,
+        allow_null = True
+    )
+    auther = serializers.SlugRelatedField(
+        slug_field = 'email',
+        queryset = CustomUser.objects.all(),
+        required = False,
+        allow_null = True
+    )
+    class Meta:
+        model = Message
+        fields = [
+            'group', 'goal', 'auther', 'text', 'file', 'parent', 'created_at'
+        ]
+
+class MessageReadSerializer(serializers.ModelSerializer):
+    group = GenerateGroupReadSerializer(read_only=True)
+    goal = GoalReadSerializer(read_only=True)
+    auther = CustomUserSerializer(read_only=True)
+    class Meta:
+        model = Message
+        fields = [
+            'id', 'group', 'goal', 'auther', 'text', 'file', 'parent', 'created_at'
         ]

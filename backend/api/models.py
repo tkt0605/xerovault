@@ -209,3 +209,15 @@ class GroupNotification(models.Model):
 
     def __str__(self) -> str:
         return super().__str__()
+
+
+class Message(models.Model):
+    group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='対象グループ', blank=True, null=True)
+    goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name='対象ゴール', blank=True, null=True)
+    auther = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='作者')
+    text = models.TextField()
+    file = models.FileField(upload_to='file/', blank=True, null=True)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
+    created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return self.pk

@@ -1,169 +1,127 @@
 <template>
   <div class="flex flex-col h-screen bg-gray-50 dark:bg-zinc-800 text-gray-800 dark:text-white">
-
-    <!-- ヘッダー：上部固定 -->
     <header class="sticky top-0 z-50 bg-white dark:bg-zinc-900 shadow">
       <Header @toggle-sidebar="toggleSidebar" />
     </header>
-
-    <!-- コンテンツ本体：サイドバー + メインビュー -->
     <div class="flex flex-1 overflow-hidden">
-
-      <!-- サイドバー -->
       <aside class="hidden md:block">
         <Aside @toggle-sidebar="toggleSidebar" @Token-dialog="TokenDialog()" @Library-dialog="LibraryDailog()"
           @Group-dialog="GroupDailog" :isOpen="isSidebarOpen" @close="isSidebarOpen = false" />
       </aside>
-
-      <!-- メインビュー -->
       <main class="flex-1 overflow-y-auto">
         <NuxtPage @Member-dialog="ShowMember()" @QR-dialog="QRdialog()" @Goal-dialog="CreateGoal()" />
       </main>
+
+      <!-- Dialog コンポーネントは省略 -->
+      <!-- 全てのダイアログ部分（openGroupDailog〜isShowMember）をそっくりそのまま展開してください -->
       <Dialog :visible="openGroupDailog" @close="openGroupDailog = false">
         <template #header>
-          <h2 class="text-xl font-bold">スタジオ新規作成</h2>
+          <h2 class="text-xl font-bold text-gray-800 dark:text-white">スタジオ新規作成</h2>
         </template>
         <template #default>
           <div class="space-y-4">
             <div>
               <input id="group-name" type="text" placeholder="スタジオ名を入力" v-model="groupName"
-                class="mt-1 block w-full rounded-md bg-gray-800 border border-gray-600 text-white p-2" />
+                class="mt-1 block w-full rounded-md p-2 border bg-white text-black dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-600" />
             </div>
             <div>
-              <label for="lib-tags" class="block text-sm font-semibold text-gray-200">タグ（カンマ区切り）</label>
+              <label for="lib-tags" class="block text-sm font-semibold text-gray-700 dark:text-gray-200">タグ（カンマ区切り）</label>
               <input id="lib-tags" type="text" placeholder="例：機密, AI, レポート" v-model="groupTag"
-                class="mt-1 block w-full bg-gray-800 border border-gray-600 text-white p-2 rounded-md" />
+                class="mt-1 block w-full p-2 rounded-md border bg-white text-black dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-600" />
             </div>
             <div>
-              <span class="block text-sm font-medium text-gray-200 mb-1">公開設定</span>
+              <span class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">公開設定</span>
               <div class="flex items-center gap-6">
                 <label class="inline-flex items-center">
-                  <input type="radio" name="visibility" class="form-radio text-green-500" v-model="is_group"
-                    :value="true" />
-                  <span class="ml-2 text-gray-200">公開</span>
+                  <input type="radio" name="visibility" class="form-radio text-green-500" v-model="is_group" :value="true" />
+                  <span class="ml-2 text-gray-700 dark:text-gray-200">公開</span>
                 </label>
                 <label class="inline-flex items-center">
-                  <input type="radio" name="visibility" class="form-radio text-red-500" v-model="is_group"
-                    :value="false" />
-                  <span class="ml-2 text-gray-200">非公開</span>
+                  <input type="radio" name="visibility" class="form-radio text-red-500" v-model="is_group" :value="false" />
+                  <span class="ml-2 text-gray-700 dark:text-gray-200">非公開</span>
                 </label>
               </div>
             </div>
           </div>
-
         </template>
         <template #footer>
           <button @click="openGroupDailog = false"
-            class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+            class="px-4 py-2 bg-gray-300 text-black dark:bg-gray-600 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
             キャンセル
           </button>
-          <button @click="createNewGroup()" class="bg-blue-600 text-white px-4 py-2 rounded">作成する</button>
+          <button @click="createNewGroup()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+            作成する
+          </button>
         </template>
       </Dialog>
       <Dialog :visible="openLibraryDailog" @close="openLibraryDailog = false">
         <template #header>
-          <h2 class="text-xl font-bold">ライブラリ新規作成</h2>
+          <h2 class="text-xl font-bold text-gray-800 dark:text-white">ライブラリ新規作成</h2>
         </template>
         <template #default>
           <div class="space-y-5">
-            <!-- ライブラリ名 -->
             <div>
-              <label for="lib-name" class="block text-sm font-semibold text-gray-200">ライブラリ名 <span
-                  class="text-red-400">*</span></label>
+              <label for="lib-name" class="block text-sm font-semibold text-gray-700 dark:text-gray-200">ライブラリ名 <span class="text-red-500">*</span></label>
               <input id="lib-name" type="text" placeholder="例：研究資料2025" v-model="libraryName"
-                class="mt-1 block w-full bg-gray-800 border border-gray-600 text-white p-2 rounded-md" />
+                class="mt-1 block w-full p-2 rounded-md border bg-white text-black dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-600" />
             </div>
-
-            <!-- タグ -->
             <div>
-              <label for="lib-tags" class="block text-sm font-semibold text-gray-200">タグ（カンマ区切り）</label>
+              <label for="lib-tags" class="block text-sm font-semibold text-gray-700 dark:text-gray-200">タグ（カンマ区切り）</label>
               <input id="lib-tags" type="text" v-model="libraryTag" placeholder="例：機密, AI, レポート"
-                class="mt-1 block w-full bg-gray-800 border border-gray-600 text-white p-2 rounded-md" />
+                class="mt-1 block w-full p-2 rounded-md border bg-white text-black dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-600" />
             </div>
-
-            <!-- 公開設定 -->
             <div>
-              <span class="block text-sm font-medium text-gray-200 mb-1">公開設定</span>
+              <span class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">公開設定</span>
               <div class="flex items-center gap-6">
                 <label class="inline-flex items-center">
-                  <input type="radio" name="visibility" class="form-radio text-green-500" v-model="is_library"
-                    :value="true" />
-                  <span class="ml-2 text-gray-200">公開</span>
+                  <input type="radio" name="visibility" class="form-radio text-green-500" v-model="is_library" :value="true" />
+                  <span class="ml-2 text-gray-700 dark:text-gray-200">公開</span>
                 </label>
                 <label class="inline-flex items-center">
-                  <input type="radio" name="visibility" class="form-radio text-red-500" v-model="is_library"
-                    :value="false" />
-                  <span class="ml-2 text-gray-200">非公開</span>
+                  <input type="radio" name="visibility" class="form-radio text-red-500" v-model="is_library" :value="false" />
+                  <span class="ml-2 text-gray-700 dark:text-gray-200">非公開</span>
                 </label>
               </div>
             </div>
           </div>
-
         </template>
         <template #footer>
           <button @click="openLibraryDailog = false"
-            class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+            class="px-4 py-2 bg-gray-300 text-black dark:bg-gray-600 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
             キャンセル
           </button>
-          <button @click="createLibrary" class="bg-green-600 text-white px-4 py-2 rounded">作成する</button>
-        </template>
-      </Dialog>
-      <Dialog :visible="openTokenDailog" @close="openTokenDailog = false">
-        <template #header>
-          <h2 class="text-xl font-bold">ユーザー・リクエスト</h2>
-        </template>
-        <template #default>
-          <div class="space-y-5">
-            <div>
-              <p class="text-sm font-semibold text-gray-300">ユーザー追加</p>
-              <input id="note" v-model="InviteeEmail" placeholder="追加するユーザーのメールアドレス..."
-                class="mt-1 w-full bg-gray-800 text-white border border-gray-600 p-2 rounded-md" />
-            </div>
-          </div>
-        </template>
-        <template #footer>
-          <button @click="openTokenDailog = false"
-            class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
-            キャンセル
+          <button @click="createLibrary" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+            作成する
           </button>
-          <button @click="AddNewFreind"
-            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md">友達に追加</button>
         </template>
       </Dialog>
       <Dialog :visible="openGoalDialog" @close="openGoalDialog = false">
         <template #header>
-          <h2 class="text-xl font-bold text-white">🎯 ゴールの作成</h2>
+          <h2 class="text-xl font-bold text-gray-800 dark:text-white">🎯 ゴールの作成</h2>
         </template>
-
         <template #default>
           <div class="space-y-6 py-2">
-            <!-- ゴール名 -->
             <div>
-              <label class="block text-sm font-semibold text-gray-100 mb-1">ゴール名</label>
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-100 mb-1">ゴール名</label>
               <input v-model="goalHead" type="text" placeholder="例：週に1回プロトタイプを提出"
-                class="w-full bg-gray-800 text-white border border-gray-600 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                class="w-full bg-white dark:bg-zinc-800 text-black dark:text-white border border-gray-300 dark:border-zinc-600 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
-
-            <!-- ゴールの説明 -->
             <div>
-              <label class="block text-sm font-semibold text-gray-100 mb-1">詳細な説明</label>
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-100 mb-1">詳細な説明</label>
               <textarea v-model="goalDescription" rows="4" placeholder="このゴールの目的や背景、達成のためのアプローチなどを書いてください。"
-                class="w-full bg-gray-800 text-white border border-gray-600 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"></textarea>
+                class="w-full bg-white dark:bg-zinc-800 text-black dark:text-white border border-gray-300 dark:border-zinc-600 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"></textarea>
             </div>
-
-            <!-- 締め切り日 -->
             <div>
-              <label class="block text-sm font-semibold text-gray-100 mb-1">締め切り日（任意）</label>
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-100 mb-1">締め切り日（任意）</label>
               <input v-model="goalDeadline" type="date" :min="new Date().toISOString().split('T')[0]"
-                class="w-full bg-gray-800 text-white border border-gray-600 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                class="w-full bg-white dark:bg-zinc-800 text-black dark:text-white border border-gray-300 dark:border-zinc-600 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
           </div>
         </template>
-
         <template #footer>
           <div class="flex justify-end gap-3 mt-4">
             <button @click="openGoalDialog = false"
-              class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+              class="px-4 py-2 bg-gray-300 text-black dark:bg-gray-600 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
               キャンセル
             </button>
             <button @click="submitGoal()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
@@ -172,12 +130,9 @@
           </div>
         </template>
       </Dialog>
-
-
-      <!-- QRコード Dialog -->
       <Dialog :visible="openQRdailog" @close="openQRdailog = false">
         <template #header>
-          <h2 class="text-lg font-semibold text-zinc-800 dark:text-white">
+          <h2 class="text-lg font-semibold text-gray-800 dark:text-white">
             {{ group.name }} のQRコード
           </h2>
         </template>
@@ -188,9 +143,8 @@
                 <QrcodeCanvas :value="invterURL" :size="180" level="M" />
               </div>
             </div>
-            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 space-y-3">
-              <div
-                class="flex items-center justify-between gap-2 bg-zinc-100 dark:bg-zinc-700 p-3 rounded-lg shadow-inner">
+            <div class="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 space-y-3">
+              <div class="flex items-center justify-between gap-2 bg-zinc-100 dark:bg-zinc-700 p-3 rounded-lg shadow-inner">
                 <input type="text" :value="invterURL" readonly
                   class="w-full px-3 py-2 text-sm rounded-md text-gray-800 dark:text-white bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 focus:outline-none" />
                 <button @click="copyToClipboard(invterURL)"
@@ -200,8 +154,9 @@
               </div>
               <p class="text-sm text-gray-500 dark:text-gray-400">このコードをコピーして共有してください。</p>
               <div class="flex items-center justify-between gap-2 bg-zinc-100 dark:bg-zinc-600 p-3 rounded shadow">
-                <div class="text-sm font-mono text-black dark:text-white break-all">{{
-                  group.joined_token }}</div>
+                <div class="text-sm font-mono text-black dark:text-white break-all">
+                  {{ group.joined_token }}
+                </div>
                 <button @click="copyToClipboard" class="p-2 rounded bg-zinc-600 hover:bg-zinc-700 text-white transition"
                   title="コピー">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
@@ -214,43 +169,36 @@
           </div>
         </template>
         <template #footer>
-          <button @click="closeQRdialog" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+          <button @click="closeQRdialog"
+            class="px-4 py-2 bg-gray-300 text-black dark:bg-gray-600 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
             キャンセル
           </button>
-          <button @click="RemoveQR()" class="">QRを削除する。</button>
+          <button @click="RemoveQR()" class="text-red-600 hover:text-red-700 font-medium transition">
+            QRを削除する。
+          </button>
         </template>
       </Dialog>
       <Dialog :visible="isShowMember" @close="isShowMember = false">
-        <!-- ヘッダー -->
         <template #header>
           <div class="flex items-center justify-between px-2 py-1 border-b border-zinc-700">
-            <h2 class="text-xl font-bold text-white tracking-wide">メンバー</h2>
+            <h2 class="text-xl font-bold dark:text-white tracking-wide">メンバー</h2>
           </div>
         </template>
-
-        <!-- メンバーカード一覧 -->
         <template #default>
-          <!-- メンバーカード -->
           <div v-for="member in group.members" :key="member.id"
-            class="flex items-center justify-between p-4 rounded-lg bg-black-800 border border-zinc-700 shadow hover:bg-zinc-700 transition space-x-4.">
-
-            <!-- 左側：アバターと情報 -->
+            class="flex items-center justify-between p-4 rounded-lg dark:bg-zinc-800 border border-zinc-700 shadow hover:bg-gray-100 dark:hover:bg-zinc-700 transition">
             <div class="flex items-center space-x-4">
-              <!-- アバター -->
-              <img :src="member.avater" class="w-12 h-12 rounded-full border-2 border-white object-cover shadow"
+              <img :src="member.avater" class="w-12 h-12 rounded-full border-2 dark:border-white object-cover shadow"
                 alt="Member" />
-
-              <!-- 情報 -->
               <div>
-                <p class="text-white text-sm font-medium break-all">
+                <p class="dark:text-white text-sm font-medium break-all">
                   {{ member.username || member.email || '不明なユーザー' }}
                 </p>
-                <p class="inline-block mt-2 text-xs text-white-200 bg-green-700 px-2 py-0.5 rounded-full">
-                  メンバー</p>
+                <p class="inline-block mt-2 text-xs text-white bg-green-700 px-2 py-0.5 rounded-full">
+                  メンバー
+                </p>
               </div>
             </div>
-
-            <!-- 右側：削除ボタン -->
             <button @click="isDeleteAlart(member.id)" class="text-red-500 hover:text-red-400 transition"
               title="このメンバーを削除">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-trash"
@@ -261,13 +209,11 @@
               </svg>
             </button>
           </div>
-
         </template>
       </Dialog>
     </div>
   </div>
 </template>
-
 <script setup>
 import Header from '~/components/Header.vue';
 import Aside from '~/components/Aside.vue';
@@ -340,6 +286,7 @@ onMounted(async () => {
 
   }
 });
+
 const toggleSidebar = () => {
   isSidebarOpen.value = true;
 };
@@ -399,7 +346,7 @@ const createNewGroup = async () => {
   }
 };
 const groups = computed(() =>
-  groupList.value.filter((item) => item.owner === authStore.user.email)
+  group.value.filter((item) => item.owner === authStore.user.email)
 );
 const createLibrary = async () => {
   const user = authStore?.user;
@@ -451,93 +398,93 @@ const AddNewFreind = async () => {
 };
 
 const copyToClipboard = async () => {
-    try {
-        await navigator.clipboard.writeText(invterURL.value);
-        alert("コピーしました！");
-    } catch (err) {
-        console.error("コピーに失敗:", err);
-        alert("コピーに失敗しました。");
-    }
+  try {
+    await navigator.clipboard.writeText(invterURL.value);
+    alert("コピーしました！");
+  } catch (err) {
+    console.error("コピーに失敗:", err);
+    alert("コピーに失敗しました。");
+  }
 };
 const MemberCounter = computed(() => {
-    return group.value.members ? group.value.members.length : 0;
+  return group.value.members ? group.value.members.length : 0;
 });
 const submitGoal = async () => {
-    const group = route.params.id;
-    if (!group) {
-        console.error('グループがしてされていません。');
-        return;
-    }
-    const goal_header = goalHead.value.trim();
-    const goal_description = goalDescription.value.trim();
-    const goal_deadline = goalDeadline.value;
-    try {
+  const group = route.params.id;
+  if (!group) {
+    console.error('グループがしてされていません。');
+    return;
+  }
+  const goal_header = goalHead.value.trim();
+  const goal_description = goalDescription.value.trim();
+  const goal_deadline = goalDeadline.value;
+  try {
 
-        if (!goal_header || !goal_description || !goal_deadline) {
-            console.error('ゴールの情報が不完全です。');
-            return;
-        }
-        const newGoal = await authGoal.CreateGoal(group, goal_header, goal_description, goal_deadline);
-        goals.value = await authGoal.fetchGoals();
-        if (goals.value) {
-            console.log('新しいゴールが作成されました:', newGoal);
-            console.log('目標の作成に成功しました。');
-            openGoalDialog.value = false;
-            goalHead.value = '';
-            goalDescription.value = '';
-            goalDeadline.value = '';
-        } else {
-            console.error('目標の作成に失敗しました。')
-        }
-    } catch (err) {
-        console.error('目標の作成中にエラーが発生しました:', err);
-        throw err;
+    if (!goal_header || !goal_description || !goal_deadline) {
+      console.error('ゴールの情報が不完全です。');
+      return;
     }
+    const newGoal = await authGoal.CreateGoal(group, goal_header, goal_description, goal_deadline);
+    goals.value = await authGoal.fetchGoals();
+    if (goals.value) {
+      console.log('新しいゴールが作成されました:', newGoal);
+      console.log('目標の作成に成功しました。');
+      openGoalDialog.value = false;
+      goalHead.value = '';
+      goalDescription.value = '';
+      goalDeadline.value = '';
+    } else {
+      console.error('目標の作成に失敗しました。')
+    }
+  } catch (err) {
+    console.error('目標の作成中にエラーが発生しました:', err);
+    throw err;
+  }
 };
 const isDeleteAlart = (memberId) => {
-    if (currentUser.email === group.owner?.email) {
-        if (confirm(`本当にメンバー「${memberId}」を削除しますか？`)) {
-            removeMember(memberId);
-            RemoveQR();
-            console.log('メンバーの削除が完了 | 招待トークンも削除されました。');
-        } else {
-            console.log('メンバーの削除がキャンセルされました。');
-        }
+  if (currentUser.email === group.owner?.email) {
+    if (confirm(`本当にメンバー「${memberId}」を削除しますか？`)) {
+      removeMember(memberId);
+      RemoveQR();
+      console.log('メンバーの削除が完了 | 招待トークンも削除されました。');
     } else {
-        alert('あなたはこのスタジオのオーナーではありません。メンバーを削除する権限がありません。');
+      console.log('メンバーの削除がキャンセルされました。');
     }
+  } else {
+    alert('あなたはこのスタジオのオーナーではありません。メンバーを削除する権限がありません。');
+  }
 };
 const removeMember = async (memberId) => {
-    const groupId = route.params.id;
-    console.log("メンバーID：", memberId);
-    try {
-        const response = await authGroup.DeleteMember(groupId, memberId);
-        if (response) {
-            console.log('メンバーの削除完了:', response);
-            // メンバー削除後の更新処理
-            group.value = await authGroup.fetchGroupId(groupId);
-            goals.value = await authGoal.fetchGoalsByGroup(groupId);
-            return route.push(`/studio/${groupId}`);
-        } else {
-            console.error('メンバーの削除に失敗しました。');
-            throw new Error('メンバーの削除・失敗:');
-        }
-    } catch (error) {
-        console.error('メンバーの削除中にエラー発生:', error);
-        throw error;
+  const groupId = route.params.id;
+  console.log("メンバーID：", memberId);
+  try {
+    const response = await authGroup.DeleteMember(groupId, memberId);
+    if (response) {
+      console.log('メンバーの削除完了:', response);
+      // メンバー削除後の更新処理
+      group.value = await authGroup.fetchGroupId(groupId);
+      goals.value = await authGoal.fetchGoalsByGroup(groupId);
+      return route.push(`/studio/${groupId}`);
+    } else {
+      console.error('メンバーの削除に失敗しました。');
+      throw new Error('メンバーの削除・失敗:');
     }
+  } catch (error) {
+    console.error('メンバーの削除中にエラー発生:', error);
+    throw error;
+  }
 };
 const RemoveQR = async () => {
-    const routeId = route.params.id;
-    const key = `${group.name}_${routeId}`;
-    const inviteTokens = localStorage.getItem(key);
-    if (inviteTokens) {
-        localStorage.removeItem(key);
-        isJoinToStudioUrl.value = false;
-        openQRdailog.value = false
-        console.log('削除成功');
-    } else {
-        console.warn('削除失敗');
-    }
+  const routeId = route.params.id;
+  const key = `${group.name}_${routeId}`;
+  const inviteTokens = localStorage.getItem(key);
+  if (inviteTokens) {
+    localStorage.removeItem(key);
+    isJoinToStudioUrl.value = false;
+    openQRdailog.value = false
+    console.log('削除成功');
+  } else {
+    console.warn('削除失敗');
+  }
 };
 </script>

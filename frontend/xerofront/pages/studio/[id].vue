@@ -3,19 +3,17 @@
         :class="{ 'bg-white': !$colorMode?.value || $colorMode?.value === 'light', 'bg-black': $colorMode?.value === 'dark' }"
         :style="{
             backgroundImage: $colorMode?.value === 'dark'
-                ? `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url(${group.background_image || '/default-bg.jpg'})`
-                : `linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.9)), url(${group.background_image || '/default-bg.jpg'})`,
+                ? `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url(${group.background_image || null} )`
+                : `linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.9)), url(${group.background_image || null} )`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backdropFilter: 'blur(8px)'
         }">
         <div class="dark:bg-zinc-800 backdrop-blur-md  py-4">
             <div class="max-w-4xl mx-auto px-6 space-y-12">
-                <!-- タイトル -->
                 <div class="text-center space-y-2">
                     <button>
-                        <h1 class="text-4xl font-extrabold text-transparent bg-clip-text"
-                            :class="$colorMode?.value === 'dark' ? 'bg-gradient-to-r from-cyan-400 to-indigo-400' : 'bg-gradient-to-r from-blue-500 to-indigo-600'">
+                        <h1 class="text-4xl dark:text-white">
                             {{ group.name }}
                         </h1>
                     </button>
@@ -35,12 +33,12 @@
                 </div>
                 <div class="flex items-center justify-between gap-6">
                     <div
-                        class="flex flex-col sm:flex-row items-center sm:items-start gap-4 bg-gradient-to-r from-zinc-700 to-zinc-800 p-4 rounded-xl shadow-lg border border-zinc-600">
+                        class="flex flex-col sm:flex-row items-center sm:items-start gap-4 bg-white dark:bg-gradient-to-r from-zinc-700 to-zinc-800 p-4 rounded-xl shadow-lg border  dark:border-zinc-600">
                         <img :src="group.owner?.avater"
                             class="w-20 h-20 sm:w-14 sm:h-14 rounded-full border-2 border-blue-500 object-cover"
                             alt="オーナーのアバター" />
                         <div class="text-center sm:text-left">
-                            <p class="hidden sm:block text-white text-base sm:text-lg font-bold break-all">
+                            <p class="hidden sm:block dark:text-white text-base sm:text-lg font-bold break-all">
                                 {{ group.owner?.email || 'オーナー名未設定' }}
                             </p>
                             <span
@@ -62,7 +60,7 @@
                     </div>
                 </div>
                 <div
-                    class="flex flex-col sm:flex-row w-full divide-y sm:divide-y-0 sm:divide-x divide-gray-600 rounded-xl overflow-hidden border border-zinc-600 bg-zinc-800 shadow">
+                    class="flex flex-col sm:flex-row w-full divide-y sm:divide-y-0 sm:divide-x divide-gray-200 dark:divide-gray-600 rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-600 dark:bg-zinc-800 shadow ">
                     <div class="flex-1 min-w-0 p-6 text-center">
                         <p class="text-sm text-blue-400">スコア</p>
                         <p class="text-3xl font-extrabold text-blue-500 mt-2 tracking-wide">
@@ -70,16 +68,16 @@
                         </p>
                     </div>
                     <button @click="$emit('Member-dialog')"
-                        class="flex-1 min-w-0 p-6 text-center hover:bg-zinc-700 transition text-white">
+                        class="flex-1 min-w-0 p-6 text-center hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
                         <p class="text-sm text-purple-400">メンバー数</p>
                         <p class="text-2xl font-extrabold text-purple-500 mt-2 tracking-wide">
                             {{ group.members?.length || 0 }} 人
                         </p>
                     </button>
                     <button @click="$emit('Goal-dialog')"
-                        class="flex-1 min-w-0 p-6 text-center hover:bg-zinc-700 transition text-white">
+                        class="flex-1 min-w-0 p-6 text-center hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
                         <p class="text-lg text-red-400 font-semibold">＋ゴールの追加</p>
-                        <p class="text-sm text-white-400 mt-1">このスタジオでの目標を作成</p>
+                        <p class="text-sm dark:text-white-400 mt-1">このスタジオでの目標を作成</p>
                     </button>
                 </div>
 
@@ -88,23 +86,17 @@
                     <span>作成: {{ formatDate(group.created_at) }}</span>
                     <span>更新: {{ formatDate(group.updated_at) }}</span>
                 </div>
-
-                <!-- ゴールリスト -->
-                <div class="space-y-4">
+                <div class="space-y-b-2">
                     <div v-for="goal in goals" :key="goal.id"
-                        class="p-4 rounded-xl border border-zinc-700 shadow hover:shadow-xl transition-all duration-200 flex flex-col gap-2 bg-zinc-800 text-white">
-                        <!-- 上段：アバターとタイトル -->
+                        class="p-4 transition-all duration-200 border-b border-zinc-700 flex flex-col gap-2 dark:bg-zinc-800  dark:hover:bg-zinc-700 text-white">
                         <div @click="PushToNextpage(goal.id)">
                             <div class="flex items-center gap-4">
-                                <img :src="goal.assignee?.avater"
-                                    class="w-12 h-12 rounded-full border-2 border-blue-400 object-cover shadow"
-                                    alt="Assignee" />
-                                <h3 class="text-lg sm:text-xl font-semibold tracking-wide break-all">
+                                <img :src="goal.assignee?.avater" alt="Avatar"
+                                    class="w-10 h-10 rounded-full border-2 border-white object-cover shadow" />
+                                <h3 class="text-lg sm:text-xl font-semibold tracking-wide break-all dark:text-white">
                                     {{ goal.header || '見出し無し' }}
                                 </h3>
                             </div>
-
-                            <!-- 締切情報 -->
                             <div class="text-sm text-zinc-400 mt-1">
                                 {{ goal.deadline ? '📅 締め切り: ' + formatDate(goal.deadline) : '📅 締め切りなし' }}
                             </div>
@@ -136,6 +128,7 @@ const authGroup = useAuthGroups();
 const authGoal = useGoalStore()
 const group = ref([]);
 const goals = ref([]);
+const allgoals = ref([]);
 const isJoinToStudioUrl = ref(false);
 const invterURL = ref('');
 const openQRdailog = ref(false);
@@ -155,6 +148,7 @@ onMounted(async () => {
         const routeId = route.params.id;
         group.value = await authGroup.fetchGroupId(routeId);
         goals.value = await authGoal.fetchGoalsByGroup(routeId);
+        allgoals.value = await authGoal.fetchGoals();
         const key = `${group.name}_${route.params.id}`;
         const storedUrl = localStorage.getItem(key);
         if (storedUrl) {
@@ -166,10 +160,13 @@ onMounted(async () => {
         throw error;
     }
 });
-const PushToNextpage = async(id) => {
-    try{
+const mygoals = computed(() => {
+    return allgoals.value.filter((item) => item.assignee?.email === authStore.user?.email)
+});
+const PushToNextpage = async (id) => {
+    try {
         router.push(`/studio/${routeId}/g/${id}`);
-    }catch(err){
+    } catch (err) {
         console.error("アクセス失敗：", err);
     }
 };

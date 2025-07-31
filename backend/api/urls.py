@@ -4,7 +4,7 @@ from django.conf import settings
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenBlacklistView
 from api import views
-from api.views import RegisterAPI, EmailLoginAPI, LogoutAPI, CustomUserViewSet, GenerateGroupviewSet, GeneratePublicTokenViewSet, GenerateLibraryviewSet, GoalViewSet, InviteCreateView, InviteAppoverViewSet
+from api.views import RegisterAPI,MessageViewSet , EmailLoginAPI, LogoutAPI, CustomUserViewSet, GenerateGroupviewSet, GeneratePublicTokenViewSet, GenerateLibraryviewSet, GoalViewSet, InviteCreateView, InviteAppoverViewSet
 router = routers.DefaultRouter()
 router.register(r'users', CustomUserViewSet, basename='user')
 router.register(r'groups', GenerateGroupviewSet, basename='group')
@@ -12,6 +12,7 @@ router.register(r'tokens', GeneratePublicTokenViewSet, basename='token')
 router.register(r'librarys', GenerateLibraryviewSet, basename='librarys')
 router.register(r'goals', GoalViewSet, basename='goals')
 router.register(r'invite', InviteAppoverViewSet, basename='Invite_user')
+router.register(r'message', MessageViewSet, basename='message')
 urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token-login'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
