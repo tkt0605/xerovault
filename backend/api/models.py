@@ -220,4 +220,4 @@ class Message(models.Model):
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
-        return self.pk
+        return self.text

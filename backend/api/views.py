@@ -246,7 +246,7 @@ class GoalViewSet(viewsets.ModelViewSet):
             return [AllowAny()]
         return super().get_permissions()
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action in ['list', 'retrieve']:
             return GoalReadSerializer
         return super().get_serializer_class()
     def perform_create(self, serializer):
@@ -354,6 +354,10 @@ class InviteAppoverViewSet(viewsets.ModelViewSet):
 class MessageViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = MessageSerializer
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return MessageReadSerializer  # 👈 auther を詳細に返す
+        return MessageSerializer 
     def get_queryset(self):
         queryset = Message.objects.all()
         group_id = self.request.query_params.get('group')
@@ -363,9 +367,9 @@ class MessageViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return Message.objects.filter(Q(group__owner = user) | Q(group__members = user)).order_by('-created_at')
-    def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return MessageReadSerializer
-        return super().get_serializer_class()
+    # def get_serializer_class(self):
+    #     if self.action == 'retrieve':
+    #         return MessageReadSerializer
+    #     return super().get_serializer_class()
     def perform_create(self, serializer):
         serializer.save(auther=self.request.user)

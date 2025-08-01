@@ -9,7 +9,7 @@ export const useAuthMessage = defineStore('message', {
 
     }),
     actions: {
-        async CreateMessage(group, goal, auther, text, file) {
+        async CreateMessage(group, goal, text) {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
             try{
@@ -22,9 +22,8 @@ export const useAuthMessage = defineStore('message', {
                     body: JSON.stringify({
                         group: group,
                         goal: goal,
-                        auther: auther,
                         text: text.trim(),
-                        file:file
+                        // file:file
                     })
                 });
                 if (!response.ok){
@@ -36,9 +35,9 @@ export const useAuthMessage = defineStore('message', {
                     id: data.id,
                     group: data.group,
                     goal: data.goal,
-                    auther: data.auther,
+                    // auther: data.auther,
                     text: data.text,
-                    file: data.file,
+                    // file: data.file,
                     parent: data.parent,
                     created_at: data.created_at 
                 };
@@ -69,11 +68,11 @@ export const useAuthMessage = defineStore('message', {
                 throw new Error;
             }
         },
-        async fetchMessageByGoalId(goald){
+        async fetchMessageByGoalId(id){
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
             try{
-                const response = await fetch(`${config.public.apiBase}message/?group=${goald}`, {
+                const response = await fetch(`${config.public.apiBase}message/?goal=${id}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application',
