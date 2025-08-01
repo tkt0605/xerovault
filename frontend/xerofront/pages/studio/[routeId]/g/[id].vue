@@ -21,7 +21,7 @@
                 </div>
                 <div class="bg-zinc-900 border border-zinc-700  p-6 shadow-inner">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <img :src="goal.assignee?.avater" alt="Avatar"
                                 class="w-10 h-10 rounded-full border-2 border-white object-cover shadow" />
                             <div>
@@ -49,12 +49,51 @@
                 <div class="flex flex-col h-[580px] bg-white dark:bg-zinc-800  overflow-hidden">
                     <!-- チャット表示エリア -->
                     <div class="flex-1 p-2 h- overflow-y-auto space-y-2">
-                        <div v-for="(msg, i) in messages" :key="i" :class="msg.sender === 'user'
-                            ? 'self-end bg-blue-500 text-white'
-                            : 'self-start bg-gray-300 text-black dark:bg-zinc-700 dark:text-white'"
-                            class="max-w-xs px-4 py-2 rounded-lg shadow">
-                            {{ msg.text }}
+                        <div v-for="msg in postMessage" :key="msg.id"
+                            class="flex items-start gap-3 mb-2 p-2 border-b border-gray-700">
+                            <!-- アバター -->
+                            <img :src="msg?.auther?.avater" alt="Avatar"
+                                class="w-10 h-10 rounded-full object-cover border border-gray-400 dark:border-zinc-600" />
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-sm font-semibold text-gray-800 dark:text-white">
+                                        {{ msg.auther.email }}
+                                    </span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                                        {{ formatDate(msg.created_at) }}
+                                    </span>
+                                </div>
+                                <div
+                                    class="bg-gray-100 dark:bg-zinc-700 mb-2 text-gray-900 dark:text-white px-4 py-2 rounded-xl shadow-sm whitespace-pre-line break-words">
+                                    {{ msg.text }}
+                                </div>
+                                <div
+                                    class="flex items-center gap-3">
+                                    <!-- リアクション1：リターン矢印 -->
+                                    <button
+                                        class="p-2 rounded-full hover:bg-blue-500/20 transition-all duration-200 text-zinc-400 hover:text-blue-400"
+                                        title="リターン">
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="22" width="22"
+                                            fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M10 9V5l-7 7 7 7v-4.1c4.55 0 7.55 1.45 9 4.1-.5-5-3.5-10-9-10Z" />
+                                        </svg>
+                                    </button>
+
+                                    <!-- リアクション2：風船 -->
+                                    <button
+                                        class="p-2 rounded-full hover:bg-pink-500/20 transition-all duration-200 text-zinc-400 hover:text-pink-400"
+                                        title="お祝い">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                            fill="currentColor" class="bi bi-balloon" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd"
+                                                d="M8 9.984C10.403 9.506 12 7.48 12 5a4 4 0 0 0-8 0c0 2.48 1.597 4.506 4 4.984M13 5c0 2.837-1.789 5.227-4.52 5.901l.244.487a.25.25 0 1 1-.448.224l-.008-.017c.008.11.02.202.037.29.054.27.161.488.419 1.003.288.578.235 1.15.076 1.629-.157.469-.422.867-.588 1.115l-.004.007a.25.25 0 1 1-.416-.278c.168-.252.4-.6.533-1.003.133-.396.163-.824-.049-1.246l-.013-.028c-.24-.48-.38-.758-.448-1.102a3 3 0 0 1-.052-.45l-.04.08a.25.25 0 1 1-.447-.224l.244-.487C4.789 10.227 3 7.837 3 5a5 5 0 0 1 10 0m-6.938-.495a2 2 0 0 1 1.443-1.443C7.773 2.994 8 2.776 8 2.5s-.226-.504-.498-.459a3 3 0 0 0-2.46 2.461c-.046.272.182.498.458.498s.494-.227.562-.495" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                            </div>
                         </div>
+
                     </div>
                     <div>
                         <div
@@ -69,8 +108,10 @@
                             <div class="flex items-center justify-between">
                                 <!-- 左側アイコン -->
                                 <div class="flex items-center gap-1 pl-1 hover:bg-zinc-600  rounded-xl px-2">
-                                    <button class="dark:text-white text-zinc-400 text-xl">＋</button>
-                                    <span class="text-sm dark:text-white text-zinc-400">ツール</span>
+                                    <button type="submit"
+                                        class="dark:text-white text-zinc-400 text-xl flex items-cente">
+                                        <span class="text-sm dark:text-white text-zinc-400">＋ツール</span>
+                                    </button>
                                 </div>
                                 <div class="flex items-center gap-2 pr-1">
                                     <button class=" dark:text-white hover:bg-zinc-600   rounded-xl p-2" title="マイク">
@@ -103,11 +144,12 @@
 import { useAuthStore } from '~/store/auth';
 import { useAuthGroups } from '~/store/group';
 import { useGoalStore } from '~/store/goal';
-
+import { useAuthMessage } from '~/store/message';
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 const authStore = useAuthStore();
 const groupStore = useAuthGroups();
+const messageStore = useAuthMessage();
 const goalStore = useGoalStore();
 const router = useRouter();
 const route = useRoute();
@@ -115,6 +157,7 @@ const goal = ref([]);
 const textareaRef = ref(false);
 const newMessage = ref('');
 const goalId = route.params.id;
+const postMessage = ref([]);
 onMounted(async () => {
     try {
         await authStore.restoreSession();
@@ -124,11 +167,16 @@ onMounted(async () => {
             return router.push('/auth/login');
         }
         goal.value = await goalStore.fetchGoalsId(goalId);
+        const target = goal.value?.id;
+        postMessage.value = await messageStore.fetchMessageByGoalId(target);
         console.log('目標データ：', goal.value);
         adjustHeight();
     } catch (err) {
         console.error('目標データの取得に失敗しました。', err);
     }
+});
+const messages = computed(() => {
+    return postMessage.value.filter((item) => item.goal === route.params.id);
 });
 const formatDate = (dateStr) => {
     const d = new Date(dateStr)
@@ -147,7 +195,25 @@ const adjustHeight = () => {
 watch(newMessage, adjustHeight)
 
 const sendMessage = async () => {
-
+    const user = authStore.user?.email;
+    if (!user) {
+        alert('ログインしてください。');
+        return;
+    }
+    const newtext = newMessage.value.trim();
+    const groupId = goal.value.group?.id;
+    const goalId = route.params.id;
+    // const file = ;
+    try {
+        const newMessage = await messageStore.CreateMessage(groupId, goalId, newtext);
+        console.log('作成結果：', newMessage);
+        postMessage.value = await messageStore.fetchMessageByGoalId(goalId);
+        console.log('メッセージが追加されました。');
+        // return router.push({ path: route.fullPath, force: true });
+    } catch (err) {
+        console.error('messageが作成されませんでした。', err);
+        throw new Error;
+    }
 };
 
 

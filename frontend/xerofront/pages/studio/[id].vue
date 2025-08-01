@@ -74,6 +74,11 @@
                             {{ group.members?.length || 0 }} 人
                         </p>
                     </button>
+                    <button @click="$emit('Member-dialog')"
+                        class="flex-1 min-w-0 p-6 text-center hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
+                        <p class="text-lg text-green-400 font-semibold">ドッキング</p>
+                        <p class="text-sm dark:text-white-400 mt-1">ライブラリを結びつける</p>
+                    </button>
                     <button @click="$emit('Goal-dialog')"
                         class="flex-1 min-w-0 p-6 text-center hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
                         <p class="text-lg text-red-400 font-semibold">＋ゴールの追加</p>
@@ -90,15 +95,14 @@
                     <div v-for="goal in goals" :key="goal.id"
                         class="p-4 transition-all duration-200 border-b border-zinc-700 flex flex-col gap-2 dark:bg-zinc-800  dark:hover:bg-zinc-700 text-white">
                         <div @click="PushToNextpage(goal.id)">
-                            <div class="flex items-center gap-4">
-                                <img :src="goal.assignee?.avater" alt="Avatar"
-                                    class="w-10 h-10 rounded-full border-2 border-white object-cover shadow" />
+                            <div class="flex items-center gap-2">
+                                <img :src="goal?.assignee?.avater" class="w-10 h-10 rounded-full border-2 border-white object-cover shadow" />
                                 <h3 class="text-lg sm:text-xl font-semibold tracking-wide break-all dark:text-white">
                                     {{ goal.header || '見出し無し' }}
                                 </h3>
                             </div>
-                            <div class="text-sm text-zinc-400 mt-1">
-                                {{ goal.deadline ? '📅 締め切り: ' + formatDate(goal.deadline) : '📅 締め切りなし' }}
+                            <div class="text-sm ml-12 text-zinc-400 mt-1">
+                                {{ goal.deadline ? '締め切り: ' + formatDate(goal.deadline) : '📅 締め切りなし' }}
                             </div>
                         </div>
                     </div>

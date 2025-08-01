@@ -147,7 +147,7 @@ class GoalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Goal
         fields = ['id', 'group','header', 'description', "created_at", "deadline", "assignee", "is_concrete", "is_completed"]
-        read_only_fields = ['created_at']
+        read_only_fields = ['id', "assignee" ,'created_at']
 class GoalReadSerializer(serializers.ModelSerializer):
     group = GenerateGroupSerializer(read_only=True)
     assignee = CustomUserSerializer(read_only = True)
@@ -245,6 +245,7 @@ class MessageSerializer(serializers.ModelSerializer):
         fields = [
             'group', 'goal', 'auther', 'text', 'file', 'parent', 'created_at'
         ]
+        read_only_fields = ['id', 'auther', 'created_at']
 
 class MessageReadSerializer(serializers.ModelSerializer):
     group = GenerateGroupReadSerializer(read_only=True)
