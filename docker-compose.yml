@@ -32,8 +32,12 @@ services:
       dockerfile: Dockerfile.frontend
     platform: linux/amd64
     container_name: xero-frontend
+    # volumes:
+      # - ./frontend/xerofront:/frontend/xerofront
     volumes:
       - ./frontend/xerofront:/frontend/xerofront
+      - /frontend/xerofront/node_modules  # ← この1行を追加
+
     ports:
       - "3000:3000"
     dns:
