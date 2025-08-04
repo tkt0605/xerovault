@@ -233,6 +233,6 @@ export const useAuthGroups = defineStore('group', {
                 console.error('メンバー削除失敗:', error);
                 throw error;
             }
-        },
+        }
     }
 })

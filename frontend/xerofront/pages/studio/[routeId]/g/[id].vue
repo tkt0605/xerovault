@@ -39,12 +39,11 @@
                             </p>
                         </div>
                     </div>
-                    <h2 class="text-lg font-semibold border-b border-zinc-600 pb-2 mb-4 text-zinc-300">
-                        目標の説明
-                    </h2>
-                    <p class="text-sm text-gray-300 whitespace-pre-line leading-relaxed">
-                        {{ goal.description || '（説明はありません）' }}
-                    </p>
+                    <div>
+                        <p class="ml-12 text-gray-300 whitespace-pre-line leading-relaxed">
+                            {{ goal.description || '（説明はありません）' }}
+                        </p>
+                    </div>
                 </div>
                 <div class="flex flex-col h-[580px] bg-white dark:bg-zinc-800  overflow-hidden">
                     <!-- チャット表示エリア -->
@@ -67,8 +66,7 @@
                                     class="bg-gray-100 dark:bg-zinc-700 mb-2 text-gray-900 dark:text-white px-4 py-2 rounded-xl shadow-sm whitespace-pre-line break-words">
                                     {{ msg.text }}
                                 </div>
-                                <div
-                                    class="flex items-center gap-3">
+                                <div class="flex items-center gap-3">
                                     <!-- リアクション1：リターン矢印 -->
                                     <button
                                         class="p-2 rounded-full hover:bg-blue-500/20 transition-all duration-200 text-zinc-400 hover:text-blue-400"
@@ -167,7 +165,7 @@ onMounted(async () => {
             return router.push('/auth/login');
         }
         goal.value = await goalStore.fetchGoalsId(goalId);
-        const target = goal.value?.id;
+        const target = goal.value.id;   
         postMessage.value = await messageStore.fetchMessageByGoalId(target);
         console.log('目標データ：', goal.value);
         adjustHeight();
@@ -215,6 +213,4 @@ const sendMessage = async () => {
         throw new Error;
     }
 };
-
-
 </script>

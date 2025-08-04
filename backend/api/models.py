@@ -149,6 +149,19 @@ class Goal(models.Model):
         else:
             self.is_concrete = False
         return super().save(*args, **kwargs)
+    def vote_progress(self):
+        total_members = self.group.members.count()
+        yes_vote = self.votes.filter(is_yes=True).count()
+        if total_members == 0:
+            return 0
+        return int(yes_vote / total_members * 100)
+    def check_voting_completion(self, threshold=90):
+        if self.vote_progress() >= threshold:
+            self.is_completed = True
+            self.save()
+            return True
+        return False
+    
 
 @receiver(post_save, sender=Goal)
 @receiver(post_delete, sender=Goal)
@@ -192,15 +205,27 @@ class GenerateLibrary(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.name
+class PostfileToLibrary(models.Model):
+    target = models.ForeignKey(GenerateLibrary, on_delete=models.CASCADE, related_name='target_library', default='')
+    auther = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='auther', default='')
+    name = models.CharField(max_length=50, blank=False, null=True)
+    file = models.FileField(upload_to='library_file')
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.target    
 class ConnectLibrary(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     target = models.ForeignKey(GenerateLibrary, on_delete=models.CASCADE, related_name='対象ライブラリ', default='')
     group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name="接続先スタジオ", default='')
     created_at = models.DateTimeField(auto_now_add=True)
-
     def __str__(self):
         return self.target
+    class Meta:
+        unique_together = ('group', 'target')
+        indexes = [
+            models.Index(fields=['group', 'target']),
+        ]
 
 class GroupNotification(models.Model):
     group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE)
@@ -217,7 +242,20 @@ class Message(models.Model):
     auther = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='作者')
     text = models.TextField()
     file = models.FileField(upload_to='file/', blank=True, null=True)
+    is_done = models.BooleanField(default=False, help_text='このメッセージが完了したか？')
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.text
+
+class GoalVote(models.Model):
+    goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name='投票対象ゴール')
+    voter = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='投票者')
+    is_yes = models.BooleanField(default=False, help_text='この投票が賛成か？')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('goal', 'voter')
+
+    def __str__(self):
+        return f"{self.voter.email} の {self.goal.description[:20]} への投票"

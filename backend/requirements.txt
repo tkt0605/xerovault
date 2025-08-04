@@ -17,3 +17,4 @@ pillow>=11.2.1
 # pycrypto>=2.6.1
 pycryptodome>=3.23.0
 django-extensions>=4.1
+python-dotenv>=1.1.1

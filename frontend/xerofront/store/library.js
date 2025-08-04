@@ -124,7 +124,103 @@ export const useAuthLibrary = defineStore('library', {
                 console.error('個別ライブラリ取得失敗', error);
                 throw error;
             }
-        }
+        },
+        async fetchMylibrary(){
+            const config = useRuntimeConfig();
+            const authStore = useAuthStore();
+            try{
+                const response = await fetch(`${config.public.apiBase}librarys/my_library/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-type': 'application/json',
+                        'Authorization': `Bearer ${authStore.accessToken}`
+                    }
+                });
+                if (!response.ok){
+                    const errorLog = await response.text();
+                    throw new Error(errorLog || "自身のライブラリデータの取得失敗");
+                }
+                const data = await response.json();
+                return data;
+            }catch(error){
+                console.error('取得失敗：', error);
+                throw error;
+            }
+        },
+        async UploadfileToLibrary(name, file){
+            const config = useRuntimeConfig();
+            const authStore = useAuthStore();
+            try {
+                const response = await fetch(`${config.public.apiBase}upload_library/`, {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${authStore.accessToken}`
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        file: file,
+                    })
+                });
+                if (!response.ok){
+                    const errorLog = await response.text();
+                    throw new Error(errorLog || "ファイルのアップロードの失敗");                     
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('アップロード失敗：', error);
+                throw error;
+            }
+        },
+        async FetchfilesOfLibrary(id){
+            const config = useRuntimeConfig();
+            const authStore = useAuthStore();
+            try {
+                const response = await fetch(`${config.public.apiBase}library_files/${id}/`, {
+                    method: 'GET',
+                    headers: {
+                        "Content-type": "application/json",
+                        "Authorization": `Bearer ${authStore.accessToken}`
+                    }
+                });
+                if (!response.ok){
+                    const errorLog = await response.text();
+                    throw new Error(errorLog || "ファイルの取得失敗");      
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('ファイル取得失敗：', error);
+                throw error;
+            }
+        },
+        async DockingLibrary(groupId, libraryId){
+            const config = useRuntimeConfig();
+            const authStore = useAuthStore();
+            try{
+                const response = await fetch(`${config.public.apiBase}connect_library/create_connection/`, {
+                    method: 'POST',
+                    headers: {
+                        "Content-type": "application/json",
+                        "Authorization": `Bearer ${authStore.accessToken}`
+                    },
+                    body: JSON.stringify({
+                        group: groupId,
+                        target: libraryId,
+                    })
+                });
+                if (!response.ok){
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'ライブラリとスタジオとのドッキングに失敗');
+                }
+                const data = await response.json();
+                return data;
+            }catch(error){
+                console.error('ドッキングに失敗：', error);
+                throw error;
+            }
+        },
     },
     getters: {
 
