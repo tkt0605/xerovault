@@ -9,15 +9,15 @@
             backgroundPosition: 'center',
             backdropFilter: 'blur(8px)'
         }">
-        <div class="dark:bg-zinc-800 backdrop-blur-md  py-4">
-            <div class="max-w-4xl mx-auto px-6 space-y-12">
-                <div class="text-center space-y-2">
+        <div class="dark:bg-zinc-800 backdrop-blur-md py-4 pt-16">
+            <div class="max-w-4xl mx-auto px-6 space-y-6">
+                <div class="text-center ">
                     <button>
                         <h1 class="text-4xl dark:text-white">
                             {{ group.name }}
                         </h1>
                     </button>
-                    <div class="flex justify-center gap-3 text-sm">
+                    <div class="flex justify-center gap-3 text-sm mt-2">
                         <span
                             :class="$colorMode?.value === 'dark' ? 'bg-zinc-800/80 text-white' : 'bg-zinc-100 text-gray-800'"
                             class="px-3 py-1 rounded-full">
@@ -74,7 +74,7 @@
                             {{ group.members?.length || 0 }} 人
                         </p>
                     </button>
-                    <button @click="$emit('Member-dialog')"
+                    <button @click="$emit('DockingtoStudio-dialog')"
                         class="flex-1 min-w-0 p-6 text-center hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
                         <p class="text-lg text-green-400 font-semibold">ドッキング</p>
                         <p class="text-sm dark:text-white-400 mt-1">ライブラリを結びつける</p>
@@ -82,21 +82,31 @@
                     <button @click="$emit('Goal-dialog')"
                         class="flex-1 min-w-0 p-6 text-center hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
                         <p class="text-lg text-red-400 font-semibold">＋ゴールの追加</p>
-                        <p class="text-sm dark:text-white-400 mt-1">このスタジオでの目標を作成</p>
+                        <p class="text-sm dark:text-white-400 mt-1">新規ゴールを作成</p>
+                    </button>
+                    <button @click="$emit('Goalvote-dialog')"
+                        class="flex-1 min-w-0 p-6 text-center hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
+                        <p class="text-lg text-yellow-400 font-semibold">ゴールの投票</p>
+                        <p class="text-sm dark:text-white-400 mt-1">ゴールの結果投票</p>
                     </button>
                 </div>
-
-
-                <div class="text-xs text-zinc-500 flex justify-between pt-6">
-                    <span>作成: {{ formatDate(group.created_at) }}</span>
-                    <span>更新: {{ formatDate(group.updated_at) }}</span>
+                <div class="flex space-x-4  mb-4">
+                    <button v-for="tab in tabs" :key="tab" @click="activeTab = tab" :class="[
+                        'px-4 py-2',
+                        activeTab === tab
+                            ? 'border-b-2 border-blue-500 text-blue-600'
+                            : 'text-gray-500 hover:text-gray-700'
+                    ]">
+                        {{ tab }}
+                    </button>
                 </div>
-                <div class="space-y-b-2">
+                <div v-if="activeTab === 'ゴール'">
                     <div v-for="goal in goals" :key="goal.id"
                         class="p-4 transition-all duration-200 border-b border-zinc-700 flex flex-col gap-2 dark:bg-zinc-800  dark:hover:bg-zinc-700 text-white">
                         <div @click="PushToNextpage(goal.id)">
                             <div class="flex items-center gap-2">
-                                <img :src="goal?.assignee?.avater" class="w-10 h-10 rounded-full border-2 border-white object-cover shadow" />
+                                <img :src="goal?.assignee?.avater"
+                                    class="w-10 h-10 rounded-full border-2 border-white object-cover shadow" />
                                 <h3 class="text-lg sm:text-xl font-semibold tracking-wide break-all dark:text-white">
                                     {{ goal.header || '見出し無し' }}
                                 </h3>
@@ -107,7 +117,19 @@
                         </div>
                     </div>
                 </div>
+                <div v-else-if="activeTab === 'ライブラリ'">
+                    <div class="p-4">
+                        <h2 class="text-xl font-semibold mb-4">ライブラリ</h2>
+                        <p class="text-gray-500 dark:text-gray-400">ライブラリの内容はまだ実装されていません。</p>
+                        <p class="text-sm text-gray-400 mt-2">近日中にライブラリ機能を追加予定です。</p>
+                    </div>
+                </div>
+                <div v-else-if="activeTab === '投票'" class="p-4">
+                    <h2 class="text-xl font-semibold mb-4">投票</h2>
+                    <p class="text-gray-500 dark:text-gray-400">投票機能は現在開発中です。</p>
+                    <p class="text-sm text-gray-400 mt-2">近日中に投票機能を追加予定です。</p>
 
+                </div>
             </div>
         </div>
     </main>
@@ -144,6 +166,8 @@ const routeId = route.params.id;
 const toggleSidebar = () => {
     isSidebarOpen.value = !isSidebarOpen.value
 };
+const tabs = ['ゴール', 'ライブラリ', '投票'];
+const activeTab = ref('ゴール');
 const currentUser = computed(() => authStore.currentUser);
 onMounted(async () => {
     try {
@@ -211,4 +235,10 @@ const formatDate = (dateStr) => {
     const d = new Date(dateStr)
     return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' })
 };
+const GotoGoalTab = () => {
+
+};
+const GotoLibraryTab = () => {
+
+}
 </script>

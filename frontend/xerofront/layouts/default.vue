@@ -9,7 +9,8 @@
           @Group-dialog="GroupDailog" :isOpen="isSidebarOpen" @close="isSidebarOpen = false" />
       </aside>
       <main class="flex-1 overflow-y-auto">
-        <NuxtPage @Member-dialog="ShowMember()" @QR-dialog="QRdialog()" @Goal-dialog="CreateGoal()" />
+        <NuxtPage @Member-dialog="ShowMember()" @QR-dialog="QRdialog()" @Goal-dialog="CreateGoal()"
+          @DockingtoStudio-dialog="DockingLibrary()" @Goalvote-dialog="GoalVoting()" />
       </main>
 
       <!-- Dialog コンポーネントは省略 -->
@@ -25,7 +26,8 @@
                 class="mt-1 block w-full rounded-md p-2 border bg-white text-black dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-600" />
             </div>
             <div>
-              <label for="lib-tags" class="block text-sm font-semibold text-gray-700 dark:text-gray-200">タグ（カンマ区切り）</label>
+              <label for="lib-tags"
+                class="block text-sm font-semibold text-gray-700 dark:text-gray-200">タグ（カンマ区切り）</label>
               <input id="lib-tags" type="text" placeholder="例：機密, AI, レポート" v-model="groupTag"
                 class="mt-1 block w-full p-2 rounded-md border bg-white text-black dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-600" />
             </div>
@@ -33,11 +35,13 @@
               <span class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">公開設定</span>
               <div class="flex items-center gap-6">
                 <label class="inline-flex items-center">
-                  <input type="radio" name="visibility" class="form-radio text-green-500" v-model="is_group" :value="true" />
+                  <input type="radio" name="visibility" class="form-radio text-green-500" v-model="is_group"
+                    :value="true" />
                   <span class="ml-2 text-gray-700 dark:text-gray-200">公開</span>
                 </label>
                 <label class="inline-flex items-center">
-                  <input type="radio" name="visibility" class="form-radio text-red-500" v-model="is_group" :value="false" />
+                  <input type="radio" name="visibility" class="form-radio text-red-500" v-model="is_group"
+                    :value="false" />
                   <span class="ml-2 text-gray-700 dark:text-gray-200">非公開</span>
                 </label>
               </div>
@@ -49,7 +53,8 @@
             class="px-4 py-2 bg-gray-300 text-black dark:bg-gray-600 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
             キャンセル
           </button>
-          <button @click="createNewGroup()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+          <button @click="createNewGroup()"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
             作成する
           </button>
         </template>
@@ -61,12 +66,14 @@
         <template #default>
           <div class="space-y-5">
             <div>
-              <label for="lib-name" class="block text-sm font-semibold text-gray-700 dark:text-gray-200">ライブラリ名 <span class="text-red-500">*</span></label>
+              <label for="lib-name" class="block text-sm font-semibold text-gray-700 dark:text-gray-200">ライブラリ名 <span
+                  class="text-red-500">*</span></label>
               <input id="lib-name" type="text" placeholder="例：研究資料2025" v-model="libraryName"
                 class="mt-1 block w-full p-2 rounded-md border bg-white text-black dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-600" />
             </div>
             <div>
-              <label for="lib-tags" class="block text-sm font-semibold text-gray-700 dark:text-gray-200">タグ（カンマ区切り）</label>
+              <label for="lib-tags"
+                class="block text-sm font-semibold text-gray-700 dark:text-gray-200">タグ（カンマ区切り）</label>
               <input id="lib-tags" type="text" v-model="libraryTag" placeholder="例：機密, AI, レポート"
                 class="mt-1 block w-full p-2 rounded-md border bg-white text-black dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-600" />
             </div>
@@ -74,11 +81,13 @@
               <span class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">公開設定</span>
               <div class="flex items-center gap-6">
                 <label class="inline-flex items-center">
-                  <input type="radio" name="visibility" class="form-radio text-green-500" v-model="is_library" :value="true" />
+                  <input type="radio" name="visibility" class="form-radio text-green-500" v-model="is_library"
+                    :value="true" />
                   <span class="ml-2 text-gray-700 dark:text-gray-200">公開</span>
                 </label>
                 <label class="inline-flex items-center">
-                  <input type="radio" name="visibility" class="form-radio text-red-500" v-model="is_library" :value="false" />
+                  <input type="radio" name="visibility" class="form-radio text-red-500" v-model="is_library"
+                    :value="false" />
                   <span class="ml-2 text-gray-700 dark:text-gray-200">非公開</span>
                 </label>
               </div>
@@ -90,7 +99,8 @@
             class="px-4 py-2 bg-gray-300 text-black dark:bg-gray-600 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
             キャンセル
           </button>
-          <button @click="createLibrary" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+          <button @click="createLibrary"
+            class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
             作成する
           </button>
         </template>
@@ -144,7 +154,8 @@
               </div>
             </div>
             <div class="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 space-y-3">
-              <div class="flex items-center justify-between gap-2 bg-zinc-100 dark:bg-zinc-700 p-3 rounded-lg shadow-inner">
+              <div
+                class="flex items-center justify-between gap-2 bg-zinc-100 dark:bg-zinc-700 p-3 rounded-lg shadow-inner">
                 <input type="text" :value="invterURL" readonly
                   class="w-full px-3 py-2 text-sm rounded-md text-gray-800 dark:text-white bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 focus:outline-none" />
                 <button @click="copyToClipboard(invterURL)"
@@ -180,7 +191,7 @@
       </Dialog>
       <Dialog :visible="isShowMember" @close="isShowMember = false">
         <template #header>
-          <div class="flex items-center justify-between px-2 py-1 border-b border-zinc-700">
+          <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold dark:text-white tracking-wide">メンバー</h2>
           </div>
         </template>
@@ -211,6 +222,69 @@
           </div>
         </template>
       </Dialog>
+      <Dialog :visible="isDockingdailog" @close="isDockingdailog = false">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold dark:text-white tracking-wide">ライブラリをドッキングする</h2>
+          </div>
+        </template>
+        <template #default>
+          <div class="space-y-4">
+            <div>
+              <label class="text-sm font-semibold dark:text-white">ドッキング先ライブラリ</label>
+              <select v-model="selectedLibraryId"
+                class="w-full px-3 py-2 mt-1 bg-white dark:bg-zinc-800 border dark:border-zinc-600 rounded">
+                <option v-for="lib in my_libraries" :value="lib.id" :key="lib.id">
+                  {{ lib.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </template>
+        <template #footer>
+          <button @click="closeDockingLibrary()"
+            class="px-4 py-2 bg-gray-300 text-black dark:bg-gray-600 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+            キャンセル
+          </button>
+          <button @click="Docking()" class="px-2 py-2 rounded bg-green-600 hover:bg-green-700 font-medium transition">
+            ドッキングする
+          </button>
+        </template>
+      </Dialog>
+      <Dialog :visible="isVotingdailog" @close="isVotingdailog = false">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold dark:text-white tracking-wide">ゴールの投票をする</h2>
+          </div>
+        </template>
+        <template #default>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-100 mb-1">投票のValue</label>
+              <input v-model="voteValue" type="text" placeholder="例：投票の内容を入力"
+                class="w-full bg-white dark:bg-zinc-800 text-black dark:text-white border border-gray-300 dark:border-zinc-600 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label class="text-sm font-semibold dark:text-white">対象ゴール</label>
+              <select v-model="selectedGoalId"
+                class="w-full px-3 py-2 mt-1 bg-white dark:bg-zinc-800 border dark:border-zinc-600 rounded">
+                <option v-for="goal in goals" :value="goal.id" :key="goal.id">
+                  {{ goal.header }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </template>
+        <template #footer>
+          <button @click="closeVoting()"
+            class="px-4 py-2 bg-gray-300 text-black dark:bg-gray-600 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+            キャンセル
+          </button>
+          <button @click="Voting()" class="px-2 py-2 rounded bg-green-600 hover:bg-green-700 font-medium transition">
+            ドッキングする
+          </button>
+        </template>
+      </Dialog>
     </div>
   </div>
 </template>
@@ -225,6 +299,7 @@ import { useAuthGroups } from '~/store/group';
 import { useAuthFreinds } from '~/store/freind';
 import { useGoalStore } from '~/store/goal';
 import { useAuthLibrary } from '~/store/library';
+import { useAuthVote } from '~/store/vote';
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { QrcodeCanvas } from 'qrcode.vue';
@@ -250,10 +325,10 @@ const is_group = ref(false);
 const libraryName = ref('');
 const libraryTag = ref('');
 const is_library = ref(false);
-
+const voteValue = ref('');
 const InviteeEmail = ref('');
 const is_invite = ref(false);
-
+const authVote = useAuthVote();
 const groupList = ref([]);
 const libraries = ref([]);
 const friends = ref([]);
@@ -263,17 +338,25 @@ const route = useRoute();
 const isShowMember = ref(false);
 const openGoalDialog = ref(false);
 const openQRdailog = ref(false);
+const isDockingdailog = ref(false);
 const invterURL = ref('');
 const routeId = route.params.id;
 const goals = ref([]);
+const my_libraries = ref([]);
 const isJoinToStudioUrl = ref(false);
+const selectedLibraryId = ref('');
+const selectedGoalId = ref('');
+const my_goals = ref([]);
+const isVotingdailog = ref(false);
 onMounted(async () => {
   try {
     groupList.value = await groupStore.fetchGroup();
     libraries.value = await libraryStore.FetchLibrary();
+    my_libraries.value = await libraryStore.fetchMylibrary();
     friends.value = await friendStore.fetchFreind();
     group.value = await authGroup.fetchGroupId(routeId);
     goals.value = await authGoal.fetchGoalsByGroup(routeId);
+    // my_goals.value = await authGoal.MyGoals();
     const key = `${group.name}_${route.params.id}`;
     const storedUrl = localStorage.getItem(key);
     if (storedUrl) {
@@ -304,6 +387,18 @@ const TokenDialog = () => {
 };
 const ShowMember = () => {
   isShowMember.value = true;
+};
+const DockingLibrary = () => {
+  isDockingdailog.value = true;
+};
+const closeDockingLibrary = () => {
+  isDockingdailog.value = false;
+};
+const GoalVoting = () => {
+  isVotingdailog.value = true;
+}
+const closeVoting = () => {
+  isVotingdailog.value = false;
 };
 const QRdialog = () => {
   openQRdailog.value = true;
@@ -485,6 +580,55 @@ const RemoveQR = async () => {
     console.log('削除成功');
   } else {
     console.warn('削除失敗');
+  }
+};
+const Docking = async () => {
+  const routeId = route.params.id;
+  const targetLibrary = selectedLibraryId.value;
+  const user = authStore.user.email;
+  if (!user) {
+    alert('ログインしてください。');
+    return;
+  }
+  try {
+    console.log('ドッキング先ライブラリID:', targetLibrary);
+    console.log('ドッキング元スタジオID:', routeId);
+    const response = await libraryStore.DockingLibrary(targetLibrary, routeId);
+    if (response) {
+      console.log('ドッキングに失敗しました:', response);
+      // メンバー削除後の更新処理
+      group.value = await authGroup.fetchGroupId(routeId);
+      goals.value = await authGoal.fetchGoalsByGroup(routeId);
+      return route.push(`/studio/${routeId}`);
+    }
+  } catch (err) {
+    console.error('docking失敗：', err);
+    throw err;
+  }
+};
+const Voting = async () => {
+  const goalId = selectedGoalId.value;
+  const vote = voteValue.value.trim();
+  try {
+    if (!goalId) {
+      console.error('ゴールIDが選択されていません。');
+      return;
+    }
+    const response = await authVote.CreateVote(goalId, vote);
+    if (response){
+      console.log('投票の作成成功:', response);
+      isVotingdailog.value = false;
+      voteValue.value = '';
+      selectedGoalId.value = '';
+      goals.value = await authGoal.fetchGoalsByGroup(routeId);
+      console.log('投票が作成されました。');
+    }else{
+      console.error('投票の作成に失敗しました。');
+      throw new Error('投票の作成・失敗:');
+    }
+  }catch(err){
+    console.error('投票の作成中にエラーが発生しました:', err);
+    throw err;
   }
 };
 </script>

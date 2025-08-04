@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
-from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, InviteAppover, Message
+from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, InviteAppover, Message, PostfileToLibrary, GoalVote
 from rest_framework_simplejwt.tokens import RefreshToken
 User = get_user_model()
 class RegisterSerializer(serializers.ModelSerializer):
@@ -256,3 +256,55 @@ class MessageReadSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'group', 'goal', 'auther', 'text', 'file', 'parent', 'created_at'
         ]
+class PostLibrarySerializer(serializers.ModelSerializer):
+    target = serializers.SlugRelatedField(
+        slug_field = 'id',
+        queryset = GenerateLibrary.objects.all(),
+        required = False,
+        allow_null = True
+    )
+    auther = serializers.SlugRelatedField(
+        slug_field = 'email',
+        queryset = CustomUser.objects.all(),
+        required = False,
+        allow_null = True
+    )
+    class Meta:
+        model = PostfileToLibrary
+        fields = [
+            'id','auther', 'name' , 'target', 'file', 'created_at'
+        ]
+        read_only_fields = [
+            'id','auther', 'name' , 'target', 'file', 'created_at'
+        ]
+class PostLibraryReadSerializer(serializers.ModelSerializer):
+    target = GenerateLibraryReadSerializer(read_only=True)
+    class Meta:
+        model = PostfileToLibrary
+        fields = [
+            'id','auther', 'name' ,'target', 'file', 'created_at'
+        ]
+
+class GoalVoteSerializer(serializers.ModelSerializer):
+    goal = serializers.SlugRelatedField(
+        queryset = Goal.objects.all(),
+        slug_field = 'id',
+        required = True,
+        allow_null = False
+    )
+    voter = serializers.SlugRelatedField(
+        queryset = CustomUser.objects.all(),
+        slug_field = 'email',
+        required = True,
+        allow_null = False
+    )
+    class Meta:
+        model = GoalVote
+        fields = ['goal', 'voter', 'is_yes', 'created_at']
+        read_only_fields = ['created_at']
+class GoalVoteReadSerializer(serializers.ModelSerializer):
+    goal = GoalReadSerializer(read_only=True)
+    voter = CustomUserSerializer(read_only=True)
+    class Meta:
+        model = GoalVote
+        fields = ['goal', 'voter', 'is_yes', 'created_at']
