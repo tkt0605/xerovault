@@ -249,7 +249,9 @@ class Message(models.Model):
         return self.text
 
 class GoalVote(models.Model):
+    group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='ターゲット', blank=True, null=True)
     goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name='投票対象ゴール')
+    explain = models.CharField(max_length=50, blank=True, null=True, help_text='この投票の目的や背景を説明するテキスト')
     voter = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='投票者')
     is_yes = models.BooleanField(default=False, help_text='この投票が賛成か？')
     created_at = models.DateTimeField(auto_now_add=True)

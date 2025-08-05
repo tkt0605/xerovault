@@ -118,17 +118,28 @@
                     </div>
                 </div>
                 <div v-else-if="activeTab === 'ライブラリ'">
-                    <div class="p-4">
-                        <h2 class="text-xl font-semibold mb-4">ライブラリ</h2>
-                        <p class="text-gray-500 dark:text-gray-400">ライブラリの内容はまだ実装されていません。</p>
-                        <p class="text-sm text-gray-400 mt-2">近日中にライブラリ機能を追加予定です。</p>
+                    <div v-for="lib in alllibrary" :key="lib.id"
+                        class="p-4 transition-all duration-200 border-b border-zinc-700 flex flex-col gap-2 dark:bg-zinc-800  dark:hover:bg-zinc-700 text-white">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-lg sm:text-xl font-semibold tracking-wide break-all dark:text-white">
+                                    {{ lib.target.name }}
+                                </h3>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div v-else-if="activeTab === '投票'" class="p-4">
-                    <h2 class="text-xl font-semibold mb-4">投票</h2>
-                    <p class="text-gray-500 dark:text-gray-400">投票機能は現在開発中です。</p>
-                    <p class="text-sm text-gray-400 mt-2">近日中に投票機能を追加予定です。</p>
-
+                    <div v-for="vote in allvotes" :key="vote.id"
+                        class="p-4 transition-all duration-200 border-b border-zinc-700 flex flex-col gap-2 dark:bg-zinc-800  dark:hover:bg-zinc-700 text-white">
+                        <div @click="$emit('Vote-dialog', vote.id)">
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-lg sm:text-xl font-semibold tracking-wide break-all dark:text-white">
+                                    {{ vote.explain }}
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -138,6 +149,8 @@
 import { useAuthStore } from '~/store/auth';
 import { useAuthGroups } from '~/store/group';
 import { useGoalStore } from '~/store/goal';
+import { useAuthVote } from '~/store/vote';
+import { useAuthLibrary } from '~/store/library';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, onMounted } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
@@ -151,10 +164,13 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const authGroup = useAuthGroups();
-const authGoal = useGoalStore()
+const authGoal = useGoalStore();
+const authVote = useAuthVote();
 const group = ref([]);
 const goals = ref([]);
 const allgoals = ref([]);
+const allvotes = ref([]);
+const alllibrary = ref([]);
 const isJoinToStudioUrl = ref(false);
 const invterURL = ref('');
 const openQRdailog = ref(false);
@@ -166,6 +182,7 @@ const routeId = route.params.id;
 const toggleSidebar = () => {
     isSidebarOpen.value = !isSidebarOpen.value
 };
+const authLibrary = useAuthLibrary();
 const tabs = ['ゴール', 'ライブラリ', '投票'];
 const activeTab = ref('ゴール');
 const currentUser = computed(() => authStore.currentUser);
@@ -177,6 +194,8 @@ onMounted(async () => {
         group.value = await authGroup.fetchGroupId(routeId);
         goals.value = await authGoal.fetchGoalsByGroup(routeId);
         allgoals.value = await authGoal.fetchGoals();
+        allvotes.value = await authVote.FetchVotesByGroup(routeId);
+        alllibrary.value = await authLibrary.FetchDockingLibrary(routeId);
         const key = `${group.name}_${route.params.id}`;
         const storedUrl = localStorage.getItem(key);
         if (storedUrl) {
@@ -235,10 +254,4 @@ const formatDate = (dateStr) => {
     const d = new Date(dateStr)
     return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' })
 };
-const GotoGoalTab = () => {
-
-};
-const GotoLibraryTab = () => {
-
-}
 </script>
