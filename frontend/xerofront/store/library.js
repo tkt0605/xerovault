@@ -199,7 +199,7 @@ export const useAuthLibrary = defineStore('library', {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
             try{
-                const response = await fetch(`${config.public.apiBase}connect_library/create_connection/`, {
+                const response = await fetch(`${config.public.apiBase}connect_library/`, {
                     method: 'POST',
                     headers: {
                         "Content-type": "application/json",
@@ -212,7 +212,8 @@ export const useAuthLibrary = defineStore('library', {
                 });
                 if (!response.ok){
                     const errorData = await response.json();
-                    throw new Error(errorData.detail || 'ライブラリとスタジオとのドッキングに失敗');
+                    console.error('失敗：', errorData);
+                    throw new Error('ライブラリとスタジオとのドッキングに失敗');
                 }
                 const data = await response.json();
                 return data;
@@ -221,6 +222,29 @@ export const useAuthLibrary = defineStore('library', {
                 throw error;
             }
         },
+        async FetchDockingLibrary(groupId){
+            const config = useRuntimeConfig();
+            const authStore = useAuthStore();
+            try{
+                const response = await fetch(`${config.public.apiBase}connect_library/?group=${groupId}`, {
+                    method: 'GET',
+                    headers: {
+                        "Content-type": "application/json",
+                        "Authorization": `Bearer ${authStore.accessToken}`
+                    }
+                });
+                if (!response.ok){
+                    const errorData = await response.json();
+                    console.error('失敗：', errorData);
+                    throw new Error('ライブラリとスタジオとのドッキング情報の取得に失敗');
+                }
+                const data = await response.json();
+                return data;
+            }catch(error){
+                console.error('ドッキング情報取得失敗：', error);
+                throw error;
+            }
+        }
     },
     getters: {
 

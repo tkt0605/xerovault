@@ -10,7 +10,7 @@
       </aside>
       <main class="flex-1 overflow-y-auto">
         <NuxtPage @Member-dialog="ShowMember()" @QR-dialog="QRdialog()" @Goal-dialog="CreateGoal()"
-          @DockingtoStudio-dialog="DockingLibrary()" @Goalvote-dialog="GoalVoting()" />
+          @DockingtoStudio-dialog="DockingLibrary()" @Goalvote-dialog="GoalVoting()" @Vote-dialog="Votedialog(voteId)" />
       </main>
 
       <!-- Dialog コンポーネントは省略 -->
@@ -281,7 +281,31 @@
             キャンセル
           </button>
           <button @click="Voting()" class="px-2 py-2 rounded bg-green-600 hover:bg-green-700 font-medium transition">
-            ドッキングする
+            作成する
+          </button>
+        </template>
+      </Dialog>
+      <Dialog :visible="openVotedialog" @close="openVotedialog = false">
+        <template #header>
+          <h2 class="text-xl font-bold text-gray-800 dark:text-white">{{ voteValue }}</h2>
+        </template>
+        <template #default>
+          <!-- ここに投票のyesかNoを選択するUIを作成。 -->
+          <div class="mt-4 flex justify-center gap-6">
+            <button @click="submitVote('yes')"
+              class="px-6 py-3 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 transition">
+              👍 はい
+            </button>
+            <button @click="submitVote('no')"
+              class="px-6 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition">
+              👎 いいえ
+            </button>
+          </div>
+        </template>
+        <template #footer>
+          <button @click="openVotedialog = false"
+            class="px-4 py-2 bg-gray-300 text-black dark:bg-gray-600 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+            キャンセル
           </button>
         </template>
       </Dialog>
@@ -348,6 +372,7 @@ const selectedLibraryId = ref('');
 const selectedGoalId = ref('');
 const my_goals = ref([]);
 const isVotingdailog = ref(false);
+const openVotedialog = ref(false);
 onMounted(async () => {
   try {
     groupList.value = await groupStore.fetchGroup();
@@ -408,6 +433,9 @@ const closeQRdialog = () => {
 };
 const CreateGoal = () => {
   openGoalDialog.value = true;
+};
+const Votedialog = () => {
+  openVotedialog.value = true;
 };
 const createNewGroup = async () => {
   const user = authStore?.user;
@@ -593,13 +621,12 @@ const Docking = async () => {
   try {
     console.log('ドッキング先ライブラリID:', targetLibrary);
     console.log('ドッキング元スタジオID:', routeId);
-    const response = await libraryStore.DockingLibrary(targetLibrary, routeId);
+    const response = await libraryStore.DockingLibrary(routeId, targetLibrary);
     if (response) {
-      console.log('ドッキングに失敗しました:', response);
-      // メンバー削除後の更新処理
+      console.log('成功:', response);
       group.value = await authGroup.fetchGroupId(routeId);
       goals.value = await authGoal.fetchGoalsByGroup(routeId);
-      return route.push(`/studio/${routeId}`);
+      return router.push(`/studio/${routeId}`);
     }
   } catch (err) {
     console.error('docking失敗：', err);
@@ -608,27 +635,37 @@ const Docking = async () => {
 };
 const Voting = async () => {
   const goalId = selectedGoalId.value;
+  const routeId = route.params.id;
   const vote = voteValue.value.trim();
+  const is_yes = ref(false);
   try {
     if (!goalId) {
       console.error('ゴールIDが選択されていません。');
       return;
     }
-    const response = await authVote.CreateVote(goalId, vote);
-    if (response){
+    console.log("ゴールのID:", goalId);
+    console.log("投票の内容:", vote);
+    console.log("投票の選択:", is_yes.value);
+    const response = await authVote.CreateVote(routeId, goalId, vote, is_yes.value);
+    if (response) {
       console.log('投票の作成成功:', response);
       isVotingdailog.value = false;
       voteValue.value = '';
       selectedGoalId.value = '';
       goals.value = await authGoal.fetchGoalsByGroup(routeId);
       console.log('投票が作成されました。');
-    }else{
+    } else {
       console.error('投票の作成に失敗しました。');
       throw new Error('投票の作成・失敗:');
     }
-  }catch(err){
-    console.error('投票の作成中にエラーが発生しました:', err);
+  } catch (err) {
+    console.error('投票の作成中にエラーが発生しました', err);
     throw err;
   }
 };
+const submitVote = (value) => {
+  console.log('投票:', value)
+  openVotedialog.value = false
+}
+
 </script>

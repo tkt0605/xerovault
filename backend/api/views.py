@@ -297,7 +297,7 @@ class ConnectLibraryViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return ConnectLibraryReadSerializer
         return ConnectLibrarySerializer
-    @action(detail=False, methods=['post'], url_path='', url_name='connect_library')
+    @action(detail=False, methods=['post'], url_path='create_connection', url_name='create_connection')
     def create_connection(self, request, *args, **kwargs):
         user = self.request.user
         print('リクエストデータ：', request.data)
@@ -335,6 +335,12 @@ class ConnectLibraryViewSet(viewsets.ModelViewSet):
         )
         serializer = ConnectLibraryReadSerializer(connecter, many=True)
         return Response(serializer.data)
+    def get_queryset(self):
+        queryset = ConnectLibrary.objects.all()
+        group_id = self.request.query_params.get('group')
+        if group_id:
+            return queryset.filter(group=group_id)
+        return queryset
 
 
 class InviteAppoverViewSet(viewsets.ModelViewSet):
@@ -436,9 +442,9 @@ class GoalVoteViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = GoalVote.objects.all()
-        goal_id = self.request.query_params.get('goal')
-        if goal_id:
-            return self.queryset.filter(goal=goal_id)
+        group_id = self.request.query_params.get('group')
+        if group_id:
+            return queryset.filter(group=group_id)
         return queryset
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
