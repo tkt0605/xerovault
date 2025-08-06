@@ -278,7 +278,7 @@ class GoalViewSet(viewsets.ModelViewSet):
     def vote(self, request, pk=None):
         goal = self.get_object()
         user= request.user
-        is_yes = request.deta.get('is_yes')
+        is_yes = request.data.get('is_yes')
         if goal.group.members.filter(id=user.id).exists():
             vote, created = GoalVote.objects.get_or_create(
                 goal=goal,

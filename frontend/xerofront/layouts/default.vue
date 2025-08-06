@@ -285,20 +285,20 @@
           </button>
         </template>
       </Dialog>
-      <Dialog :visible="openVotedialog" @close="openVotedialog = false">
+      <Dialog :visible="openVotedialog" @close="openVotedialog = false" >
         <template #header>
-          <h2 class="text-xl font-bold text-gray-800 dark:text-white">{{ voteValue }}</h2>
+          <h2 class="text-xl font-bold text-gray-800 dark:text-white">{{ selectedVote?.explain }}</h2>
         </template>
         <template #default>
           <!-- ここに投票のyesかNoを選択するUIを作成。 -->
           <div class="mt-4 flex justify-center gap-6">
             <button @click="submitVote('yes')"
               class="px-6 py-3 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 transition">
-              👍 はい
+              👍 賛成😁
             </button>
             <button @click="submitVote('no')"
               class="px-6 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition">
-              👎 いいえ
+              👎 反対😒
             </button>
           </div>
         </template>
@@ -327,6 +327,7 @@ import { useAuthVote } from '~/store/vote';
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { QrcodeCanvas } from 'qrcode.vue';
+import { eventBus } from '#imports';
 const openTokenDailog = ref(false);
 const openGroupDailog = ref(false);
 const authGroup = useAuthGroups();
@@ -373,6 +374,9 @@ const selectedGoalId = ref('');
 const my_goals = ref([]);
 const isVotingdailog = ref(false);
 const openVotedialog = ref(false);
+const selectedVoteId = ref(null);
+const allvotes = ref([]);
+const voteId = ref(''); 
 onMounted(async () => {
   try {
     groupList.value = await groupStore.fetchGroup();
@@ -381,7 +385,8 @@ onMounted(async () => {
     friends.value = await friendStore.fetchFreind();
     group.value = await authGroup.fetchGroupId(routeId);
     goals.value = await authGoal.fetchGoalsByGroup(routeId);
-    // my_goals.value = await authGoal.MyGoals();
+    allvotes.value = await authVote.FetchVotes();
+    eventBus.on('Vote-dialog', handleVotedialog);
     const key = `${group.name}_${route.params.id}`;
     const storedUrl = localStorage.getItem(key);
     if (storedUrl) {
@@ -391,10 +396,20 @@ onMounted(async () => {
   } catch (error) {
     console.error('エラー:', error);
     throw error;
-
   }
 });
-
+onBeforeUnmount(() => {
+  eventBus.off('Vote-dialog', handleVotedialog);
+});
+const selectedVote = computed(() => {
+  if (Array.isArray(allvotes.value)){
+    return allvotes.value.find((v) => v.id === selectedVoteId.value);
+  }
+});
+function handleVotedialog(voteId) {
+  selectedVoteId.value = voteId;
+  openVotedialog.value = true;
+};
 const toggleSidebar = () => {
   isSidebarOpen.value = true;
 };
@@ -664,8 +679,13 @@ const Voting = async () => {
   }
 };
 const submitVote = (value) => {
-  console.log('投票:', value)
-  openVotedialog.value = false
-}
+  console.log('投票:', value);
+  if (value === "yes"){
+    authVote.PostVoteToGoal(selectedVote.value.goal.id, true);
+  }else if (value === 'no'){
+    authVote.PostVoteToGoal(selectedVote.value.goal.id, false);
+  }
+  openVotedialog.value = false;
+};
 
 </script>
