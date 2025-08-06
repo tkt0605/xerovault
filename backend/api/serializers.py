@@ -305,11 +305,11 @@ class GoalVoteSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = GoalVote
-        fields = ['group', 'goal', 'voter', 'explain', 'is_yes', 'created_at']
-        read_only_fields = [ 'voter', 'created_at']
+        fields = ['id', 'group', 'goal', 'voter', 'explain', 'is_yes', 'created_at']
+        read_only_fields = ["id", 'voter', 'created_at']
 class GoalVoteReadSerializer(serializers.ModelSerializer):
     goal = GoalReadSerializer(read_only=True)
     voter = CustomUserSerializer(read_only=True)
     class Meta:
         model = GoalVote
-        fields = ['group', 'goal', 'voter', 'explain' , 'is_yes', 'created_at']
+        fields = ['id', 'group', 'goal', 'voter', 'explain' , 'is_yes', 'created_at']

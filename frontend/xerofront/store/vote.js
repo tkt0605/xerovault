@@ -59,6 +59,33 @@ export const useAuthVote = defineStore('vote', {
                 throw error;
             }
         },
+        async FetchVoteId(id) {
+            const config = useRuntimeConfig();
+            const authStore = useAuthStore();
+            if (!voteId) {
+                console.error("voteId が無効です");
+                return;
+            }
+            try {
+                const response = await fetch(`${config.public.apiBase}votes/${id}/`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${authStore.accessToken}`
+                    }
+                });
+                if (!response.ok) {
+                    const errData = await response.json();
+                    console.error('失敗', errData);
+                    throw new Error('投票情報の取得失敗');
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('投票情報取得失敗', error);
+                throw error;
+            }
+        },
         async FetchVotesByGroup(groupId) {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
@@ -70,7 +97,7 @@ export const useAuthVote = defineStore('vote', {
                         "Authorization": `Bearer ${authStore.accessToken}`
                     }
                 });
-                if (!response.ok){
+                if (!response.ok) {
                     const errData = await response.json();
                     console.error('失敗', errData);
                     throw new Error('グループの投票情報の取得失敗');
@@ -79,6 +106,32 @@ export const useAuthVote = defineStore('vote', {
                 return data;
             } catch (error) {
                 console.error('グループの投票情報取得失敗', error);
+                throw error;
+            }
+        },
+        async PostVoteToGoal(goalId, is_yes){
+            const config = useRuntimeConfig();
+            const authStore = useAuthStore();
+            try{
+                const response = await fetch(`${config.public.apiBase}goals/${goalId}/vote/`, {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${authStore.accessToken}`
+                    },
+                    body: JSON.stringify({
+                        is_yes: is_yes
+                    })
+                });
+                if (!response.ok){
+                    const errData = await response.json();
+                    console.error('サーバーからのエラー：', errData);
+                    throw new Error("目標への投票失敗");
+                }
+                const data = await response.json();
+                return data;
+            }catch(error){
+                console.error('目標への投票失敗：', error);
                 throw error;
             }
         }
