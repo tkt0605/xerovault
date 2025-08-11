@@ -458,7 +458,6 @@ import '~/assets/css/index.css';
 import Dialog from '~/components/MainDialog.vue';
 import { useAuthStore } from '~/store/auth';
 import { useAuthGroups } from '~/store/group';
-import { useAuthFreinds } from '~/store/freind';
 import { useGoalStore } from '~/store/goal';
 import { useAuthLibrary } from '~/store/library';
 import { useAuthVote } from '~/store/vote';
@@ -476,7 +475,6 @@ const group = ref([]);
 const groupStore = useAuthGroups();
 const authStore = useAuthStore();
 const libraryStore = useAuthLibrary();
-const friendStore = useAuthFreinds();
 const currentUser = computed(() => authStore.currentUser);
 const goalHead = ref('');
 const goalDescription = ref('');
@@ -524,7 +522,6 @@ onMounted(async () => {
     groupList.value = await groupStore.fetchGroup();
     libraries.value = await libraryStore.FetchLibrary();
     my_libraries.value = await libraryStore.fetchMylibrary();
-    friends.value = await friendStore.fetchFreind();
     group.value = await authGroup.fetchGroupId(routeId);
     goals.value = await authGoal.fetchGoalsByGroup(routeId);
     allvotes.value = await authVote.FetchVotes();
@@ -543,7 +540,7 @@ onMounted(async () => {
 });
 onBeforeUnmount(() => {
   eventBus.off('Vote-dialog', handleVotedialog);
-  eventBus.off('Folder-dialog', openFolder)
+  eventBus.off('Folder-dialog', openFolder);
 });
 const selectedVote = computed(() => {
   if (Array.isArray(allvotes.value)) {
@@ -559,13 +556,11 @@ function openFolder(libraryId) {
   selectedLibrary.value = libraryId;
   openLibraryfolder.value = true;
 };
-const closeFolder = () => {
-  openLibraryfolder.value = false;
-};
 function handleVotedialog(voteId) {
   selectedVoteId.value = voteId;
   openVotedialog.value = true;
 };
+
 const toggleSidebar = () => {
   isSidebarOpen.value = true;
 };
@@ -673,23 +668,6 @@ const createLibrary = async () => {
 const libraryList = computed(() =>
   libraries.value.filter((item) => item.owner === authStore.user.email)
 );
-const AddNewFreind = async () => {
-  const userId = authStore.user.id;
-  const TargetEmail = InviteeEmail.value.trim();
-
-  try {
-    const invite = await friendStore.sendFriendRequest(TargetEmail);
-    const result = await friendStore.approveFriendInvite(invite.token || invite.id);
-
-    console.log('結果：', result);
-    friends.value = await friendStore.fetchFreind();
-    openTokenDailog.value = false;
-    console.log('友達リクエスト送信済み');
-  } catch (err) {
-    console.error('リクエスト送信失敗：', err);
-    throw err;
-  }
-};
 
 const copyToClipboard = async () => {
   try {
