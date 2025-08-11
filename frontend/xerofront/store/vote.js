@@ -134,6 +134,29 @@ export const useAuthVote = defineStore('vote', {
                 console.error('目標への投票失敗：', error);
                 throw error;
             }
+        },
+        async DeleteVote(voteId){
+            const config = useRuntimeConfig();
+            const authStore = useAuthStore();
+            try{
+                const response = await fetch(`${config.public.apiBase}votes/${voteId}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        // "Content-Type": "application/json",
+                        "Authorization": `Bearer ${authStore.accessToken}`
+                    }
+                });
+                if (!response.ok){
+                    const errData = await response.json();
+                    console.error('サーバーからのエラー：', errData);
+                    throw new Error("投票削除失敗");
+                }
+                const data = await response.json();
+                return data;
+            }catch(error){
+                console.error('投票削除失敗：', error);
+                throw error;
+            }
         }
     }
 })

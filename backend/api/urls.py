@@ -24,7 +24,7 @@ urlpatterns = [
     path('login/', EmailLoginAPI.as_view(), name='login'),
     path('signup/', RegisterAPI.as_view(), name='signup'),
     path('invite/create/', InviteCreateView.as_view(), name='invite-create'),
-    path('upload_library/', UploadMultipleFilesView.as_view(), name='upload_file_library'),
+    # path('upload_library/', UploadMultipleFilesView.as_view(), name='upload_file_library'),
     path('', include(router.urls))
 ]
 if settings.DEBUG:

@@ -2,16 +2,15 @@ import { useAuthStore } from "./auth";
 import { useAuthGroups } from "./group";
 import { useRuntimeConfig } from "#app";
 
-
 export const useAuthLibrary = defineStore('library', {
     state: () => ({
         libraries: [],
     }),
     actions: {
-        async CreateLibraries(name, tag, is_public){
+        async CreateLibraries(name, tag, is_public) {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
-            try{
+            try {
                 const response = await fetch(`${config.public.apiBase}librarys/`, {
                     method: "POST",
                     headers: {
@@ -24,7 +23,7 @@ export const useAuthLibrary = defineStore('library', {
                         is_public: is_public
                     })
                 });
-                if (!response.ok){
+                if (!response.ok) {
                     const errorData = await response.json();
                     throw Error(errorData.detail || 'ライブラリ作成失敗')
                 }
@@ -38,15 +37,15 @@ export const useAuthLibrary = defineStore('library', {
                     created_at: data.created_at,
                     updated_at: data.updated_at,
                 }
-            }catch(error){
+            } catch (error) {
                 console.error('ライブラリ作成失敗', error);
                 throw error;
             }
         },
-        async FetchLibrary(){
+        async FetchLibrary() {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
-            try{
+            try {
                 const response = await fetch(`${config.public.apiBase}librarys/`, {
                     method: "GET",
                     headers: {
@@ -54,12 +53,12 @@ export const useAuthLibrary = defineStore('library', {
                         "Authorization": `Bearer ${authStore.accessToken}`
                     }
                 });
-                if (!response.ok){
+                if (!response.ok) {
                     const errorData = await response.json();
                     throw Error(errorData.detail || "ライブラリ取得失敗");
                 }
                 const data = await response.json();
-                if (!Array.isArray(data)){
+                if (!Array.isArray(data)) {
                     return {
                         id: data.id,
                         name: data.name,
@@ -79,15 +78,15 @@ export const useAuthLibrary = defineStore('library', {
                     created_at: item.created_at,
                     updated_at: item.updated_at
                 }));
-            }catch(error){
+            } catch (error) {
                 console.error('ライブラリ情報取得のしっぱい');
                 throw error;
             }
         },
-        async FetchLibraryId(id){
+        async FetchLibraryId(id) {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
-            try{
+            try {
                 const response = await fetch(`${config.public.apiBase}librarys/${id}`, {
                     method: "GET",
                     headers: {
@@ -95,12 +94,12 @@ export const useAuthLibrary = defineStore('library', {
                         "Authorization": `Bearer ${authStore.accessToken}`
                     }
                 });
-                if (!response.ok){
+                if (!response.ok) {
                     const errorData = await response.json();
                     throw Error(errorData.detail || '個別ライブラリ情報取得失敗')
                 }
                 const data = await response.json();
-                if (!Array.isArray(data)){
+                if (!Array.isArray(data)) {
                     return {
                         id: data.id,
                         name: data.name,
@@ -120,15 +119,15 @@ export const useAuthLibrary = defineStore('library', {
                     created_at: item.created_at,
                     updated_at: item.updated_at
                 }));
-            }catch(error){
+            } catch (error) {
                 console.error('個別ライブラリ取得失敗', error);
                 throw error;
             }
         },
-        async fetchMylibrary(){
+        async fetchMylibrary() {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
-            try{
+            try {
                 const response = await fetch(`${config.public.apiBase}librarys/my_library/`, {
                     method: 'GET',
                     headers: {
@@ -136,20 +135,27 @@ export const useAuthLibrary = defineStore('library', {
                         'Authorization': `Bearer ${authStore.accessToken}`
                     }
                 });
-                if (!response.ok){
+                if (!response.ok) {
                     const errorLog = await response.text();
                     throw new Error(errorLog || "自身のライブラリデータの取得失敗");
                 }
                 const data = await response.json();
                 return data;
-            }catch(error){
+            } catch (error) {
                 console.error('取得失敗：', error);
                 throw error;
             }
         },
-        async UploadfileToLibrary(name, file){
+        async UploadfileToLibrary(target, name, file) {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
+            const formData = new FormData();
+            formData.append('target', target);
+            formData.append('name', name);
+            const fileArry = Array.from(file);
+            fileArry.forEach(f => {
+                formData.append('file', f);
+            });
             try {
                 const response = await fetch(`${config.public.apiBase}upload_library/`, {
                     method: 'POST',
@@ -157,14 +163,11 @@ export const useAuthLibrary = defineStore('library', {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
                     },
-                    body: JSON.stringify({
-                        name: name,
-                        file: file,
-                    })
+                    body: formData
                 });
-                if (!response.ok){
+                if (!response.ok) {
                     const errorLog = await response.text();
-                    throw new Error(errorLog || "ファイルのアップロードの失敗");                     
+                    throw new Error(errorLog || "ファイルのアップロードの失敗");
                 }
                 const data = await response.json();
                 return data;
@@ -173,7 +176,7 @@ export const useAuthLibrary = defineStore('library', {
                 throw error;
             }
         },
-        async FetchfilesOfLibrary(id){
+        async FetchfilesOfLibrary(id) {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
             try {
@@ -184,9 +187,9 @@ export const useAuthLibrary = defineStore('library', {
                         "Authorization": `Bearer ${authStore.accessToken}`
                     }
                 });
-                if (!response.ok){
+                if (!response.ok) {
                     const errorLog = await response.text();
-                    throw new Error(errorLog || "ファイルの取得失敗");      
+                    throw new Error(errorLog || "ファイルの取得失敗");
                 }
                 const data = await response.json();
                 return data;
@@ -195,10 +198,10 @@ export const useAuthLibrary = defineStore('library', {
                 throw error;
             }
         },
-        async DockingLibrary(groupId, libraryId){
+        async DockingLibrary(groupId, libraryId) {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
-            try{
+            try {
                 const response = await fetch(`${config.public.apiBase}connect_library/`, {
                     method: 'POST',
                     headers: {
@@ -210,22 +213,22 @@ export const useAuthLibrary = defineStore('library', {
                         target: libraryId,
                     })
                 });
-                if (!response.ok){
+                if (!response.ok) {
                     const errorData = await response.json();
                     console.error('失敗：', errorData);
                     throw new Error('ライブラリとスタジオとのドッキングに失敗');
                 }
                 const data = await response.json();
                 return data;
-            }catch(error){
+            } catch (error) {
                 console.error('ドッキングに失敗：', error);
                 throw error;
             }
         },
-        async FetchDockingLibrary(groupId){
+        async FetchDockingLibrary(groupId) {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
-            try{
+            try {
                 const response = await fetch(`${config.public.apiBase}connect_library/?group=${groupId}`, {
                     method: 'GET',
                     headers: {
@@ -233,14 +236,14 @@ export const useAuthLibrary = defineStore('library', {
                         "Authorization": `Bearer ${authStore.accessToken}`
                     }
                 });
-                if (!response.ok){
+                if (!response.ok) {
                     const errorData = await response.json();
                     console.error('失敗：', errorData);
                     throw new Error('ライブラリとスタジオとのドッキング情報の取得に失敗');
                 }
                 const data = await response.json();
                 return data;
-            }catch(error){
+            } catch (error) {
                 console.error('ドッキング情報取得失敗：', error);
                 throw error;
             }

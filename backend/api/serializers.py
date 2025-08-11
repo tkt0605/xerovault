@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, InviteAppover, Message, PostfileToLibrary, GoalVote
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db import IntegrityError, transaction
 User = get_user_model()
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -257,59 +258,124 @@ class MessageReadSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'group', 'goal', 'auther', 'text', 'file', 'parent', 'created_at'
         ]
-class PostLibrarySerializer(serializers.ModelSerializer):
-    target = serializers.SlugRelatedField(
-        slug_field = 'id',
-        queryset = GenerateLibrary.objects.all(),
-        required = False,
-        allow_null = True
-    )
-    auther = serializers.SlugRelatedField(
-        slug_field = 'email',
-        queryset = CustomUser.objects.all(),
-        required = False,
-        allow_null = True
-    )
-    class Meta:
-        model = PostfileToLibrary
-        fields = [
-            'id','auther', 'name' , 'target', 'file', 'created_at'
-        ]
-        read_only_fields = [
-            'id','auther', 'name' , 'target', 'file', 'created_at'
-        ]
-class PostLibraryReadSerializer(serializers.ModelSerializer):
-    target = GenerateLibraryReadSerializer(read_only=True)
-    class Meta:
-        model = PostfileToLibrary
-        fields = [
-            'id','auther', 'name' ,'target', 'file', 'created_at'
-        ]
+# class PostLibrarySerializer(serializers.ModelSerializer):
+#     target = serializers.SlugRelatedField(
+#         slug_field = 'id',
+#         queryset = GenerateLibrary.objects.all(),
+#         required = False,
+#         allow_null = True
+#     )
+#     auther = serializers.SlugRelatedField(
+#         slug_field = 'email',
+#         queryset = CustomUser.objects.all(),
+#         required = False,
+#         allow_null = True
+#     )
+#     file = serializers.ListField(
+#         child=serializers.FileField(),
+#         write_only = True
+#     )
+#     class Meta:
+#         model = PostfileToLibrary
+#         fields = [
+#             'id','auther', 'name' , 'target', 'file', 'created_at'
+#         ]
+#         read_only_fields = ['created_at'
+#         ]
+#     def create(self, validated_data):
+#         file = validated_data.pop('file')
+#         created_objects = []
+#         for file in file:
+#             obj = PostfileToLibrary.objects.create(file=file, **validated_data)
+#             created_objects.append(obj)
+#         return created_objects
+# class PostLibraryReadSerializer(serializers.ModelSerializer):
+#     target = GenerateLibraryReadSerializer(read_only=True)
+#     class Meta:
+#         model = PostfileToLibrary
+#         fields = [
+#             'id','auther', 'name' ,'target', 'file', 'created_at'
+#         ]
 
+class PostLibraryCreateSerializer(serializers.ModelSerializer):
+    # create 用（複数ファイル）
+    target = serializers.PrimaryKeyRelatedField(
+        queryset=GenerateLibrary.objects.all(), required=True
+    )
+    auther = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(), required=False, allow_null=True
+    )
+    file = serializers.ListField(
+        child=serializers.FileField(),
+        write_only=True
+    )
+
+    class Meta:
+        model = PostfileToLibrary
+        fields = ['id', 'auther', 'name', 'target', 'file', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+    def create(self, validated_data):
+        file = validated_data.pop('file')
+        # auther は view で渡す（request.user）
+        objs = [
+            PostfileToLibrary.objects.create(file=f, **validated_data)
+            for f in file
+        ]
+        return objs  # ← リストを返す点に注意
+
+class PostLibraryReadSerializer(serializers.ModelSerializer):
+    target = serializers.SerializerMethodField()
+    auther = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PostfileToLibrary
+        fields = ['id', 'auther', 'name', 'target', 'file', 'created_at']
+
+    def get_target(self, obj):
+        # 必要に応じて詳細化
+        return {"id": str(obj.target_id), "name": getattr(obj.target, "name", None)}
+
+    def get_auther(self, obj):
+        return {"id": obj.auther_id, "email": getattr(obj.auther, "email", None)}
 class GoalVoteSerializer(serializers.ModelSerializer):
-    group = serializers.SlugRelatedField(
-        slug_field = 'id',
-        queryset = GenerateGroup.objects.all(),
-        required = True,
-        allow_null = False
-    )
-    goal = serializers.SlugRelatedField(
-        queryset = Goal.objects.all(),
-        slug_field = 'id',
-        required = True,
-        allow_null = False
-    )
-    voter = serializers.SlugRelatedField(
-        slug_field = 'email',
-        read_only = True,
-    )
+    group = serializers.PrimaryKeyRelatedField(queryset=GenerateGroup.objects.all())
+    goal = serializers.PrimaryKeyRelatedField(queryset=Goal.objects.all())
+    voter = serializers.SlugRelatedField(slug_field='email', read_only=True)
+    is_yes = serializers.BooleanField(required=True)
+    explain = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
     class Meta:
         model = GoalVote
         fields = ['id', 'group', 'goal', 'voter', 'explain', 'is_yes', 'created_at']
-        read_only_fields = ["id", 'voter', 'created_at']
+        read_only_fields = ['id', 'voter', 'created_at']
+
+    def validate(self, attrs):
+        user = self.context['request'].user
+        group = attrs['group']
+        goal = attrs['goal']
+
+        if goal.group_id != group.id:
+            raise serializers.ValidationError('group と goal.group が一致していません。')
+
+        if not (group.members.filter(id=user.id).exists() or group.owner_id == user.id):
+            raise serializers.ValidationError('このグループのメンバーではありません。')
+
+        return attrs
+
+    def create(self, validated):
+        validated['voter'] = self.context['request'].user
+        try:
+            with transaction.atomic():
+                return super().create(validated)
+        except IntegrityError:
+            raise serializers.ValidationError('既に投票済みです。')
+
+
 class GoalVoteReadSerializer(serializers.ModelSerializer):
     goal = GoalReadSerializer(read_only=True)
     voter = CustomUserSerializer(read_only=True)
+
     class Meta:
         model = GoalVote
-        fields = ['id', 'group', 'goal', 'voter', 'explain' , 'is_yes', 'created_at']
+        fields = ['id', 'group', 'goal', 'voter', 'explain', 'is_yes', 'created_at']

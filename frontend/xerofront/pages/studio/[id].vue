@@ -117,32 +117,8 @@
                         </div>
                     </div>
                 </div>
-                <!-- <div v-else-if="activeTab === 'ライブラリ'">
-                    <div v-for="lib in alllibrary" :key="lib.id"
-                        class="p-4 transition-all duration-200 border-b border-zinc-700 flex flex-col gap-2 dark:bg-zinc-800  dark:hover:bg-zinc-700 text-white">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
-                                        class="bi bi-folder" viewBox="0 0 16 16">
-                                        <path
-                                            d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139q.323-.119.684-.12h5.396z" />
-                                    </svg>
-                                </div>
-                                <h3 class="text-lg sm:text-xl font-semibold tracking-wide break-all dark:text-white">
-                                    {{ lib.target.name }}
-                                </h3>
-                            </div>
-                            <div class="text-sm ml-8 text-zinc-400 mt-1">
-                                <p class="text-sm text-zinc-400">
-                                    #{{ lib.target.tag }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
                 <div v-else-if="activeTab === 'ライブラリ'" class="space-y-4">
-                    <div v-for="lib in alllibrary" :key="lib.id" @click="goToLibrary(lib.target.id)" class="bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-xl p-4
+                    <div v-for="lib in alllibrary" :key="lib.id" @click="emitLibrary(lib.target.id)" class="bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-xl p-4
                         shadow-sm transition cursor-pointer border border-zinc-200 dark:border-zinc-700">
                         <div class="flex items-center justify-between">
                             <!-- 上段：フォルダアイコン + ライブラリ名 -->
@@ -176,13 +152,15 @@
                             <div class="flex items-start gap-3">
                                 <div class="pt-1">
                                     <!-- SVGアイコン -->
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                        class="w-5 h-5 text-indigo-500 dark:text-indigo-300" fill="currentColor"
-                                        viewBox="0 0 16 16">
-                                        <path
-                                            d="M6 6.207v9.043a.75.75 0 0 0 1.5 0V10.5a.5.5 0 0 1 1 0v4.75a.75.75 0 0 0 1.5 0v-8.5a.25.25 0 1 1 .5 0v2.5a.75.75 0 0 0 1.5 0V6.5a3 3 0 0 0-3-3H6.236a1 1 0 0 1-.447-.106l-.33-.165A.83.83 0 0 1 5 2.488V.75a.75.75 0 0 0-1.5 0v2.083c0 .715.404 1.37 1.044 1.689L5.5 5c.32.32.5.754.5 1.207" />
-                                        <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
-                                    </svg>
+                                    <button class="hover:bg-zinc-100 rounded-full" @click="DeleteVote(vote.id)">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            class="w-5 h-5 text-indigo-500 dark:text-indigo-300" fill="currentColor"
+                                            viewBox="0 0 16 16">
+                                            <path
+                                                d="M6 6.207v9.043a.75.75 0 0 0 1.5 0V10.5a.5.5 0 0 1 1 0v4.75a.75.75 0 0 0 1.5 0v-8.5a.25.25 0 1 1 .5 0v2.5a.75.75 0 0 0 1.5 0V6.5a3 3 0 0 0-3-3H6.236a1 1 0 0 1-.447-.106l-.33-.165A.83.83 0 0 1 5 2.488V.75a.75.75 0 0 0-1.5 0v2.083c0 .715.404 1.37 1.044 1.689L5.5 5c.32.32.5.754.5 1.207" />
+                                            <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                        </svg>
+                                    </button>
                                 </div>
                                 <h3
                                     class="text-lg font-semibold text-zinc-800 dark:text-white break-words leading-snug">
@@ -223,7 +201,7 @@ import { useGoalStore } from '~/store/goal';
 import { useAuthVote } from '~/store/vote';
 import { useAuthLibrary } from '~/store/library';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, createCommentVNode } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import { errorMessages } from 'vue/compiler-sfc';
 import { QrcodeCanvas } from 'qrcode.vue';
@@ -282,6 +260,10 @@ onMounted(async () => {
 function emitVote(voteId) {
     console.log('投票ID:', voteId);
     eventBus.emit('Vote-dialog', voteId);
+};
+function emitLibrary(libraryId){
+    console.log('ライブラリID:', libraryId);
+    eventBus.emit('Folder-dialog', libraryId);
 }
 const mygoals = computed(() => {
     return allgoals.value.filter((item) => item.assignee?.email === authStore.user?.email)
@@ -329,5 +311,20 @@ const JoinCreateForm = async () => {
 const formatDate = (dateStr) => {
     const d = new Date(dateStr)
     return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' })
+};
+const DeleteVote = async (voteId) => {
+    try{
+        const response = await authVote.DeleteVote(voteId);
+        if (response.status === 204){
+            console.log('投票削除成功', response);
+            return router.go(0);
+        } else {
+            console.error('投票削除失敗', response.status);
+            throw new Error('投票削除に失敗しました');
+        }
+    }catch(err){
+        console.error('投票削除エラー:', err);
+        throw err;
+    }
 };
 </script>

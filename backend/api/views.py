@@ -7,7 +7,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, GroupNotification, InviteAppover, Message, PostfileToLibrary, GoalVote
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
-from .serializers import GoalVoteSerializer, GoalVoteReadSerializer, RegisterSerializer,MessageSerializer,MessageReadSerializer , CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LogoutSerializer, GeneratePublicTokenSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GeneratePublicTokenReadSerializer, GenerateLibrarySerializer, GenerateLibraryReadSerializer, GoalSerializer, GoalReadSerializer, ConnectLibrarySerializer, ConnectLibraryReadSerializer, InviteAppoverSerializer, InviteApproverReadSerializer, PostLibraryReadSerializer, PostLibrarySerializer
+from .serializers import GoalVoteSerializer, PostLibraryCreateSerializer, GoalVoteReadSerializer, RegisterSerializer,MessageSerializer,MessageReadSerializer , CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LogoutSerializer, GeneratePublicTokenSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GeneratePublicTokenReadSerializer, GenerateLibrarySerializer, GenerateLibraryReadSerializer, GoalSerializer, GoalReadSerializer, ConnectLibrarySerializer, ConnectLibraryReadSerializer, InviteAppoverSerializer, InviteApproverReadSerializer, PostLibraryReadSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import timedelta
 from django.contrib.auth import get_user_model
@@ -243,7 +243,7 @@ class GoalViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in['create', 'list', 'my_goals']:
-            return [AllowAny()]
+            return [IsAuthenticated()]
         return super().get_permissions()
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
@@ -278,7 +278,13 @@ class GoalViewSet(viewsets.ModelViewSet):
     def vote(self, request, pk=None):
         goal = self.get_object()
         user= request.user
-        is_yes = request.data.get('is_yes')
+        raw = request.data.get('is_yes')
+        if isinstance(raw, str):
+            is_yes = raw.lower() in ['true', '1', 'yes']
+        else:
+            is_yes = bool(raw)
+        if not (goal.group.members.filter(id=user.id).exists() or goal.group.owner == user.id):
+            return Response({'detail': 'このユーザーはグループのメンバー又は、オーナーではありません。'}, status=403)
         if goal.group.members.filter(id=user.id).exists():
             vote, created = GoalVote.objects.get_or_create(
                 goal=goal,
@@ -398,54 +404,117 @@ class MessageViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(auther=self.request.user)
 
-class UploadMultipleFilesView(APIView):
-    permission_classes = [IsAuthenticated]
+# class UploadMultipleFilesView(viewsets.ModelViewSet):
+#     queryset = PostfileToLibrary.objects.all()
+#     serializer_class = PostLibrarySerializer
 
-    def post(self, request, *args, **kwargs):
-        target_id = request.data.get('target')  # フロント側から送られる target ライブラリID
-        files = request.FILES.getlist('file')   # name="file" の input が複数の場合
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         objects = serializer.save(auther=request.user)
+#         return Response({"uploaded": len(objects)}, status=status.HTTP_201_CREATED)
+    # permission_classes = [IsAuthenticated]
 
-        if not target_id or not files:
-            return Response({'error': 'targetとfileは必須です。'}, status=400)
+    # def post(self, request, *args, **kwargs):
+    #     target_id = request.data.get('target')  # フロント側から送られる target ライブラリID
+    #     files = request.FILES.getlist('file')   # name="file" の input が複数の場合
 
-        saved_files = []
-        for file in files:
-            serializer = PostLibrarySerializer(data={
-                'target': target_id,
-                'file': file
-            })
-            if serializer.is_valid():
-                serializer.save()
-                saved_files.append(serializer.data)
-            else:
-                return Response(serializer.errors, status=400)
+    #     if not target_id or not files:
+    #         return Response({'error': 'targetとfileは必須です。'}, status=400)
 
-        return Response({'uploaded': saved_files}, status=201)
+    #     saved_files = []
+    #     for file in files:
+    #         serializer = PostLibrarySerializer(data={
+    #             'target': target_id,
+    #             'file': file
+    #         })
+    #         if serializer.is_valid():
+    #             serializer.save()
+    #             saved_files.append(serializer.data)
+    #         else:
+    #             return Response(serializer.errors, status=400)
+
+    #     return Response({'uploaded': saved_files}, status=201)
+# class GetFilesView(viewsets.ModelViewSet):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = PostLibrarySerializer
+#     def get_serializer_class(self):
+#         if self.action in ['list', 'retrieve']:
+#             return PostLibraryReadSerializer
+#         return PostLibrarySerializer
+#     def get_queryset(self):
+#         user = self.request.user
+#         return PostfileToLibrary.objects.filter(
+#             Q(auther = user)
+#             ).order_by('-created_at')
+#     def create(self, request, *args, **kwargs):
+#         user = request.user
+#         target = request.data.get('target')
+#         name = request.data.get('name')
+#         upload_files = request.FILES.getlist('file')
+#         if not upload_files:
+#             return Response({'error': 'ファイルが送信されていません。'}, status=403)
+#         crated_objects = []
+#         for f in upload_files:
+#             obj = PostfileToLibrary.objects.create(
+#                 target=target,
+#                 auther = user,
+#                 name = name,
+#                 file = f,
+#            )
+#             crated_objects.append(obj)
+#         read_serializer = PostLibraryReadSerializer(crated_objects, many = True)
+#         return Response(read_serializer.data, status=201)
 class GetFilesView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
-    serializer_class = PostLibrarySerializer
+
     def get_serializer_class(self):
-        if self.action in ['list', 'retrieve']:
-            return PostLibraryReadSerializer
-        return PostLibrarySerializer
+        # create のみ「複数ファイル」用 serializer
+        if self.action == 'create':
+            return PostLibraryCreateSerializer
+        # list / retrieve / update などは読む用
+        return PostLibraryReadSerializer
+
     def get_queryset(self):
         user = self.request.user
-        return PostfileToLibrary.objects.filter(
-            Q(auther = user)
-            ).order_by('-created_at')
-    def perform_create(self, serializer):
-        user = self.request.user
-        serializer.save(auther=user)
+        return PostfileToLibrary.objects.filter(Q(auther=user)).order_by('-created_at')
+
+    def create(self, request, *args, **kwargs):
+        """
+        フロントは FormData で:
+          target: <id>
+          name: <str>
+          files: <file> (同じキー名で複数 append)
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # 権限チェック（必要なら追加）
+        # target = serializer.validated_data['target']
+        # if target.owner != request.user: return Response(..., 403)
+
+        objs = serializer.save(auther=request.user)  # ← list が返る
+        read_ser = PostLibraryReadSerializer(objs, many=True)
+        return Response(read_ser.data, status=status.HTTP_201_CREATED)
 class GoalVoteViewSet(viewsets.ModelViewSet):
     serializer_class = GoalVoteSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = GoalVote.objects.all()
+        user = self.request.user
+        qs = GoalVote.objects.select_related('goal', 'voter', 'goal__group')
+        qs = qs.filter(
+            Q(goal__group__members = user) | Q(goal__group__owner = user)
+        )
         group_id = self.request.query_params.get('group')
         if group_id:
-            return queryset.filter(group=group_id)
-        return queryset
+            qs = qs.filter(goal__group=group_id)
+        return qs.order_by('-created_at')
+        # queryset = GoalVote.objects.all()
+        # group_id = self.request.query_params.get('group')
+        # if group_id:
+        #     return queryset.filter(group=group_id)
+        # return queryset
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return GoalVoteReadSerializer
