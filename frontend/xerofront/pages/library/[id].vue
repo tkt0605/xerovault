@@ -1,6 +1,5 @@
 <template>
-  <main
-    class="flex-1 px-6 py-12 overflow-y-auto  from-zinc-100 to-white dark:from-zinc-950 dark:to-zinc-900">
+  <main class="text-black dark:text-white  md:ml-72 ml-0 relative flex-1 overflow-y-auto">
     <section
       class="max-w-5xl mx-auto backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-8 md:p-10 space-y-10">
 
@@ -81,7 +80,7 @@
 
         <!-- 送信 -->
         <div class="pt-2">
-          <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl
+          <button type="submit" @click="uploadfile" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl
                          bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
               <path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v6h6.66V9h3.84L12 2z" />
@@ -170,7 +169,28 @@ const formatDate = (dateStr) => {
   return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' })
 };
 
+const uploadfile = async()=>{
+  const file = fileInput.value.files[0];
+  if (!file) {
+    alert('ファイルを選択してください');
+    return;
+  }
 
+  const formData = new FormData();
+  formData.append('file', file);
+  // formData.append('name', form.value.filename || file.name);
+  const name = form.value.filename || file.name;
+
+  try {
+    await libraryStore.UploadfileToLibrary(libraries.value.id ,name , formData);
+    alert('ファイルがアップロードされました');
+    fileInput.value.value = ''; // Reset file input
+    libraries.value = await libraryStore.FetchLibraryId(libraries.value.id); // Refresh library data
+  } catch (error) {
+    console.error('ファイルアップロード失敗：', error);
+    alert('ファイルのアップロードに失敗しました');
+  }
+};
 </script>
 <style scoped>
 @keyframes fadeIn {

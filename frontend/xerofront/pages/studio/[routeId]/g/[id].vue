@@ -277,7 +277,8 @@ const formatDate = (dateStr) => {
     return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' })
 };
 const goBack = () => {
-    router.back();
+    // router.back();
+    return router.push(`/studio/${route.params.routeId}`);
 };
 const adjustHeight = () => {
     const el = textareaRef.value;
