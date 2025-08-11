@@ -1,8 +1,36 @@
-node_modules
-.nuxt
-.output
-dist
+# ------------------------
+# Node依存・ビルド生成物
+# ------------------------
+node_modules/
+.nuxt/
+.output/
+dist/
+
+# ------------------------
+# 環境変数・設定ファイル
+# ------------------------
 .env
+*.env
+
+# ------------------------
+# OSやエディタのゴミファイル
+# ------------------------
 .DS_Store
-npm-debug.log
-node_modules
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ------------------------
+# npm / yarn / pnpm ログ
+# ------------------------
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ------------------------
+# Git関連
+# ------------------------
+.git
+.gitignore

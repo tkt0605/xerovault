@@ -1,22 +1,8 @@
-# ✅ amd64 対応（Apple Silicon でも amd64 エミュレーションで動かす）
 FROM --platform=linux/amd64 node:18-slim
-
-# パッケージ更新 & curl だけでOK
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-
-# ✅ 作業ディレクトリを明示
 WORKDIR /frontend/xerofront
-
-# ✅ パッケージJSONのみをまずコピー（キャッシュ効かせるため）
 COPY package*.json ./
-
-# ✅ コンテナ内で依存インストール（重要！ホストと切り離す）
 RUN npm install
-
-# ✅ 残りをすべてコピー（コードや .nuxt, .output 除外するには .dockerignore）
 COPY . .
-# ✅ ポート開放
 EXPOSE 3000
-
-# ✅ Nuxt 起動（nuxiはローカル依存を使う）
 CMD ["npm", "run", "dev"]

@@ -10,7 +10,7 @@
             backdropFilter: 'blur(8px)'
         }">
         <div class="dark:bg-zinc-800 backdrop-blur-md py-4 pt-16">
-            <div class="max-w-4xl mx-auto px-6 space-y-6">
+            <div class="max-w-6xl mx-auto px-6 space-y-4">
                 <div class="text-center ">
                     <button>
                         <h1 class="text-4xl dark:text-white">
