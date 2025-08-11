@@ -4,14 +4,14 @@ from django.conf import settings
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenBlacklistView
 from api import views
-from api.views import GoalVoteViewSet, RegisterAPI,MessageViewSet , EmailLoginAPI, LogoutAPI, CustomUserViewSet,ConnectLibraryViewSet , GenerateGroupviewSet, GeneratePublicTokenViewSet, GenerateLibraryviewSet, GoalViewSet, InviteCreateView, InviteAppoverViewSet, UploadMultipleFilesView, GetFilesView
+from api.views import GoalVoteViewSet, RegisterAPI,MessageViewSet , EmailLoginAPI, LogoutAPI, CustomUserViewSet,ConnectLibraryViewSet , GenerateGroupviewSet, GenerateLibraryviewSet, GoalViewSet, GetFilesView
 router = routers.DefaultRouter()
 router.register(r'users', CustomUserViewSet, basename='user')
 router.register(r'groups', GenerateGroupviewSet, basename='group')
-router.register(r'tokens', GeneratePublicTokenViewSet, basename='token')
+# router.register(r'tokens', GeneratePublicTokenViewSet, basename='token')
 router.register(r'librarys', GenerateLibraryviewSet, basename='librarys')
 router.register(r'goals', GoalViewSet, basename='goals')
-router.register(r'invite', InviteAppoverViewSet, basename='Invite_user')
+# router.register(r'invite', InviteAppoverViewSet, basename='Invite_user')
 router.register(r'message', MessageViewSet, basename='message')
 router.register(r'library_files', GetFilesView, basename='library_files')
 router.register(r'connect_library', ConnectLibraryViewSet, basename='connect_library')
@@ -23,7 +23,7 @@ urlpatterns = [
     path('logout/', LogoutAPI.as_view(), name='logout'),
     path('login/', EmailLoginAPI.as_view(), name='login'),
     path('signup/', RegisterAPI.as_view(), name='signup'),
-    path('invite/create/', InviteCreateView.as_view(), name='invite-create'),
+    # path('invite/create/', InviteCreateView.as_view(), name='invite-create'),
     # path('upload_library/', UploadMultipleFilesView.as_view(), name='upload_file_library'),
     path('', include(router.urls))
 ]

@@ -76,20 +76,20 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.email
 def get_default_expired():
     return timezone.now() + timedelta(hours=24)
-class InviteAppover(models.Model):
-    token = models.UUIDField(default=uuid.uuid4, unique=True)
-    inviter = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
-    invitee = models.ForeignKey( AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='group_invite_received', null=True, blank=True)
-    is_approved = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField(default=get_default_expired)
-    def __str__(self) -> str:
-        return f"{self.inviter}が{self.invitee}をリスト追加"
-    @property
-    def is_expired(self):
-        return timezone.now() > self.expires_at
-    class Meta:
-        ordering = ['-created_at']
+# class InviteAppover(models.Model):
+#     token = models.UUIDField(default=uuid.uuid4, unique=True)
+#     inviter = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
+#     invitee = models.ForeignKey( AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='group_invite_received', null=True, blank=True)
+#     is_approved = models.BooleanField(default=False)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     expires_at = models.DateTimeField(default=get_default_expired)
+#     def __str__(self) -> str:
+#         return f"{self.inviter}が{self.invitee}をリスト追加"
+#     @property
+#     def is_expired(self):
+#         return timezone.now() > self.expires_at
+#     class Meta:
+#         ordering = ['-created_at']
 class GenerateGroup(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, unique=True)
@@ -176,24 +176,24 @@ def on_member_change(sender, instance, action, **kwargs):
         instance.update_score()
 
 
-class GeneratePublicToken(models.Model):
-    user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tokens')
-    groups = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='group_tokens', default='')
-    token = models.UUIDField(default=uuid.uuid4)
-    is_used = models.BooleanField(default=False)
-    is_valid = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    def __str__(self):
-        return self.token
-    def save(self, *args, **kwargs):
-        if not self.pk and GeneratePublicToken.objects.filter(user=self.user).count() >= 10:
-            raise ValueError('ユーザーの公開トークンは最大10個までです。')
-        super().save(*args, **kwargs)
-    class Meta:
-        unique_together = ('user', 'groups')
-        verbose_name = 'Generate Token'
-        verbose_name_plural = 'Generate Tokens'
+# class GeneratePublicToken(models.Model):
+#     user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tokens')
+#     groups = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='group_tokens', default='')
+#     token = models.UUIDField(default=uuid.uuid4)
+#     is_used = models.BooleanField(default=False)
+#     is_valid = models.BooleanField(default=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+#     def __str__(self):
+#         return self.token
+#     def save(self, *args, **kwargs):
+#         if not self.pk and GeneratePublicToken.objects.filter(user=self.user).count() >= 10:
+#             raise ValueError('ユーザーの公開トークンは最大10個までです。')
+#         super().save(*args, **kwargs)
+#     class Meta:
+#         unique_together = ('user', 'groups')
+#         verbose_name = 'Generate Token'
+#         verbose_name_plural = 'Generate Tokens'
 
 class GenerateLibrary(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

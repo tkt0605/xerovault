@@ -34,7 +34,6 @@ definePageMeta({
   layout: 'auth',
 });
 const handleLogin = async () => {
-  // TODO: 認証API呼び出し
   try{
     await authStore.login(email.value, password.value);
     console.log('Login with:', email.value, password.value);

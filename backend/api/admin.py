@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, GenerateGroup, GeneratePublicToken, Goal
+from .models import CustomUser, GenerateGroup, Goal
 from django.contrib.auth.admin import UserAdmin as baseUserAdmin
 from api.model.custom_token import CustomOutStandingToken, CustomBlackListToken
 class CustomUserAdmin(baseUserAdmin):
@@ -26,7 +26,6 @@ class CustomOutstandingTokenAdmin(admin.ModelAdmin):
 class CustomBlackListTokenAdmin(admin.ModelAdmin):
     list_display = ('token', 'blacklisted_at')
 admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.register(GeneratePublicToken)
 admin.site.register(GenerateGroup)
 admin.site.register(CustomOutStandingToken, CustomOutstandingTokenAdmin)
 admin.site.register(CustomBlackListToken, CustomBlackListTokenAdmin)

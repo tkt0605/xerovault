@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import GeneratePublicToken, CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, GroupNotification, InviteAppover, Message, PostfileToLibrary, GoalVote
+from .models import  CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, GroupNotification, Message, PostfileToLibrary, GoalVote
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
-from .serializers import GoalVoteSerializer, PostLibraryCreateSerializer, GoalVoteReadSerializer, RegisterSerializer,MessageSerializer,MessageReadSerializer , CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LogoutSerializer, GeneratePublicTokenSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GeneratePublicTokenReadSerializer, GenerateLibrarySerializer, GenerateLibraryReadSerializer, GoalSerializer, GoalReadSerializer, ConnectLibrarySerializer, ConnectLibraryReadSerializer, InviteAppoverSerializer, InviteApproverReadSerializer, PostLibraryReadSerializer
+from .serializers import GoalVoteSerializer, PostLibraryCreateSerializer, GoalVoteReadSerializer, RegisterSerializer,MessageSerializer,MessageReadSerializer , CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LogoutSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GenerateLibrarySerializer, GenerateLibraryReadSerializer, GoalSerializer, GoalReadSerializer, ConnectLibrarySerializer, ConnectLibraryReadSerializer, PostLibraryReadSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import timedelta
 from django.contrib.auth import get_user_model
@@ -75,25 +75,25 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(approver, many=True)
         return Response(serializer.data)
 
-class GeneratePublicTokenViewSet(viewsets.ModelViewSet):
-    queryset = GeneratePublicToken.objects.all()
-    serializer_class = GeneratePublicTokenSerializer
-    permission_classes = [IsAuthenticated]
-    def get_permissions(self):
-        if self.action in ['create', 'list']:
-            return [AllowAny()]
-        return super().get_permissions()
-    def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return GeneratePublicTokenReadSerializer
-        return super().get_serializer_class()
-    @action(detail=False, methods=['post'], permission_classes = [IsAuthenticated])
-    def generate_token(self, request):
-        serializer = GeneratePublicTokenSerializer(data=request.data)
-        if serializer.is_valid():
-            token = serializer.save()
-            return Response({'token': token.token}, status=201)
-        return Response(serializer.errors, status=400)
+# class GeneratePublicTokenViewSet(viewsets.ModelViewSet):
+#     queryset = GeneratePublicToken.objects.all()
+#     serializer_class = GeneratePublicTokenSerializer
+#     permission_classes = [IsAuthenticated]
+#     def get_permissions(self):
+#         if self.action in ['create', 'list']:
+#             return [AllowAny()]
+#         return super().get_permissions()
+#     def get_serializer_class(self):
+#         if self.action == 'retrieve':
+#             return GeneratePublicTokenReadSerializer
+#         return super().get_serializer_class()
+#     @action(detail=False, methods=['post'], permission_classes = [IsAuthenticated])
+#     def generate_token(self, request):
+#         serializer = GeneratePublicTokenSerializer(data=request.data)
+#         if serializer.is_valid():
+#             token = serializer.save()
+#             return Response({'token': token.token}, status=201)
+#         return Response(serializer.errors, status=400)
 class InviteCreateView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
@@ -342,42 +342,47 @@ class ConnectLibraryViewSet(viewsets.ModelViewSet):
         serializer = ConnectLibraryReadSerializer(connecter, many=True)
         return Response(serializer.data)
     def get_queryset(self):
-        queryset = ConnectLibrary.objects.all()
+        qs = super().get_queryset()
         group_id = self.request.query_params.get('group')
-        if group_id:
-            return queryset.filter(group=group_id)
-        return queryset
+        if group_id in (None, '', 'null', 'undefined'):
+            return qs
+        try:
+            group_uuid = uuid.UUID(group_id)
+        except (ValueError, AttributeError, TypeError):
+            raise ValueError("Invalid group ID format.")
+        return qs.filter(group__id=group_uuid)
 
 
-class InviteAppoverViewSet(viewsets.ModelViewSet):
-    queryset = InviteAppover.objects.all()
-    permission_classes = [IsAuthenticated]
-    serializer_class = InviteAppoverSerializer
-    def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return InviteApproverReadSerializer
-        return super().get_serializer_class()
-    def perform_create(self, serializer):
-        serializer.save(inviter=self.request.user)
-    @action(detail=True, methods=['post'], url_path='approver')
-    def approver_invite(self, request, *args, **kwargs):
-        invite = self.get_object()
-        if invite.expires_at:
-            return Response({'error': 'この招待リンクは期限切れです。'}, status=400)
-        if invite.is_approved:
-            return Response({'error': 'このリンクは既に利用されています。'}, status=400)
-        invite.invitee = request.user
-        invite.is_approved = True
-        invite.save()
-        return Response(self.get_serializer(invite).data, status=200)
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
-    def my_friends(self, request):
-        user = self.request.user
-        my_list = InviteAppover.objects.filter(
-            Q(inviter=user)
-        )
-        serializer = InviteApproverReadSerializer(my_list, many=True)
-        return Response(serializer.data)
+
+# class InviteAppoverViewSet(viewsets.ModelViewSet):
+#     queryset = InviteAppover.objects.all()
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = InviteAppoverSerializer
+#     def get_serializer_class(self):
+#         if self.action == 'retrieve':
+#             return InviteApproverReadSerializer
+#         return super().get_serializer_class()
+#     def perform_create(self, serializer):
+#         serializer.save(inviter=self.request.user)
+#     @action(detail=True, methods=['post'], url_path='approver')
+#     def approver_invite(self, request, *args, **kwargs):
+#         invite = self.get_object()
+#         if invite.expires_at:
+#             return Response({'error': 'この招待リンクは期限切れです。'}, status=400)
+#         if invite.is_approved:
+#             return Response({'error': 'このリンクは既に利用されています。'}, status=400)
+#         invite.invitee = request.user
+#         invite.is_approved = True
+#         invite.save()
+#         return Response(self.get_serializer(invite).data, status=200)
+#     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+#     def my_friends(self, request):
+#         user = self.request.user
+#         my_list = InviteAppover.objects.filter(
+#             Q(inviter=user)
+#         )
+#         serializer = InviteApproverReadSerializer(my_list, many=True)
+#         return Response(serializer.data)
 
 class MessageViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -403,68 +408,6 @@ class MessageViewSet(viewsets.ModelViewSet):
         return queryset
     def perform_create(self, serializer):
         serializer.save(auther=self.request.user)
-
-# class UploadMultipleFilesView(viewsets.ModelViewSet):
-#     queryset = PostfileToLibrary.objects.all()
-#     serializer_class = PostLibrarySerializer
-
-#     def create(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         objects = serializer.save(auther=request.user)
-#         return Response({"uploaded": len(objects)}, status=status.HTTP_201_CREATED)
-    # permission_classes = [IsAuthenticated]
-
-    # def post(self, request, *args, **kwargs):
-    #     target_id = request.data.get('target')  # フロント側から送られる target ライブラリID
-    #     files = request.FILES.getlist('file')   # name="file" の input が複数の場合
-
-    #     if not target_id or not files:
-    #         return Response({'error': 'targetとfileは必須です。'}, status=400)
-
-    #     saved_files = []
-    #     for file in files:
-    #         serializer = PostLibrarySerializer(data={
-    #             'target': target_id,
-    #             'file': file
-    #         })
-    #         if serializer.is_valid():
-    #             serializer.save()
-    #             saved_files.append(serializer.data)
-    #         else:
-    #             return Response(serializer.errors, status=400)
-
-    #     return Response({'uploaded': saved_files}, status=201)
-# class GetFilesView(viewsets.ModelViewSet):
-#     permission_classes = [IsAuthenticated]
-#     serializer_class = PostLibrarySerializer
-#     def get_serializer_class(self):
-#         if self.action in ['list', 'retrieve']:
-#             return PostLibraryReadSerializer
-#         return PostLibrarySerializer
-#     def get_queryset(self):
-#         user = self.request.user
-#         return PostfileToLibrary.objects.filter(
-#             Q(auther = user)
-#             ).order_by('-created_at')
-#     def create(self, request, *args, **kwargs):
-#         user = request.user
-#         target = request.data.get('target')
-#         name = request.data.get('name')
-#         upload_files = request.FILES.getlist('file')
-#         if not upload_files:
-#             return Response({'error': 'ファイルが送信されていません。'}, status=403)
-#         crated_objects = []
-#         for f in upload_files:
-#             obj = PostfileToLibrary.objects.create(
-#                 target=target,
-#                 auther = user,
-#                 name = name,
-#                 file = f,
-#            )
-#             crated_objects.append(obj)
-#         read_serializer = PostLibraryReadSerializer(crated_objects, many = True)
-#         return Response(read_serializer.data, status=201)
 class GetFilesView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
