@@ -10,7 +10,8 @@
       </aside>
       <main class="flex-1 overflow-y-auto">
         <NuxtPage @Member-dialog="ShowMember()" @QR-dialog="QRdialog()" @Goal-dialog="CreateGoal()"
-          @DockingtoStudio-dialog="DockingLibrary()" @Goalvote-dialog="GoalVoting()" @Vote-dialog="Votedialog(voteId)" />
+          @DockingtoStudio-dialog="DockingLibrary()" @Goalvote-dialog="GoalVoting()" @Vote-dialog="Votedialog(voteId)"
+          @Folder-dialog="openFolder(libraryId)" />
       </main>
 
       <!-- Dialog コンポーネントは省略 -->
@@ -285,7 +286,7 @@
           </button>
         </template>
       </Dialog>
-      <Dialog :visible="openVotedialog" @close="openVotedialog = false" >
+      <Dialog :visible="openVotedialog" @close="openVotedialog = false">
         <template #header>
           <h2 class="text-xl font-bold text-gray-800 dark:text-white">{{ selectedVote?.explain }}</h2>
         </template>
@@ -309,13 +310,150 @@
           </button>
         </template>
       </Dialog>
+      <Dialog :visible="openLibraryfolder" @close="openLibraryfolder = false">
+        <!-- Header -->
+        <template #header>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="h-10 w-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
+                <!-- フォルダアイコン -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600 dark:text-indigo-300"
+                  viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M10 4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2h6z" />
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-lg md:text-xl font-bold text-zinc-900 dark:text-white">
+                  {{ selectedLib?.name }} フォルダ
+                </h2>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                  追加・並び替え・共有をここから操作
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span
+                class="px-2 py-1 text-xs rounded-full bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200">
+                {{ files.length }} ファイル
+              </span>
+              <button @click="refreshFiles"
+                class="px-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700">
+                更新
+              </button>
+            </div>
+          </div>
+        </template>
+        <template #default>
+          <div class="space-y-4">
+            <div class="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+              <div class="flex items-center gap-2">
+                <div class="relative">
+                  <input v-model="query" type="text" placeholder="ファイル検索"
+                    class="w-64 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 pl-9 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <svg class="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M10 18a8 8 0 1 1 5.292-14.01l4.359 4.36-1.414 1.414-3.94-3.94A6 6 0 1 0 10 16a5.96 5.96 0 0 0 3.87-1.39l1.42 1.42A7.96 7.96 0 0 1 10 18z" />
+                  </svg>
+                </div>
+                <select v-model="sortKey"
+                  class="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm">
+                  <option value="updated">更新順</option>
+                  <option value="name">名前順</option>
+                  <option value="size">サイズ順</option>
+                </select>
+              </div>
+              <div class="flex items-center gap-2">
+                <button @click="selectAll"
+                  class="text-sm px-3 py-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700">
+                  全選択
+                </button>
+                <button @click="deleteSelected" :disabled="!selectedIds.length"
+                  class="text-sm px-3 py-2 rounded-lg bg-rose-600 text-white disabled:opacity-40 hover:bg-rose-500">
+                  削除
+                </button>
+              </div>
+            </div>
+            <div v-if="filteredFiles.length"
+              class="divide-y divide-zinc-100 dark:divide-zinc-700 rounded-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+              <div v-for="f in filteredFiles" :key="f.id"
+                class="flex items-center justify-between gap-3 px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/60">
+                <div class="flex items-center gap-3 min-w-0">
+                  <input type="checkbox" v-model="selectedIds" :value="f.id"
+                    class="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500">
+                  <div
+                    class="h-9 w-9 rounded-lg bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-600 dark:text-zinc-300"
+                      viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4c0-1.1.9-2 2-2z" />
+                    </svg>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="truncate font-medium text-zinc-900 dark:text-white">{{ f.name }}</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                      {{ formatSize(f.size) }} ・ {{ formatDate(f.updated_at) }}
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button @click="downloadFile(f)"
+                    class="px-2 py-1.5 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700">DL</button>
+                  <button @click="renameFile(f)"
+                    class="px-2 py-1.5 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover	bg-zinc-700">名称変更</button>
+                  <button @click="deleteOne(f)"
+                    class="px-2 py-1.5 text-sm rounded-lg bg-rose-600 text-white hover:bg-rose-500">削除</button>
+                </div>
+              </div>
+            </div>
+            <div v-else class="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 p-10 text-center">
+              <p class="text-zinc-600 dark:text-zinc-300 font-medium">このフォルダにはまだファイルがありません</p>
+              <p class="text-sm text-zinc-500 dark:text-zinc-400">下のアップロードから追加できます</p>
+              <div class="text-xs text-zinc-500 dark:text-zinc-400">
+                最大 100MB / ファイル ・ JPG, PNG, PDF, ZIP 対応
+              </div>
+            </div>
+            <div @dragover.prevent @drop.prevent="handleDrop"
+              class="rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 p-6 text-center hover:bg-zinc-50/60 dark:hover:bg-zinc-800/50 transition">
+              <p class="text-sm text-zinc-600 dark:text-zinc-300">ここにファイルをドラッグ & ドロップ</p>
+              <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">または</p>
+              <button @click="$refs.fileInput.click()"
+                class="mt-3 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500">
+                ファイルを選択
+              </button>
+              <input ref="fileInput" type="file" multiple class="hidden" @change="handlePick">
+              <div v-if="uploading" class="mt-4">
+                <div class="h-2 w-full rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
+                  <div class="h-2 bg-indigo-600 transition-all" :style="{ width: uploadProgress + '%' }"></div>
+                </div>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{{ uploadProgress }}%</p>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Footer -->
+        <template #footer>
+          <div class="flex items-center justify-between w-full">
+            <div class="flex items-center justify-end gap-2">
+              <button @click="$refs.fileInput.click()"
+                class="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500">
+                アップロードする
+              </button>
+              <button @click="createSubfolder"
+                class="px-3 py-2 rounded-lg bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90">
+                サブフォルダ作成
+              </button>
+            </div>
+          </div>
+        </template>
+      </Dialog>
+
     </div>
   </div>
 </template>
 <script setup>
 import Header from '~/components/Header.vue';
 import Aside from '~/components/Aside.vue';
-// import Main from '~/components/Main.vue';
 import '~/assets/css/index.css';
 import Dialog from '~/components/MainDialog.vue';
 import { useAuthStore } from '~/store/auth';
@@ -346,7 +484,7 @@ const goalDeadline = ref('');
 const groupName = ref("");
 const groupTag = ref("");
 const is_group = ref(false);
-
+const openLibraryfolder = ref(false);
 const libraryName = ref('');
 const libraryTag = ref('');
 const is_library = ref(false);
@@ -375,10 +513,14 @@ const my_goals = ref([]);
 const isVotingdailog = ref(false);
 const openVotedialog = ref(false);
 const selectedVoteId = ref(null);
+const selectedLibrary = ref(null);
 const allvotes = ref([]);
-const voteId = ref(''); 
+const voteId = ref('');
+const library = ref([]);
+const libraryId = ref('');
 onMounted(async () => {
   try {
+    library.value = await libraryStore.FetchDockingLibrary(routeId);
     groupList.value = await groupStore.fetchGroup();
     libraries.value = await libraryStore.FetchLibrary();
     my_libraries.value = await libraryStore.fetchMylibrary();
@@ -387,6 +529,7 @@ onMounted(async () => {
     goals.value = await authGoal.fetchGoalsByGroup(routeId);
     allvotes.value = await authVote.FetchVotes();
     eventBus.on('Vote-dialog', handleVotedialog);
+    eventBus.on('Folder-dialog', openFolder);
     const key = `${group.name}_${route.params.id}`;
     const storedUrl = localStorage.getItem(key);
     if (storedUrl) {
@@ -400,12 +543,25 @@ onMounted(async () => {
 });
 onBeforeUnmount(() => {
   eventBus.off('Vote-dialog', handleVotedialog);
+  eventBus.off('Folder-dialog', openFolder)
 });
 const selectedVote = computed(() => {
-  if (Array.isArray(allvotes.value)){
+  if (Array.isArray(allvotes.value)) {
     return allvotes.value.find((v) => v.id === selectedVoteId.value);
   }
 });
+const selectedLib = computed(() => {
+  if (Array.isArray(libraries.value)) {
+    return libraries.value.find((lib) => lib.id === selectedLibrary.value);
+  }
+})
+function openFolder(libraryId) {
+  selectedLibrary.value = libraryId;
+  openLibraryfolder.value = true;
+};
+const closeFolder = () => {
+  openLibraryfolder.value = false;
+};
 function handleVotedialog(voteId) {
   selectedVoteId.value = voteId;
   openVotedialog.value = true;
@@ -669,6 +825,7 @@ const Voting = async () => {
       selectedGoalId.value = '';
       goals.value = await authGoal.fetchGoalsByGroup(routeId);
       console.log('投票が作成されました。');
+      return router.go(0);
     } else {
       console.error('投票の作成に失敗しました。');
       throw new Error('投票の作成・失敗:');
@@ -680,12 +837,67 @@ const Voting = async () => {
 };
 const submitVote = (value) => {
   console.log('投票:', value);
-  if (value === "yes"){
+  if (value === "yes") {
     authVote.PostVoteToGoal(selectedVote.value.goal.id, true);
-  }else if (value === 'no'){
+  } else if (value === 'no') {
     authVote.PostVoteToGoal(selectedVote.value.goal.id, false);
   }
   openVotedialog.value = false;
 };
+const query = ref('')
+const sortKey = ref('updated') // "updated" | "name" | "size"
+const selectedIds = ref([])
+const files = ref([]) // 例: [{ id, name, size, updated_at }, ...]
 
+const uploading = ref(false)
+const uploadProgress = ref(0)
+
+const filteredFiles = computed(() => {
+  const q = query.value.trim().toLowerCase()
+  const arr = files.value.filter(f => (f.name || '').toLowerCase().includes(q))
+
+  const byName = (a, b) => (a.name || '').localeCompare(b.name || '')
+  const bySize = (a, b) => (a.size || 0) - (b.size || 0)
+  const byUpdated = (a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0)
+
+  const sorters = { name: byName, size: bySize, updated: byUpdated }
+  return arr.slice().sort(sorters[sortKey.value] || byUpdated) // sliceで元配列を汚さない
+})
+
+function formatSize(n) {
+  if (n === undefined || n === null) return '-'
+  const units = ['B', 'KB', 'MB', 'GB']
+  let i = 0
+  let v = Number(n) || 0
+  while (v >= 1024 && i < units.length - 1) { v /= 1024; i++ }
+  return `${v.toFixed(1)} ${units[i]}`
+}
+
+function formatDate(s) {
+  const d = new Date(s || 0)
+  return isNaN(d.getTime()) ? '-' : d.toLocaleString()
+}
+
+function refreshFiles() { /* API で files を再取得して files.value = 結果 */ }
+function selectAll() { selectedIds.value = filteredFiles.value.map(f => f.id) }
+function deleteSelected() { /* 選択削除 */ }
+function deleteOne(f) { /* 単体削除 */ }
+function shareSelected() { /* 共有リンク生成 */ }
+function renameFile(f) { /* モーダルでリネーム */ }
+
+function handlePick(e) { uploadFiles(e.target.files) }
+function handleDrop(e) { uploadFiles(e.dataTransfer && e.dataTransfer.files) }
+
+async function uploadFiles(list) {
+  if (!list || !list.length) return
+  uploading.value = true
+  uploadProgress.value = 0
+  // TODO: FormData でアップロード（進捗はXHRで更新 or 擬似カウント）
+  // 完了後に再取得
+  // await refreshFiles()
+  uploading.value = false
+  uploadProgress.value = 100
+}
+
+function createSubfolder() { /* APIでフォルダ作成 → refreshFiles() */ }
 </script>

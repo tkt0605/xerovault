@@ -253,11 +253,13 @@ class GoalVote(models.Model):
     goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name='投票対象ゴール')
     explain = models.CharField(max_length=50, blank=True, null=True, help_text='この投票の目的や背景を説明するテキスト')
     voter = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='投票者')
-    is_yes = models.BooleanField(default=False, help_text='この投票が賛成か？')
+    is_yes = models.BooleanField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('goal', 'voter')
-
+        constraints = [
+            models.UniqueConstraint(fields=['goal', 'voter'], name='uniq_goal_voter'),
+        ]
+        indexes = [models.Index(fields=['group', 'goal']), models.Index(fields=['voter'])]
     def __str__(self):
         return f"{self.voter.email} の {self.goal.description[:20]} への投票"
