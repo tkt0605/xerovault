@@ -1,6 +1,6 @@
 <template>
   <main
-    class="flex-1 px-6 py-12 overflow-y-auto bg-gradient-to-tr from-zinc-100 to-white dark:from-zinc-950 dark:to-zinc-900">
+    class="flex-1 px-6 py-12 overflow-y-auto  from-zinc-100 to-white dark:from-zinc-950 dark:to-zinc-900">
     <section
       class="max-w-5xl mx-auto backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-8 md:p-10 space-y-10">
 

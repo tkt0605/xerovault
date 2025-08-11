@@ -58,11 +58,9 @@ import { useAuthStore } from '~/store/auth';
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { useAuthFreinds } from '~/store/freind';
 const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
-const friendStore = useAuthFreinds();
 const currentUser = computed(() => authStore.currentUser);
 
 
