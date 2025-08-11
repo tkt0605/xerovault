@@ -419,8 +419,11 @@ class GetFilesView(viewsets.ModelViewSet):
         return PostLibraryReadSerializer
 
     def get_queryset(self):
-        user = self.request.user
-        return PostfileToLibrary.objects.filter(Q(auther=user)).order_by('-created_at')
+        queryset = PostfileToLibrary.objects.all()
+        lib_id = self.request.query_params.get('target')
+        if lib_id:
+            return queryset.filter(target__id=lib_id)
+        return queryset
 
     def create(self, request, *args, **kwargs):
         """

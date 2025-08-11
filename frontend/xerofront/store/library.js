@@ -146,7 +146,7 @@ export const useAuthLibrary = defineStore('library', {
                 throw error;
             }
         },
-        async UploadfileToLibrary(target, name, file) {
+        async UploadfileToLibrary(target,name , file) {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
             const formData = new FormData();
@@ -157,10 +157,10 @@ export const useAuthLibrary = defineStore('library', {
                 formData.append('file', f);
             });
             try {
-                const response = await fetch(`${config.public.apiBase}upload_library/`, {
+                const response = await fetch(`${config.public.apiBase}library_files/`, {
                     method: 'POST',
                     headers: {
-                        "Content-Type": "application/json",
+                        "Content-Type": "multipart/form-data",
                         "Authorization": `Bearer ${authStore.accessToken}`
                     },
                     body: formData
@@ -176,11 +176,33 @@ export const useAuthLibrary = defineStore('library', {
                 throw error;
             }
         },
+        async FetchLibraryFiles(){
+            const config = useRuntimeConfig();
+            const authStore = useAuthStore();
+            try {
+                const response = await fetch(`${config.public.apiBase}library_files/`, {
+                    method: 'GET',
+                    headers: {
+                        "Content-type": "application/json",
+                        "Authorization": `Bearer ${authStore.accessToken}`
+                    }
+                });
+                if (!response.ok) {
+                    const errorLog = await response.text();
+                    throw new Error(errorLog || "ライブラリファイルの取得失敗");
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('ライブラリファイル取得失敗：', error);
+                throw error;
+            }
+        },
         async FetchfilesOfLibrary(id) {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
             try {
-                const response = await fetch(`${config.public.apiBase}library_files/${id}/`, {
+                const response = await fetch(`${config.public.apiBase}library_files/?target=${id}`, {
                     method: 'GET',
                     headers: {
                         "Content-type": "application/json",
@@ -247,7 +269,7 @@ export const useAuthLibrary = defineStore('library', {
                 console.error('ドッキング情報取得失敗：', error);
                 throw error;
             }
-        }
+        },
     },
     getters: {
 

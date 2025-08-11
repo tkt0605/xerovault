@@ -208,7 +208,7 @@ class GenerateLibrary(models.Model):
 class PostfileToLibrary(models.Model):
     target = models.ForeignKey(GenerateLibrary, on_delete=models.CASCADE, related_name='target_library', default='')
     auther = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='auther', default='')
-    name = models.CharField(max_length=50, blank=False, null=True)
+    name = models.CharField(max_length=50, blank=True, null=True)
     file = models.FileField(upload_to='library_file')
     created_at = models.DateTimeField(auto_now_add=True)
 

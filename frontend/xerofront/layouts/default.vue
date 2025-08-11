@@ -311,40 +311,34 @@
         </template>
       </Dialog>
       <Dialog :visible="openLibraryfolder" @close="openLibraryfolder = false">
-        <!-- Header -->
         <template #header>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="h-10 w-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
-                <!-- フォルダアイコン -->
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600 dark:text-indigo-300"
                   viewBox="0 0 24 24" fill="currentColor">
                   <path d="M10 4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2h6z" />
                 </svg>
               </div>
               <div>
-                <h2 class="text-lg md:text-xl font-bold text-zinc-900 dark:text-white">
-                  {{ selectedLib?.name }} フォルダ
-                </h2>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400">
-                  追加・並び替え・共有をここから操作
-                </p>
+                <h2 class="text-lg md:text-xl font-bold text-zinc-900 dark:text-white">{{ selectedLib.name }} フォルダ</h2>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400">検索・並び替え・アップロードのみのシンプル版</p>
               </div>
             </div>
             <div class="flex items-center gap-2">
               <span
-                class="px-2 py-1 text-xs rounded-full bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200">
-                {{ files.length }} ファイル
-              </span>
+                class="px-2 py-1 text-xs rounded-full bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200">{{
+                files.length }} ファイル</span>
               <button @click="refreshFiles"
-                class="px-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700">
-                更新
-              </button>
+                class="px-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700">更新</button>
             </div>
           </div>
         </template>
+
+        <!-- Body -->
         <template #default>
           <div class="space-y-4">
+            <!-- ツールバー -->
             <div class="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
               <div class="flex items-center gap-2">
                 <div class="relative">
@@ -364,23 +358,18 @@
                 </select>
               </div>
               <div class="flex items-center gap-2">
-                <button @click="selectAll"
-                  class="text-sm px-3 py-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700">
-                  全選択
-                </button>
-                <button @click="deleteSelected" :disabled="!selectedIds.length"
-                  class="text-sm px-3 py-2 rounded-lg bg-rose-600 text-white disabled:opacity-40 hover:bg-rose-500">
-                  削除
-                </button>
+                <input ref="fileInput" type="file" multiple class="hidden" @change="handlePick" />
+                <button type="button" @click="openPicker"
+                  class="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500">アップロード</button>
               </div>
             </div>
-            <div v-if="filteredFiles.length"
-              class="divide-y divide-zinc-100 dark:divide-zinc-700 rounded-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden">
-              <div v-for="f in filteredFiles" :key="f.id"
+
+            <!-- 一覧 -->
+            <div v-if="my_files.length"
+              class="divide-y divide-zinc-100 dark:divide-zinc-700 rounded-xl border border-zinc-200 dark:border-zinc-700 h-[44vh] overflow-y-auto overscroll-contain scroll-smooth pr-2">
+              <div v-for="f in filterFiles" :key="f.id"
                 class="flex items-center justify-between gap-3 px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/60">
                 <div class="flex items-center gap-3 min-w-0">
-                  <input type="checkbox" v-model="selectedIds" :value="f.id"
-                    class="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500">
                   <div
                     class="h-9 w-9 rounded-lg bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-600 dark:text-zinc-300"
@@ -389,44 +378,26 @@
                     </svg>
                   </div>
                   <div class="min-w-0">
-                    <p class="truncate font-medium text-zinc-900 dark:text-white">{{ f.name }}</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">
-                      {{ formatSize(f.size) }} ・ {{ formatDate(f.updated_at) }}
-                    </p>
+                    <p class="truncate font-medium text-zinc-900 dark:text-white">{{ formatFile(f.file) }}</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">{{ formatSize(f.size) }} ・ {{
+                      formatDate(f.created_at || f.updated_at) }}</p>
                   </div>
                 </div>
-                <div class="flex items-center gap-2">
-                  <button @click="downloadFile(f)"
-                    class="px-2 py-1.5 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700">DL</button>
-                  <button @click="renameFile(f)"
-                    class="px-2 py-1.5 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover	bg-zinc-700">名称変更</button>
-                  <button @click="deleteOne(f)"
-                    class="px-2 py-1.5 text-sm rounded-lg bg-rose-600 text-white hover:bg-rose-500">削除</button>
-                </div>
+                <button @click="downloadFile(f)"
+                  class="px-2 py-1.5 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700">DL</button>
               </div>
             </div>
             <div v-else class="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 p-10 text-center">
               <p class="text-zinc-600 dark:text-zinc-300 font-medium">このフォルダにはまだファイルがありません</p>
-              <p class="text-sm text-zinc-500 dark:text-zinc-400">下のアップロードから追加できます</p>
-              <div class="text-xs text-zinc-500 dark:text-zinc-400">
-                最大 100MB / ファイル ・ JPG, PNG, PDF, ZIP 対応
-              </div>
+              <p class="text-sm text-zinc-500 dark:text-zinc-400">上の「アップロード」から追加できます</p>
             </div>
-            <div @dragover.prevent @drop.prevent="handleDrop"
-              class="rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 p-6 text-center hover:bg-zinc-50/60 dark:hover:bg-zinc-800/50 transition">
-              <p class="text-sm text-zinc-600 dark:text-zinc-300">ここにファイルをドラッグ & ドロップ</p>
-              <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">または</p>
-              <button @click="$refs.fileInput.click()"
-                class="mt-3 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500">
-                ファイルを選択
-              </button>
-              <input ref="fileInput" type="file" multiple class="hidden" @change="handlePick">
-              <div v-if="uploading" class="mt-4">
-                <div class="h-2 w-full rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
-                  <div class="h-2 bg-indigo-600 transition-all" :style="{ width: uploadProgress + '%' }"></div>
-                </div>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{{ uploadProgress }}%</p>
+
+            <!-- 進捗 -->
+            <div v-if="uploading" class="mt-2">
+              <div class="h-2 w-full rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
+                <div class="h-2 bg-indigo-600 transition-all" :style="{ width: uploadProgress + '%' }"></div>
               </div>
+              <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{{ uploadProgress }}%</p>
             </div>
           </div>
         </template>
@@ -434,20 +405,10 @@
         <!-- Footer -->
         <template #footer>
           <div class="flex items-center justify-between w-full">
-            <div class="flex items-center justify-end gap-2">
-              <button @click="$refs.fileInput.click()"
-                class="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500">
-                アップロードする
-              </button>
-              <button @click="createSubfolder"
-                class="px-3 py-2 rounded-lg bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90">
-                サブフォルダ作成
-              </button>
-            </div>
+            <div class="text-xs text-zinc-500 dark:text-zinc-400">最大 100MB / ファイル ・ JPG, PNG, PDF, ZIP</div>
           </div>
         </template>
       </Dialog>
-
     </div>
   </div>
 </template>
@@ -464,6 +425,7 @@ import { useAuthVote } from '~/store/vote';
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { QrcodeCanvas } from 'qrcode.vue';
+import { useRuntimeConfig } from '#imports';
 import { eventBus } from '#imports';
 const openTokenDailog = ref(false);
 const openGroupDailog = ref(false);
@@ -516,6 +478,7 @@ const allvotes = ref([]);
 const voteId = ref('');
 const library = ref([]);
 const libraryId = ref('');
+const my_files = ref([]);
 onMounted(async () => {
   try {
     library.value = await libraryStore.FetchDockingLibrary(routeId);
@@ -527,6 +490,7 @@ onMounted(async () => {
     allvotes.value = await authVote.FetchVotes();
     eventBus.on('Vote-dialog', handleVotedialog);
     eventBus.on('Folder-dialog', openFolder);
+    my_files.value = await libraryStore.FetchLibraryFiles();
     const key = `${group.name}_${route.params.id}`;
     const storedUrl = localStorage.getItem(key);
     if (storedUrl) {
@@ -551,6 +515,9 @@ const selectedLib = computed(() => {
   if (Array.isArray(libraries.value)) {
     return libraries.value.find((lib) => lib.id === selectedLibrary.value);
   }
+})
+const filterFiles = computed(() => {
+  return my_files.value.filter((file) => file.target.id === selectedLib.value.id)
 })
 function openFolder(libraryId) {
   selectedLibrary.value = libraryId;
@@ -822,60 +789,169 @@ const submitVote = (value) => {
   }
   openVotedialog.value = false;
 };
-const query = ref('')
-const sortKey = ref('updated') // "updated" | "name" | "size"
-const selectedIds = ref([])
-const files = ref([]) // 例: [{ id, name, size, updated_at }, ...]
+// --- state ---
+const files = ref([]);
+const uploading = ref(false);
+const uploadProgress = ref(0);
+const config = useRuntimeConfig();
+// <input ref="fileInput" type="file" multiple> に紐づける
+const fileInput = ref(null);
 
-const uploading = ref(false)
-const uploadProgress = ref(0)
+// APIルート例: `${config.public.apiBase}library_files/`
+const API_BASE = config.public.apiBase;
 
+// 最低限の1件アップロード関数（FormData使用時は Content-Type を自前で付けない）
+const uploadFile = async (file) => {
+  const fd = new FormData();
+  fd.append('file', file);
+
+  // ← サーバ仕様に合わせてキー名を調整
+  fd.append('target', String(selectedLib.value.id));
+  // fd.append('groupId', String(route.params.id));
+
+  const res = await fetch(`${API_BASE}library_files/`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${authStore.accessToken}`,
+    },
+    body: fd,
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Upload failed (${res.status}): ${text || 'no body'}`);
+  }
+  return res.json();
+};
+
+// 複数ファイルアップロード（順次）＋簡易進捗
+const uploadFiles = async (fileList) => {
+  uploading.value = true;
+  uploadProgress.value = 0;
+
+  const total = fileList.length;
+  const uploaded = [];
+
+  try {
+    for (let i = 0; i < total; i++) {
+      const data = await uploadFile(fileList[i]);
+      uploaded.push(data);
+      uploadProgress.value = Math.round(((i + 1) / total) * 100);
+    }
+    files.value.push(...uploaded);
+    // 必要ならサーバ最新を取り直す
+    // await refreshFiles();
+  } finally {
+    uploading.value = false;
+  }
+};
+
+// ドラッグ&ドロップ
+const isDragging = ref(false);
+const handleDrop = async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  isDragging.value = false;
+
+  const dropped = Array.from(e.dataTransfer?.files || []);
+  if (!dropped.length) return;
+
+  try {
+    await uploadFiles(dropped);
+  } catch (err) {
+    console.error('ファイルアップロード失敗:', err);
+  }
+};
+
+// ピッカー起動
+const openPicker = () => {
+  if (fileInput.value) fileInput.value.click();
+};
+
+// input[type=file] の change
+const handlePick = async (e) => {
+  const target = e.target;
+  const picked = Array.from(target.files || []);
+  if (!picked.length) return;
+
+  try {
+    await uploadFiles(picked);
+  } catch (err) {
+    console.error('ファイルアップロード失敗:', err);
+  } finally {
+    // 同じファイルを続けて選んでも change が発火するようにクリア
+    if (fileInput.value) fileInput.value.value = '';
+  }
+};
+const query = ref('');
+const sortKey = ref('updated'); // 'updated' | 'name' | 'size'
+const selectedIds = ref([]); // 選択されたファイルのIDリスト
 const filteredFiles = computed(() => {
-  const q = query.value.trim().toLowerCase()
-  const arr = files.value.filter(f => (f.name || '').toLowerCase().includes(q))
+  return 
+  // return files.value
+  //   .filter((file) => {
+  //     return file.name.toLowerCase().includes(query.value.toLowerCase());
+  //   })
+  //   .sort((a, b) => {
+  //     if (sortKey.value === 'updated') {
+  //       return new Date(b.updated_at) - new Date(a.updated_at);
+  //     } else if (sortKey.value === 'name') {
+  //       return a.name.localeCompare(b.name);
+  //     } else if (sortKey.value === 'size') {
+  //       return b.size - a.size;
+  //     }
+  //     return 0;
+  //   });
+});
+// ファイルサイズ表示: 0 B / 12.3 KB / 8.5 MB / 2 GB ...
+function formatSize(n) {
+  if (!Number.isFinite(n) || n <= 0) return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+  let i = 0
+  let v = n
+  while (v >= 1024 && i < units.length - 1) {
+    v /= 1024
+    i++
+  }
+  // 10未満かつ単位がB以外のときだけ小数1桁
+  const digits = v < 10 && i > 0 ? 1 : 0
+  return `${v.toFixed(digits)} ${units[i]}`
+}
 
-  const byName = (a, b) => (a.name || '').localeCompare(b.name || '')
-  const bySize = (a, b) => (a.size || 0) - (b.size || 0)
-  const byUpdated = (a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0)
-
-  const sorters = { name: byName, size: bySize, updated: byUpdated }
-  return arr.slice().sort(sorters[sortKey.value] || byUpdated) // sliceで元配列を汚さない
+// 日付表示: 2025/08/11 16:45 など（withTime=falseで日付のみ）
+const dtfDate = new Intl.DateTimeFormat('ja-JP', {
+  year: 'numeric', month: '2-digit', day: '2-digit'
+})
+const dtfDateTime = new Intl.DateTimeFormat('ja-JP', {
+  year: 'numeric', month: '2-digit', day: '2-digit',
+  hour: '2-digit', minute: '2-digit'
 })
 
-function formatSize(n) {
-  if (n === undefined || n === null) return '-'
-  const units = ['B', 'KB', 'MB', 'GB']
-  let i = 0
-  let v = Number(n) || 0
-  while (v >= 1024 && i < units.length - 1) { v /= 1024; i++ }
-  return `${v.toFixed(1)} ${units[i]}`
+function formatDate(input, { withTime = true } = {}) {
+  const d = new Date(input)
+  if (Number.isNaN(d.getTime())) return ''
+  return withTime ? dtfDateTime.format(d) : dtfDate.format(d)
 }
-
-function formatDate(s) {
-  const d = new Date(s || 0)
-  return isNaN(d.getTime()) ? '-' : d.toLocaleString()
+function formatFile(input) {
+  if (input && typeof input === 'string' && input.name ) return input.name;
+  const s = String(input || '');
+  if (!s) return '不明なファイル';
+  let last = s;
+  try{
+    const urls = new URL(s, window.location.origin);
+    last = urls.pathname.split('/').pop() || s;
+  }catch(e){
+    last = s.split('/').pop() || '';
+  }
+  last = last.split('?')[0].split('#')[0];
+  let decode = last;
+  try {
+    decode = decodeURIComponent(last);
+  } catch (error) {
+    decode = last.replace(/%[0-9A-Fa-f]{2}/g, m => {
+      try{return decodeURIComponent(m);}catch(e){return m;}
+    });
+  }
+  return decode.normalize('NFC');
 }
-
-function refreshFiles() { /* API で files を再取得して files.value = 結果 */ }
-function selectAll() { selectedIds.value = filteredFiles.value.map(f => f.id) }
-function deleteSelected() { /* 選択削除 */ }
-function deleteOne(f) { /* 単体削除 */ }
-function shareSelected() { /* 共有リンク生成 */ }
-function renameFile(f) { /* モーダルでリネーム */ }
-
-function handlePick(e) { uploadFiles(e.target.files) }
-function handleDrop(e) { uploadFiles(e.dataTransfer && e.dataTransfer.files) }
-
-async function uploadFiles(list) {
-  if (!list || !list.length) return
-  uploading.value = true
-  uploadProgress.value = 0
-  // TODO: FormData でアップロード（進捗はXHRで更新 or 擬似カウント）
-  // 完了後に再取得
-  // await refreshFiles()
-  uploading.value = false
-  uploadProgress.value = 100
-}
-
-function createSubfolder() { /* APIでフォルダ作成 → refreshFiles() */ }
 </script>
