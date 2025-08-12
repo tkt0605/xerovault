@@ -16,8 +16,11 @@ from rest_framework import status
 from .utils.crypto import encrypt_invite, decrypt_invite
 from django.shortcuts import get_object_or_404
 import uuid,time
-
-
+from django.http import FileResponse, Http404
+from urllib.parse import quote, unquote
+from django.utils.encoding import smart_str
+import mimetypes, os
+from .utils.utils import pretty_filename
 User = get_user_model()
 class EmailLoginAPI(APIView):
     permission_classes = [AllowAny]
@@ -274,27 +277,32 @@ class GoalViewSet(viewsets.ModelViewSet):
         if group_id:
             return self.queryset.filter(group=group_id)
         return queryset
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post', 'patch', 'delete'], permission_classes=[IsAuthenticated])
     def vote(self, request, pk=None):
         goal = self.get_object()
-        user= request.user
+        user = request.user
+        is_member = goal.group.members.filter(id=user.id).exists()
+        is_owner = (goal.group.owner_id == user.id)
+        if not (is_member or is_owner):
+            return Response({'detail': 'このユーザーはグループのメンバー又は、オーナーではありません。'}, status=status.HTTP_403_FORBIDDEN)
+        if request.method.lower() == 'delete':
+            deleted, _ = GoalVote.objects.filter(goal=goal, voter=user).delete()
+            if deleted:
+                goal.check_voting_completion()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({"detail": "投票が見つかりません。"}, status=status.HTTP_404_NOT_FOUND)
         raw = request.data.get('is_yes')
         if isinstance(raw, str):
-            is_yes = raw.lower() in ['true', '1', 'yes']
+            is_yes = raw.lower() in ('true', '1', 'yes', 'y', 't')
         else:
             is_yes = bool(raw)
-        if not (goal.group.members.filter(id=user.id).exists() or goal.group.owner == user.id):
-            return Response({'detail': 'このユーザーはグループのメンバー又は、オーナーではありません。'}, status=403)
-        if goal.group.members.filter(id=user.id).exists():
-            vote, created = GoalVote.objects.get_or_create(
-                goal=goal,
-                voter=user
-            )
-            if not created:
-                return Response({'detail': '既に投票済みです。'}, status=400)
-            goal.check_voting_completion()
-            return Response({'detail': '投票が記録されました'}, status=200)
-        return Response({'detail': 'このグループのメンバーではありません。'}, status=403)
+        vote, created = GoalVote.objects.update_or_create(
+            goal=goal, voter=user, defaults={'is_yes': is_yes}
+        )
+        goal.check_voting_completion()
+        return Response({'vote': {'is_yes': vote.is_yes}},
+                        status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+                        )
 class ConnectLibraryViewSet(viewsets.ModelViewSet):
     queryset = ConnectLibrary.objects.all()
     serializer_class = ConnectLibrarySerializer
@@ -442,6 +450,67 @@ class GetFilesView(viewsets.ModelViewSet):
         objs = serializer.save(auther=request.user)  # ← list が返る
         read_ser = PostLibraryReadSerializer(objs, many=True)
         return Response(read_ser.data, status=status.HTTP_201_CREATED)
+    def _check_object_permission(self, request, obj):
+        user = request.user
+        # ここをあなたの権限設計に合わせて実装
+        # 所有者 or グループメンバー など
+        # if not (obj.owner == user or obj.group.members.filter(id=user.id).exists()):
+        #     raise PermissionDenied("アクセス権がありません。")
+        return True
+    @action(detail=True, methods=['get'], url_path='download', permission_classes=[IsAuthenticated])
+    def download(self, request, pk=None):
+        obj = self.get_object()  # get_object() は見つからないと自動で 404 を投げます
+        # ストレージ上の実体
+        f = obj.file
+        try:
+            fileobj = f.open('rb')  # S3 等のリモートでもOK
+        except FileNotFoundError:
+            raise Http404("File not found")
+
+        # 表示用ファイル名（URLエンコード解除 → ベース名抽出）
+        raw_name = pretty_filename(getattr(f, 'name', 'file'))
+        display_name = unquote(raw_name) if '%' in raw_name else raw_name
+
+        # Content-Type（拡張子から推測）
+        content_type = mimetypes.guess_type(display_name)[0] or 'application/octet-stream'
+
+        # inline / attachment 切替
+        as_attachment = request.query_params.get('download') == '1'
+
+        # ★ Django に任せる（filename で Unicode 指定可。Django が filename* も付ける）
+        resp = FileResponse(
+            fileobj,
+            as_attachment=as_attachment,
+            filename=display_name,
+            content_type=content_type,
+        )
+        return resp
+        # try:
+        #     obj = self.get_object()
+        # except PostfileToLibrary.DoesNotExist:
+        #     raise Http404
+        # f = obj.file  # FileField
+        # # 保存名を日本語で（例: DB/Storage上のfile.name から）
+        # raw_name = os.path.basename(f.name)
+        # display_name = unquote(raw_name)  # 念のためURLエンコードを解除
+        # content_type = mimetypes.guess_type(display_name)[0] or 'application/octet-stream'
+
+        # resp = FileResponse(f.open('rb'), content_type=content_type)
+
+        # # inline か attachment を切り替え（任意）
+        # disp = 'inline'
+        # if request.query_params.get('download') == '1':
+        #     disp = 'attachment'
+
+        # # ASCII用に安全化した代替名（空白やカンマなども避けるのが吉）
+        # ascii_fallback = quote(display_name)  # ここは本来ASCIIのみが望ましい
+
+        # # 両対応: filename (ASCII) + filename* (UTF-8)
+        # resp['Content-Disposition'] = (
+        #     f'{disp}; name="{ascii_fallback}"; '
+        #     f"name*=UTF-8''{quote(display_name)}"
+        # )
+        # return resp
 class GoalVoteViewSet(viewsets.ModelViewSet):
     serializer_class = GoalVoteSerializer
     permission_classes = [IsAuthenticated]

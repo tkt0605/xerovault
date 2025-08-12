@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, GenerateGroup, Goal
+from .models import CustomUser, GenerateGroup, Goal, PostfileToLibrary
 from django.contrib.auth.admin import UserAdmin as baseUserAdmin
 from api.model.custom_token import CustomOutStandingToken, CustomBlackListToken
 class CustomUserAdmin(baseUserAdmin):
@@ -30,3 +30,4 @@ admin.site.register(GenerateGroup)
 admin.site.register(CustomOutStandingToken, CustomOutstandingTokenAdmin)
 admin.site.register(CustomBlackListToken, CustomBlackListTokenAdmin)
 admin.site.register(Goal)
+admin.site.register(PostfileToLibrary)

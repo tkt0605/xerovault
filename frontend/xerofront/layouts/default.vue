@@ -287,27 +287,116 @@
         </template>
       </Dialog>
       <Dialog :visible="openVotedialog" @close="openVotedialog = false">
+        <!-- Header -->
         <template #header>
-          <h2 class="text-xl font-bold text-gray-800 dark:text-white">{{ selectedVote?.explain }}</h2>
-        </template>
-        <template #default>
-          <!-- ここに投票のyesかNoを選択するUIを作成。 -->
-          <div class="mt-4 flex justify-center gap-6">
-            <button @click="submitVote('yes')"
-              class="px-6 py-3 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 transition">
-              👍 賛成😁
-            </button>
-            <button @click="submitVote('no')"
-              class="px-6 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition">
-              👎 反対😒
-            </button>
+          <div class="flex items-center gap-3">
+            <div class="h-9 w-9 rounded-xl bg-emerald-600/10 dark:bg-emerald-400/10 flex items-center justify-center">
+              <svg class="h-5 w-5 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2m-1 15-5-5 1.41-1.41L11 13.17l6.59-6.58L19 8z" />
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <h2 class="text-lg md:text-xl font-bold text-gray-900 dark:text-white truncate">
+                {{ selectedVote?.explain || 'この提案に投票' }}
+              </h2>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                選択してから「投票する」を押してください（Y=賛成 / N=反対 / Esc=閉じる）
+              </p>
+            </div>
           </div>
         </template>
+
+        <!-- Body -->
+        <template #default>
+          <div class="mt-2 space-y-4">
+            <!-- 選択カード -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- YES -->
+              <button type="button" :aria-pressed="choice === 'yes'" @click="choice = 'yes'" class="group relative w-full rounded-2xl border border-gray-200 dark:border-zinc-700 p-4 text-left
+                 hover:border-emerald-400/70 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-400
+                 data-[active=true]:border-emerald-500 data-[active=true]:ring-1 data-[active=true]:ring-emerald-500"
+                :data-active="choice === 'yes'">
+                <div class="flex items-center gap-3">
+                  <div class="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                    <span class="text-2xl">👍</span>
+                  </div>
+                  <div class="min-w-0">
+                    <div class="font-semibold text-gray-900 dark:text-white">賛成</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">提案に同意します</div>
+                  </div>
+                </div>
+                <div v-if="choice === 'yes'" class="absolute right-3 top-3">
+                  <span
+                    class="inline-flex items-center rounded-lg px-2 py-1 text-xs font-medium bg-emerald-500/10 text-emerald-600">
+                    選択中
+                  </span>
+                </div>
+              </button>
+
+              <!-- NO -->
+              <button type="button" :aria-pressed="choice === 'no'" @click="choice = 'no'" class="group relative w-full rounded-2xl border border-gray-200 dark:border-zinc-700 p-4 text-left
+                 hover:border-rose-400/70 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-400
+                 data-[active=true]:border-rose-500 data-[active=true]:ring-1 data-[active=true]:ring-rose-500"
+                :data-active="choice === 'no'">
+                <div class="flex items-center gap-3">
+                  <div class="h-10 w-10 rounded-xl bg-rose-500/10 flex items-center justify-center">
+                    <span class="text-2xl">👎</span>
+                  </div>
+                  <div class="min-w-0">
+                    <div class="font-semibold text-gray-900 dark:text-white">反対</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">提案に反対します</div>
+                  </div>
+                </div>
+                <div v-if="choice === 'no'" class="absolute right-3 top-3">
+                  <span
+                    class="inline-flex items-center rounded-lg px-2 py-1 text-xs font-medium bg-rose-500/10 text-rose-600">
+                    選択中
+                  </span>
+                </div>
+              </button>
+            </div>
+
+            <!-- 
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                コメント（任意）
+              </label>
+              <textarea v-model="note" rows="3" placeholder="理由や補足があれば書いてください" class="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900
+                 text-gray-900 dark:text-white placeholder-gray-400 px-3 py-2 focus:outline-none
+                 focus:ring-2 focus:ring-indigo-400" />
+              <p v-if="error" class="mt-1 text-xs text-rose-500">{{ error }}</p>
+            </div> -->
+          </div>
+        </template>
+
+        <!-- Footer -->
         <template #footer>
-          <button @click="openVotedialog = false"
-            class="px-4 py-2 bg-gray-300 text-black dark:bg-gray-600 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
-            キャンセル
-          </button>
+          <div class="flex w-full items-center justify-between gap-3">
+            <button type="button" @click="handleClose" class="px-4 py-2 rounded-xl border border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-200
+               hover:bg-gray-100 dark:hover:bg-zinc-800 transition">
+              キャンセル（Esc）
+            </button>
+            <div class="flex items-center gap-2">
+              <button class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-semibold
+                 enabled:hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2" type="button" @click="EditVote(selectedVote.goal.id)" :disabled="!choice || loading">
+                <svg  v-if="loading" class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" stroke-width="4" />
+                  <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4" />
+                </svg>
+                <span>変更する</span>
+              </button>
+              <button type="button" @click="doSubmit(selectedVote.goal.id)" :disabled="!choice || loading"
+                class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-semibold
+                 enabled:hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2">
+                <svg v-if="loading" class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" stroke-width="4" />
+                  <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4" />
+                </svg>
+                <span>投票する</span>
+              </button>
+            </div>
+          </div>
         </template>
       </Dialog>
       <Dialog :visible="openLibraryfolder" @close="openLibraryfolder = false">
@@ -328,7 +417,7 @@
             <div class="flex items-center gap-2">
               <span
                 class="px-2 py-1 text-xs rounded-full bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200">{{
-                files.length }} ファイル</span>
+                  files.length }} ファイル</span>
               <button @click="refreshFiles"
                 class="px-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700">更新</button>
             </div>
@@ -365,7 +454,7 @@
             </div>
 
             <!-- 一覧 -->
-            <div v-if="my_files.length"
+            <div v-if="filterFiles.length"
               class="divide-y divide-zinc-100 dark:divide-zinc-700 rounded-xl border border-zinc-200 dark:border-zinc-700 h-[44vh] overflow-y-auto overscroll-contain scroll-smooth pr-2">
               <div v-for="f in filterFiles" :key="f.id"
                 class="flex items-center justify-between gap-3 px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/60">
@@ -378,12 +467,13 @@
                     </svg>
                   </div>
                   <div class="min-w-0">
-                    <p class="truncate font-medium text-zinc-900 dark:text-white">{{ formatFile(f.file) }}</p>
+                    <!-- <p class="truncate font-medium text-zinc-900 dark:text-white">{{ formatFile(f.file) }}</p> -->
+                    <p class="truncate font-medium text-zinc-900 dark:text-white">{{ f.name }}</p>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">{{ formatSize(f.size) }} ・ {{
                       formatDate(f.created_at || f.updated_at) }}</p>
                   </div>
                 </div>
-                <button @click="downloadFile(f)"
+                <button @click="openfile(f)"
                   class="px-2 py-1.5 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700">DL</button>
               </div>
             </div>
@@ -406,6 +496,7 @@
         <template #footer>
           <div class="flex items-center justify-between w-full">
             <div class="text-xs text-zinc-500 dark:text-zinc-400">最大 100MB / ファイル ・ JPG, PNG, PDF, ZIP</div>
+            <!-- <button class="">サブフォルダを作成</button> -->
           </div>
         </template>
       </Dialog>
@@ -471,7 +562,7 @@ const selectedLibraryId = ref('');
 const selectedGoalId = ref('');
 const my_goals = ref([]);
 const isVotingdailog = ref(false);
-const openVotedialog = ref(false);
+// const openVotedialog = ref(false);
 const selectedVoteId = ref(null);
 const selectedLibrary = ref(null);
 const allvotes = ref([]);
@@ -570,6 +661,9 @@ const CreateGoal = () => {
 const Votedialog = () => {
   openVotedialog.value = true;
 };
+// const handleClose = () =>{
+//   openVotedialog.value = false;
+// };
 const createNewGroup = async () => {
   const user = authStore?.user;
   if (!user) {
@@ -886,24 +980,6 @@ const handlePick = async (e) => {
 const query = ref('');
 const sortKey = ref('updated'); // 'updated' | 'name' | 'size'
 const selectedIds = ref([]); // 選択されたファイルのIDリスト
-const filteredFiles = computed(() => {
-  return 
-  // return files.value
-  //   .filter((file) => {
-  //     return file.name.toLowerCase().includes(query.value.toLowerCase());
-  //   })
-  //   .sort((a, b) => {
-  //     if (sortKey.value === 'updated') {
-  //       return new Date(b.updated_at) - new Date(a.updated_at);
-  //     } else if (sortKey.value === 'name') {
-  //       return a.name.localeCompare(b.name);
-  //     } else if (sortKey.value === 'size') {
-  //       return b.size - a.size;
-  //     }
-  //     return 0;
-  //   });
-});
-// ファイルサイズ表示: 0 B / 12.3 KB / 8.5 MB / 2 GB ...
 function formatSize(n) {
   if (!Number.isFinite(n) || n <= 0) return '0 B'
   const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
@@ -933,14 +1009,14 @@ function formatDate(input, { withTime = true } = {}) {
   return withTime ? dtfDateTime.format(d) : dtfDate.format(d)
 }
 function formatFile(input) {
-  if (input && typeof input === 'string' && input.name ) return input.name;
+  if (input && typeof input === 'string' && input.name) return input.name;
   const s = String(input || '');
   if (!s) return '不明なファイル';
   let last = s;
-  try{
+  try {
     const urls = new URL(s, window.location.origin);
     last = urls.pathname.split('/').pop() || s;
-  }catch(e){
+  } catch (e) {
     last = s.split('/').pop() || '';
   }
   last = last.split('?')[0].split('#')[0];
@@ -949,9 +1025,167 @@ function formatFile(input) {
     decode = decodeURIComponent(last);
   } catch (error) {
     decode = last.replace(/%[0-9A-Fa-f]{2}/g, m => {
-      try{return decodeURIComponent(m);}catch(e){return m;}
+      try { return decodeURIComponent(m); } catch (e) { return m; }
     });
   }
   return decode.normalize('NFC');
+};
+
+
+
+const openVotedialog = defineModel('openVotedialog', { required: true }) // v-model:openVotedialog
+
+// 親から渡される props（JS用ランタイム定義）
+const props = defineProps({
+  selectedVote: {
+    type: Object,
+    default: () => ({})
+  }
+})
+
+const choice = ref('')
+const note = ref('')
+const loading = ref(false)
+const error = ref('')
+
+// 送信イベント（JSは配列で定義）
+const emit = defineEmits(['submit'])
+
+const handleClose = () => {
+  choice.value = ''
+  note.value = ''
+  error.value = ''
+  openVotedialog.value = false
 }
+
+const doSubmit = async (routeId) => {
+  const selected = choice.value;
+  error.value = '';
+  if (selected) {
+    error.value = '賛成または反対を選択してください。'
+    return
+  }
+  try {
+    loading.value = true
+    // 親へ submit イベントを送出（リスナーが async でもOK）
+    const res = await fetch(`${config.public.apiBase}goals/${routeId}/vote/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authStore.accessToken}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        is_yes: selected === 'yes'
+      })
+    });
+    const raw = await res.text(); // ← 本文を必ず吸う
+    let body = null;
+    try { body = raw ? JSON.parse(raw) : null; } catch { }
+
+    if (!res.ok) {
+      const msg =
+        (body && (body.detail || body.error)) ||
+        (typeof body === 'string' ? body : '') ||
+        raw || `HTTP ${res.status}`;
+      error.value = msg;                      // ← 画面に表示
+      console.error('vote 400 body:', body || raw);
+      return;
+    }
+    handleClose()
+    return res.json();
+  } catch (e) {
+    error.value = (e && e.message) || '送信に失敗しました。時間をおいて再度お試しください。'
+  } finally {
+    loading.value = false
+  }
+};
+const EditVote = async(routeId) => {
+  const selected = choice.value;
+  error.value = '';
+  if (selected) {
+    error.value = '賛成または反対を選択してください。'
+    return
+  }
+  try {
+    loading.value = true;
+    const res = await fetch(`${config.public.apiBase}goals/${routeId}/vote/`, {
+      method: 'PATCH',
+      header: {
+        'Authorization': `Bearer ${authStore.accessToken}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        is_yes: selected === 'yes'
+      }),
+    });
+    const raw = await res.text(); // ← 本文を必ず吸う
+    let body = null;
+    try { body = raw ? JSON.parse(raw) : null; } catch { }
+
+    if (!res.ok) {
+      const msg =
+        (body && (body.detail || body.error)) ||
+        (typeof body === 'string' ? body : '') ||
+        raw || `HTTP ${res.status}`;
+      error.value = msg;                      // ← 画面に表示
+      console.error('vote 400 body:', body || raw);
+      return;
+    }
+    handleClose()
+    return res.json();
+  } catch (err) {
+    error.value = (err && err.message) || '送信に失敗'; 
+  }finally{
+    loading.value = false;
+  }
+};
+
+// キーボードショートカット（Y/N/Esc）
+const onKey = (e) => {
+  if (!openVotedialog.value) return
+  if (e.key === 'y' || e.key === 'Y') {
+    choice.value = 'yes'
+  } else if (e.key === 'n' || e.key === 'N') {
+    choice.value = 'no'
+  } else if (e.key === 'Escape') {
+    handleClose()
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', onKey))
+onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
+const openfile = async(f)=>{
+  const config = useRuntimeConfig();
+  const authStore = useAuthStore();
+  try {
+    const res = await fetch(`${config.public.apiBase}library_files/${f.id}/download/`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${authStore.accessToken}`
+      },
+    });
+    if (!res.ok){
+      const msg = await res.text().catch(()=>'');
+      throw new Error(`HTTP ${res.status} ${msg}`);
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const previewable = /^(image|video|audio|text|application\/pdf)/i.test(blob.type);
+    if (previewable){
+      window.open(url, '_blank');
+    }else{
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (f.file?.split('/')?.pop()) || 'download';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+  } catch (error) {
+    console.error('ファイルを開示で決ま全でした。');
+  }
+};
 </script>
