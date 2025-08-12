@@ -151,9 +151,9 @@ class Goal(models.Model):
         return super().save(*args, **kwargs)
     def vote_progress(self):
         total_members = self.group.members.count()
-        yes_vote = self.votes.filter(is_yes=True).count()
         if total_members == 0:
             return 0
+        yes_vote = self.votes.filter(is_yes=True).count()
         return int(yes_vote / total_members * 100)
     def check_voting_completion(self, threshold=90):
         if self.vote_progress() >= threshold:
@@ -213,7 +213,7 @@ class PostfileToLibrary(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.target    
+        return str(self.target)
 class ConnectLibrary(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     target = models.ForeignKey(GenerateLibrary, on_delete=models.CASCADE, related_name='対象ライブラリ', default='')
@@ -249,10 +249,10 @@ class Message(models.Model):
         return self.text
 
 class GoalVote(models.Model):
-    group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='ターゲット', blank=True, null=True)
-    goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name='投票対象ゴール')
+    group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='goal_group', blank=True, null=True)
+    goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name='votes')
     explain = models.CharField(max_length=50, blank=True, null=True, help_text='この投票の目的や背景を説明するテキスト')
-    voter = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='投票者')
+    voter = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='goal_votes')
     is_yes = models.BooleanField()
     created_at = models.DateTimeField(auto_now_add=True)
 

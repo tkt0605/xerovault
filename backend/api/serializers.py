@@ -4,6 +4,9 @@ from django.utils.translation import gettext_lazy as _
 from .models import CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, Message, PostfileToLibrary, GoalVote
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import IntegrityError, transaction
+import os
+from urllib.parse import unquote
+from .utils.utils import pretty_filename
 User = get_user_model()
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -288,11 +291,13 @@ class PostLibraryCreateSerializer(serializers.ModelSerializer):
 class PostLibraryReadSerializer(serializers.ModelSerializer):
     target = serializers.SerializerMethodField()
     auther = serializers.SerializerMethodField()
-
+    name = serializers.SerializerMethodField()
     class Meta:
         model = PostfileToLibrary
         fields = ['id', 'auther', 'name', 'target', 'file', 'created_at']
-
+    def get_name(self, obj):
+        url_or_name = getattr(obj.file, 'url', None) or obj.file.name
+        return pretty_filename(url_or_name)
     def get_target(self, obj):
         # 必要に応じて詳細化
         return {"id": str(obj.target_id), "name": getattr(obj.target, "name", None)}

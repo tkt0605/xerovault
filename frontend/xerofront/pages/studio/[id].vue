@@ -101,91 +101,101 @@
                     </button>
                 </div>
                 <div v-if="activeTab === 'ゴール'">
-                    <div v-for="goal in goals" :key="goal.id"
-                        class="p-4 transition-all duration-200 border-b border-zinc-700 flex flex-col gap-2 dark:bg-zinc-800  dark:hover:bg-zinc-700 text-white">
-                        <div @click="PushToNextpage(goal.id)">
-                            <div class="flex items-center gap-2">
-                                <img :src="goal?.assignee?.avater"
-                                    class="w-10 h-10 rounded-full border-2 border-white object-cover shadow" />
-                                <h3 class="text-lg sm:text-xl font-semibold tracking-wide break-all dark:text-white">
-                                    {{ goal.header || '見出し無し' }}
-                                </h3>
-                            </div>
-                            <div class="text-sm ml-12 text-zinc-400 mt-1">
-                                {{ goal.deadline ? '締め切り: ' + formatDate(goal.deadline) : '📅 締め切りなし' }}
+                    <div
+                        class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                        <div v-for="goal in goals" :key="goal.id"
+                            class="p-4 transition-all duration-200 border-b border-zinc-700 flex flex-col gap-2 dark:bg-zinc-800  dark:hover:bg-zinc-700 text-white">
+                            <div @click="PushToNextpage(goal.id)">
+                                <div class="flex items-center gap-2">
+                                    <img :src="goal?.assignee?.avater"
+                                        class="w-10 h-10 rounded-full border-2 border-white object-cover shadow" />
+                                    <h3
+                                        class="text-lg sm:text-xl font-semibold tracking-wide break-all dark:text-white">
+                                        {{ goal.header || '見出し無し' }}
+                                    </h3>
+                                </div>
+                                <div class="text-sm ml-12 text-zinc-400 mt-1">
+                                    {{ goal.deadline ? '締め切り: ' + formatDate(goal.deadline) : '📅 締め切りなし' }}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div v-else-if="activeTab === 'ライブラリ'" class="space-y-4">
-                    <div v-for="lib in alllibrary" :key="lib.id" @click="emitLibrary(lib.target.id)" class="bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-xl p-4
-                        shadow-sm transition cursor-pointer border border-zinc-200 dark:border-zinc-700">
-                        <div class="flex items-center justify-between">
-                            <!-- 上段：フォルダアイコン + ライブラリ名 -->
-                            <div class="flex items-center gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                                    class="text-amber-500 dark:text-yellow-300" viewBox="0 0 16 16">
-                                    <path
-                                        d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31z" />
-                                </svg>
-                                <h3 class="text-base font-medium text-zinc-800 dark:text-white break-words">
-                                    {{ lib.target.name }}
-                                </h3>
+                    <div
+                        class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                        <div v-for="lib in alllibrary" :key="lib.id" @click="emitLibrary(lib.target.id)" class="bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 p-4
+                        shadow-sm transition cursor-pointer border-b border-zinc-200 dark:border-zinc-700">
+                            <div class="flex items-center justify-between">
+                                <!-- 上段：フォルダアイコン + ライブラリ名 -->
+                                <div class="flex items-center gap-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                        class="text-amber-500 dark:text-yellow-300" viewBox="0 0 16 16">
+                                        <path
+                                            d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31z" />
+                                    </svg>
+                                    <h3 class="text-base font-medium text-zinc-800 dark:text-white break-words">
+                                        {{ lib.target.name }}
+                                    </h3>
+                                </div>
+                                <div>
+                                    {{ formatDate(lib.created_at) }}
+                                </div>
                             </div>
-                            <div>
-                                {{ formatDate(lib.created_at) }}
+                            <!-- タグ -->
+                            <div v-if="lib.target.tag" class="ml-7 mt-1">
+                                <p class="text-sm text-zinc-500 dark:text-zinc-400">#{{ lib.target.tag }}</p>
                             </div>
-                        </div>
-                        <!-- タグ -->
-                        <div v-if="lib.target.tag" class="ml-7 mt-1">
-                            <p class="text-sm text-zinc-500 dark:text-zinc-400">#{{ lib.target.tag }}</p>
                         </div>
                     </div>
                 </div>
 
                 <div v-else-if="activeTab === '投票'" class="space-y-6">
-                    <div v-for="vote in allvotes" :key="vote.id" @click="emitVote(vote.id)"
-                        class="group bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 rounded-xl px-6 py-4 transition-colors cursor-pointer shadow-sm">
-                        <!-- 上段：説明とユーザー -->
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                            <!-- 投票内容 -->
-                            <div class="flex items-start gap-3">
-                                <div class="pt-1">
-                                    <!-- SVGアイコン -->
-                                    <button class="hover:bg-zinc-100 rounded-full" @click="DeleteVote(vote.id)">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            class="w-5 h-5 text-indigo-500 dark:text-indigo-300" fill="currentColor"
-                                            viewBox="0 0 16 16">
-                                            <path
-                                                d="M6 6.207v9.043a.75.75 0 0 0 1.5 0V10.5a.5.5 0 0 1 1 0v4.75a.75.75 0 0 0 1.5 0v-8.5a.25.25 0 1 1 .5 0v2.5a.75.75 0 0 0 1.5 0V6.5a3 3 0 0 0-3-3H6.236a1 1 0 0 1-.447-.106l-.33-.165A.83.83 0 0 1 5 2.488V.75a.75.75 0 0 0-1.5 0v2.083c0 .715.404 1.37 1.044 1.689L5.5 5c.32.32.5.754.5 1.207" />
-                                            <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
-                                        </svg>
-                                    </button>
+                    <div
+                        class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                        <div v-for="vote in allvotes" :key="vote.id" @click="emitVote(vote.id)"
+                            class="group bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 border-b border-zinc-200 dark:border-zinc-700 rounded-xl px-6 py-4 transition-colors cursor-pointer shadow-sm">
+                            <!-- 上段：説明とユーザー -->
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <!-- 投票内容 -->
+                                <div class="flex items-start gap-3">
+                                    <div class="pt-1">
+                                        <!-- SVGアイコン -->
+                                        <button class="hover:bg-zinc-100 rounded-full" @click="DeleteVote(vote.id)">
+                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                class="w-5 h-5 text-indigo-500 dark:text-indigo-300" fill="currentColor"
+                                                viewBox="0 0 16 16">
+                                                <path
+                                                    d="M6 6.207v9.043a.75.75 0 0 0 1.5 0V10.5a.5.5 0 0 1 1 0v4.75a.75.75 0 0 0 1.5 0v-8.5a.25.25 0 1 1 .5 0v2.5a.75.75 0 0 0 1.5 0V6.5a3 3 0 0 0-3-3H6.236a1 1 0 0 1-.447-.106l-.33-.165A.83.83 0 0 1 5 2.488V.75a.75.75 0 0 0-1.5 0v2.083c0 .715.404 1.37 1.044 1.689L5.5 5c.32.32.5.754.5 1.207" />
+                                                <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <h3
+                                        class="text-lg font-semibold text-zinc-800 dark:text-white break-words leading-snug">
+                                        {{ vote.explain }}
+                                    </h3>
                                 </div>
-                                <h3
-                                    class="text-lg font-semibold text-zinc-800 dark:text-white break-words leading-snug">
-                                    {{ vote.explain }}
-                                </h3>
+
+                                <!-- 投稿者情報 -->
+                                <div class="flex items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
+                                    <img :src="vote.voter.avater" alt="avatar"
+                                        class="w-8 h-8 rounded-full border border-white dark:border-zinc-600 object-cover shadow" />
+                                    <div class="flex flex-col">
+                                        <span>{{ vote.voter.email }}</span>
+                                        <time class="text-xs text-zinc-400">{{ formatDate(vote.created_at) }}</time>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- 投稿者情報 -->
-                            <div class="flex items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
-                                <img :src="vote.voter.avater" alt="avatar"
-                                    class="w-8 h-8 rounded-full border border-white dark:border-zinc-600 object-cover shadow" />
-                                <div class="flex flex-col">
-                                    <span>{{ vote.voter.email }}</span>
-                                    <time class="text-xs text-zinc-400">{{ formatDate(vote.created_at) }}</time>
-                                </div>
+                            <!-- 関連ゴール -->
+                            <div v-if="vote.goal?.header" class="mt-3 pl-8 text-sm text-zinc-500 dark:text-zinc-400">
+                                <span
+                                    class="inline-block bg-zinc-100 dark:bg-zinc-700 px-2 py-0.5 rounded text-xs font-medium tracking-wide">
+                                    #{{ vote.goal.header }}
+                                </span>
+                                に関連する投票です
                             </div>
-                        </div>
-
-                        <!-- 関連ゴール -->
-                        <div v-if="vote.goal?.header" class="mt-3 pl-8 text-sm text-zinc-500 dark:text-zinc-400">
-                            <span
-                                class="inline-block bg-zinc-100 dark:bg-zinc-700 px-2 py-0.5 rounded text-xs font-medium tracking-wide">
-                                #{{ vote.goal.header }}
-                            </span>
-                            に関連する投票です
                         </div>
                     </div>
                 </div>
@@ -261,7 +271,7 @@ function emitVote(voteId) {
     console.log('投票ID:', voteId);
     eventBus.emit('Vote-dialog', voteId);
 };
-function emitLibrary(libraryId){
+function emitLibrary(libraryId) {
     console.log('ライブラリID:', libraryId);
     eventBus.emit('Folder-dialog', libraryId);
 }
@@ -313,16 +323,16 @@ const formatDate = (dateStr) => {
     return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' })
 };
 const DeleteVote = async (voteId) => {
-    try{
+    try {
         const response = await authVote.DeleteVote(voteId);
-        if (response.status === 204){
+        if (response.status === 204) {
             console.log('投票削除成功', response);
             return router.go(0);
         } else {
             console.error('投票削除失敗', response.status);
             throw new Error('投票削除に失敗しました');
         }
-    }catch(err){
+    } catch (err) {
         console.error('投票削除エラー:', err);
         throw err;
     }

@@ -57,7 +57,6 @@ defineEmits(['close']);
                  outline-none
                  md:rounded-2xl
                  overflow-hidden
-                 max-h-[92vh] md:max-h-[80vh]
                  transform
                  data-[entering=true]:opacity-0 data-[entering=true]:md:scale-95
                  data-[entering=true]:translate-y-2 md:data-[entering=true]:translate-y-0"
