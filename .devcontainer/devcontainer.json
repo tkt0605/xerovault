@@ -1,42 +1,58 @@
 {
-    "name": "Backend-XeroVault",
-    "dockerComposeFile":[
-        "../docker-compose.yml"
-    ] ,
-    "service": "xero-backend",
-    "workspaceFolder": "/backend",
-    "extensions":[
-        "ms-python.python",
-        "ms-azuretools.vscode-docker",
-        "ms-python.vscode",
-        "ms-python.isort",
-        "ms-python.black-formatter",
-        "ms-python.pylance",
-    ],
-    "settings": {
-        "python.pythonPath": "/usr/local/bin/python3",
-        "python.formatting.provider": "black",
-        "python.linting.enabled": true,
-        "python.linting.flake8Enabled": true,
-        "python.linting.mypyEnabled": true,
-        "python.analysis.typeCheckingMode": "basic",
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-            "source.organizeImports": true
-        },
-        "terminal.integrated.defaultProfile.linux": "/bin/bash"
+  "name": "Backend-XeroVault",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "xero-backend",
+  "workspaceFolder": "/backend",
+
+  // 拡張：存在するものだけ
+  "extensions": [
+    "ms-python.python",
+    "ms-azuretools.vscode-docker",
+    "ms-python.isort",
+    "ms-python.black-formatter",
+    "ms-python.pylance"
+  ],
+
+  "settings": {
+    // 既定インタプリタ（推奨キー）
+    "python.defaultInterpreterPath": "/usr/local/bin/python3",
+
+    // Black で整形
+    "python.formatting.provider": "black",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
     },
-    "remoteUser": "vscode",
-    "remoteEnv": {
-        "PYTHONPATH": "/backend"
-    },
-    "runServices": [
-        "xero-backend"
-    ],
-    "shutdownAction": "stopCompose",
-    "initializeCommand": "echo 'Initializing the development container...'",
-    "postCreateCommand": "pip install --no-cache-dir -r requirements.txt",
-    "mounts": [
-      "source=${localWorkspaceFolder},target=/workspace,type=bind"
-    ]
+
+    // 解析（タイプチェック）
+    "python.analysis.typeCheckingMode": "basic",
+
+    // 端末
+    "terminal.integrated.defaultProfile.linux": "/bin/bash"
+  },
+
+  // コンテナユーザー（いなければ削除）
+  "remoteUser": "vscode",
+
+  // 環境
+  "remoteEnv": {
+    "PYTHONPATH": "/backend"
+  },
+
+  // 起動対象
+  "runServices": ["xero-backend"],
+  "shutdownAction": "stopCompose",
+
+  "initializeCommand": "echo 'Initializing the development container...'",
+
+  // 絶対パスで安全に
+  "postCreateCommand": "pip install --no-cache-dir -r /backend/requirements.txt",
+
+  // ★ compose 側でマウントしているなら通常は不要。使うなら /backend に合わせる
+  // "mounts": [
+  //   "source=${localWorkspaceFolder},target=/backend,type=bind,consistency=cached"
+  // ],
+
+  // compose の CMD をそのまま使いたい時は false に
+  "overrideCommand": false
 }
