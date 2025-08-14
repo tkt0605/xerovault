@@ -11,6 +11,8 @@ from django.db.models.signals import post_save, post_delete, m2m_changed
 from django.dispatch import receiver
 from datetime import timedelta
 import datetime
+from uuid import UUID
+from typing import TYPE_CHECKING
 # --- 定数定義: スコアのルールと重み付けを定義 ---
 BASE_SCORE = 100  # デフォルトのスコア
 MAX_SCORE = 1000  # スコアの上限
@@ -21,8 +23,8 @@ VAGUE_GOAL_WEIGHT = 5      # 具体化されていない目標のポイント
 CONCRETE_GOAL_WEIGHT = 25  # 具体化された目標のポイント
 COMPLETED_GOAL_WEIGHT = 60 # 達成済み目標はさらに高ポイント
 
-def generate_uuid():
-    return str(uuid.uuid4())
+def generate_uuid() -> UUID:
+    return uuid.uuid4()
 def generate_avatar_path(instance, filename):
     ext=filename.split('.')[-1]
     filename=f'avatar.{ext}'
@@ -140,7 +142,16 @@ class Goal(models.Model):
     )
     is_concrete = models.BooleanField('具体化済み', default=False, help_text="締め切りか担当者が設定されると自動でTrueになります")
     is_completed = models.BooleanField('達成済み', default=False)
-
+    # progress = models.PositiveIntegerField(
+    #     default=0,
+    #     help_text='進捗率（0〜100）'
+    # )
+    @property
+    def progress(self):
+        return self.vote_progress()
+    if TYPE_CHECKING:
+        from django.db.models import Manager
+        votes: "Manager[GoalVote]"
     def __str__(self) -> str:
         return f"{self.group.name} - {self.description[:20]}"
     def save(self, *args, **kwargs):

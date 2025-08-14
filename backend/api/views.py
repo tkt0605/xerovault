@@ -23,13 +23,16 @@ import mimetypes, os
 from rest_framework.request import Request
 from typing import cast
 from .utils.utils import pretty_filename
+from django.db import transaction
+from django.db.models import Count, Q, F, FloatField, Value
+from django.db.models.functions import NullIf, Coalesce
 User = get_user_model()
 class EmailLoginAPI(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         serializer = EmailLoginSerializer(data=request.data, context={'request': request})
         if serializer.is_valid(raise_exception=True):
-            user = cast(User, serializer.validated_data['user'])
+            user = cast(CustomUser, serializer.validated_data['user'])
             refresh = RefreshToken.for_user(user)
             return Response({
                 "access": str(refresh.access_token),
@@ -275,37 +278,107 @@ class GoalViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     def get_queryset(self):
         request = cast(Request, self.request)
-        queryset = Goal.objects.all()
-        group_id = request.query_params.get('group')
+        qs = (
+            Goal.objects.select_related("group", "assignee")
+            .annotate(
+                member_count = Count("group__members", distinct=True),
+                yes_counter = Count("votes", filter = Q(votes__is_yes=True), distinct=True),
+            )
+            .annotate(
+                progress_anno = Coalesce(
+                    100.0 * F("yes_counter") / NullIf(F("member_count"), 0),
+                    Value(0.0),
+                    output_field=FloatField()
+                )
+            ).order_by("-created_at")
+        )
+        group_id = request.query_params.get("group")
         if group_id:
-            return self.queryset.filter(group=group_id)
-        return queryset
+            qs = qs.filter(group_id = group_id)
+        return qs
+
     @action(detail=True, methods=['post', 'patch', 'delete'], permission_classes=[IsAuthenticated])
     def vote(self, request, pk=None):
-        goal = self.get_object()
+        goal: Goal = self.get_object()
         user = request.user
-        is_member = goal.group.members.filter(id=user.id).exists()
-        is_owner = (goal.group.owner_id == user.id)
-        if not (is_member or is_owner):
-            return Response({'detail': 'このユーザーはグループのメンバー又は、オーナーではありません。'}, status=status.HTTP_403_FORBIDDEN)
-        if request.method.lower() == 'delete':
-            deleted, _ = GoalVote.objects.filter(goal=goal, voter=user).delete()
+
+        # 権限チェック：オーナー or メンバー
+        if not (goal.group.members.filter(id=user.id).exists() or goal.group.owner_id == user.id):
+            return Response({'detail': 'このユーザーはグループのメンバー又は、オーナーではありません。'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        # --- DELETE: 投票削除 ---
+        if request.method == 'DELETE':
+            with transaction.atomic():
+                deleted, _ = GoalVote.objects.filter(goal=goal, voter=user).delete()
+                # 達成解除の仕様：必要なら check で解除/維持を決める
+                completed = goal.check_voting_completion()
+                progress = goal.vote_progress()
             if deleted:
-                goal.check_voting_completion()
-                return Response(status=status.HTTP_204_NO_CONTENT)
+                # 204だと body 返せない → 200で状態を返す方がUI更新しやすい
+                return Response({'ok': True, 'deleted': True, 'progress': progress, 'completed': completed},
+                                status=status.HTTP_200_OK)
             return Response({"detail": "投票が見つかりません。"}, status=status.HTTP_404_NOT_FOUND)
+
+        # --- POST/PATCH: 投票作成 or 更新 ---
         raw = request.data.get('is_yes')
+        if raw is None:
+            return Response({'detail': 'is_yes は必須です。'}, status=status.HTTP_400_BAD_REQUEST)
+
         if isinstance(raw, str):
             is_yes = raw.lower() in ('true', '1', 'yes', 'y', 't')
         else:
             is_yes = bool(raw)
-        vote, created = GoalVote.objects.update_or_create(
-            goal=goal, voter=user, defaults={'is_yes': is_yes}
+
+        with transaction.atomic():
+            vote, created = GoalVote.objects.update_or_create(
+                goal=goal,
+                voter=user,
+                defaults={
+                    'is_yes': is_yes,
+                    # 任意：GoalVote に group フィールドがある場合、集計を楽にするため冪等に埋める
+                    # 'group': goal.group,
+                }
+            )
+            completed = goal.check_voting_completion()
+            progress = goal.vote_progress()
+
+        return Response(
+            {
+                'ok': True,
+                'created': created,
+                'vote': {'is_yes': vote.is_yes},
+                'progress': progress,       # 0〜100 の整数
+                'completed': completed,     # bool (今回の操作で達成したか)
+            },
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
         )
-        goal.check_voting_completion()
-        return Response({'vote': {'is_yes': vote.is_yes}},
-                        status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
-                        )
+    # @action(detail=True, methods=['post', 'patch', 'delete'], permission_classes=[IsAuthenticated])
+    # def vote(self, request, pk=None):
+    #     goal = self.get_object()
+    #     user = request.user
+    #     is_member = goal.group.members.filter(id=user.id).exists()
+    #     is_owner = (goal.group.owner_id == user.id)
+    #     if not (is_member or is_owner):
+    #         return Response({'detail': 'このユーザーはグループのメンバー又は、オーナーではありません。'}, status=status.HTTP_403_FORBIDDEN)
+    #     if request.method.lower() == 'delete':
+    #         deleted, _ = GoalVote.objects.filter(goal=goal, voter=user).delete()
+    #         if deleted:
+    #             goal.check_voting_completion()
+    #             return Response(status=status.HTTP_204_NO_CONTENT)
+    #         return Response({"detail": "投票が見つかりません。"}, status=status.HTTP_404_NOT_FOUND)
+    #     raw = request.data.get('is_yes')
+    #     if isinstance(raw, str):
+    #         is_yes = raw.lower() in ('true', '1', 'yes', 'y', 't')
+    #     else:
+    #         is_yes = bool(raw)
+    #     vote, created = GoalVote.objects.update_or_create(
+    #         goal=goal, voter=user, defaults={'is_yes': is_yes}
+    #     )
+    #     goal.check_voting_completion()
+    #     return Response({'vote': {'is_yes': vote.is_yes}},
+    #                     status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+    #                     )
 class ConnectLibraryViewSet(viewsets.ModelViewSet):
     queryset = ConnectLibrary.objects.all()
     serializer_class = ConnectLibrarySerializer
@@ -316,7 +389,7 @@ class ConnectLibraryViewSet(viewsets.ModelViewSet):
         return ConnectLibrarySerializer
     @action(detail=False, methods=['post'], url_path='create_connection', url_name='create_connection')
     def create_connection(self, request, *args, **kwargs):
-        user = self.request.user
+        user = request.user
         print('リクエストデータ：', request.data)
         group_id = request.data.get('group')
         library_id = request.data.get('target')
