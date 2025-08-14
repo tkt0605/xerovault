@@ -155,7 +155,7 @@ class GoalSerializer(serializers.ModelSerializer):
 class GoalReadSerializer(serializers.ModelSerializer):
     group = GenerateGroupSerializer(read_only=True)
     assignee = CustomUserSerializer(read_only = True)
-    progress = serializers.SerializerMethodField()
+    progress = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Goal
         fields = ['id', 'group','header' , 'description',"progress" ,"created_at", "deadline", "assignee", "is_concrete" , "is_completed"]
