@@ -154,12 +154,12 @@
 
     <!-- リスト -->
     <!-- <div v-else class="rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-white/40 dark:bg-zinc-900/40 backdrop-blur"> -->
-    <div v-else class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-      <ul class="divide-y divide-zinc-200 dark:divide-zinc-800">
+    <div v-else>
+      <ul class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
         <li
           v-for="goal in goals"
           :key="goal.id"
-          class="group"
+          class="group bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 border-b border-zinc-200 dark:border-zinc-700 transition-colors cursor-pointer shadow-sm"
         >
           <button
             type="button"
@@ -242,16 +242,6 @@
                   </span>
                 </div>
               </div>
-
-              <!-- 右側の軽いCTA（ホバーで表示） -->
-              <!-- <div class="opacity-0 group-hover:opacity-100 transition-opacity">
-                <span
-                  class="inline-flex items-center rounded-xl px-2 py-1 text-[11px] font-medium
-                         bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200"
-                >
-                  詳細へ →
-                </span>
-              </div> -->
             </div>
           </button>
         </li>
@@ -463,24 +453,6 @@ const props = defineProps({
   activeTab: { type: String, required: true },
   goals: { type: Array, default: () => [] } // [{ id, header, progress, deadline, assignee: { avater, name } }]
 })
-
-// 親の関数をそのまま使う場合は emit に変えるか、ここで直接 useRouter() で遷移
-// const PushToNextpage = (id) => {
-//   const r = useRouter()
-//   r.push(`/goal/${id}`)
-// }
-
-// // YYYY/MM/DD 形式に整形
-// const formatDate = (d) => {
-//   try {
-//     const date = new Date(d)
-//     if (Number.isNaN(date.getTime())) return '日付不明'
-//     return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2,'0')}/${String(date.getDate()).padStart(2,'0')}`
-//   } catch {
-//     return '日付不明'
-//   }
-// }
-
 // 0〜100 に丸める
 const clamp = (n) => {
   const v = typeof n === 'number' ? n : 0
