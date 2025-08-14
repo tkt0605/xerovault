@@ -20,14 +20,16 @@ from django.http import FileResponse, Http404
 from urllib.parse import quote, unquote
 from django.utils.encoding import smart_str
 import mimetypes, os
+from rest_framework.request import Request
+from typing import cast
 from .utils.utils import pretty_filename
 User = get_user_model()
 class EmailLoginAPI(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
-        serializer = EmailLoginSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data
+        serializer = EmailLoginSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid(raise_exception=True):
+            user = cast(User, serializer.validated_data['user'])
             refresh = RefreshToken.for_user(user)
             return Response({
                 "access": str(refresh.access_token),
@@ -272,8 +274,9 @@ class GoalViewSet(viewsets.ModelViewSet):
         serializer = GoalReadSerializer(goals, many=True)
         return Response(serializer.data)
     def get_queryset(self):
+        request = cast(Request, self.request)
         queryset = Goal.objects.all()
-        group_id = self.request.query_params.get('group')
+        group_id = request.query_params.get('group')
         if group_id:
             return self.queryset.filter(group=group_id)
         return queryset
@@ -399,18 +402,20 @@ class MessageViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return MessageReadSerializer
         return MessageSerializer 
+    # def get_queryset(self):
+    #     request = cast(Request, self.request)
+    #     queryset = Message.objects.all()
+    #     group_id = request.query_params.get('group')
+    #     if group_id:
+    #         return self.queryset.filter(group=group_id)
+    #     return queryset
     def get_queryset(self):
-        queryset = Message.objects.all()
-        group_id = self.request.query_params.get('group')
-        if group_id:
-            return self.queryset.filter(group=group_id)
-        return queryset
-    def get_queryset(self):
+        request = cast(Request, self.request)
         user = self.request.user
         queryset = Message.objects.filter(
             Q(group__owner=user) | Q(group__members=user)
         ).order_by('-created_at')
-        goal_id = self.request.query_params.get('goal')
+        goal_id = request.query_params.get('goal')
         if goal_id:
             queryset = queryset.filter(goal=goal_id)
         return queryset
@@ -427,8 +432,9 @@ class GetFilesView(viewsets.ModelViewSet):
         return PostLibraryReadSerializer
 
     def get_queryset(self):
+        request = cast(Request, self.request)
         queryset = PostfileToLibrary.objects.all()
-        lib_id = self.request.query_params.get('target')
+        lib_id = request.query_params.get('target')
         if lib_id:
             return queryset.filter(target__id=lib_id)
         return queryset
@@ -516,12 +522,13 @@ class GoalVoteViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        request = cast(Request, self.request)
         user = self.request.user
         qs = GoalVote.objects.select_related('goal', 'voter', 'goal__group')
         qs = qs.filter(
             Q(goal__group__members = user) | Q(goal__group__owner = user)
         )
-        group_id = self.request.query_params.get('group')
+        group_id = request.query_params.get('group')
         if group_id:
             qs = qs.filter(goal__group=group_id)
         return qs.order_by('-created_at')
