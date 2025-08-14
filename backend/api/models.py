@@ -93,10 +93,10 @@ def get_default_expired():
 class GenerateGroup(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, unique=True)
-    owner = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_group', default='')
+    owner = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_group', default=None)
     members = models.ManyToManyField(AUTH_USER_MODEL, related_name='joined_name', blank=True)
     goals = models.ManyToManyField("Goal", blank=True)
-    tag = models.CharField(max_length=256, blank=True, default='')
+    tag = models.CharField(max_length=256, blank=True, default=None)
     joined_token = models.CharField(max_length=36, unique=True, null=True, blank=True, help_text="UUID形式の招待トークン")
     is_public = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_created=True, auto_now_add=True)
@@ -125,7 +125,7 @@ class GenerateGroup(models.Model):
 class Goal(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='目標')
-    header = models.CharField('目標タイトル', max_length=255, help_text='この目標のタイトル', default='', blank=True, null=True)
+    header = models.CharField('目標タイトル', max_length=255, help_text='この目標のタイトル', default=None, blank=True, null=True)
     description = models.TextField("目標内容")
     created_at = models.DateTimeField("作成日", auto_now_add=True)
     deadline = models.DateField('締め切り', null=True, blank=True, help_text='この目標の締め切り')
@@ -178,7 +178,7 @@ def on_member_change(sender, instance, action, **kwargs):
 
 # class GeneratePublicToken(models.Model):
 #     user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tokens')
-#     groups = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='group_tokens', default='')
+#     groups = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='group_tokens', default=None)
 #     token = models.UUIDField(default=uuid.uuid4)
 #     is_used = models.BooleanField(default=False)
 #     is_valid = models.BooleanField(default=True)
@@ -197,17 +197,17 @@ def on_member_change(sender, instance, action, **kwargs):
 
 class GenerateLibrary(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    owner = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user', default='')
+    owner = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user', default=None)
     name = models.CharField(max_length=255)
-    tag = models.CharField(max_length=256, blank=True, default='')
+    tag = models.CharField(max_length=256, blank=True, default=None)
     is_public = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.name
 class PostfileToLibrary(models.Model):
-    target = models.ForeignKey(GenerateLibrary, on_delete=models.CASCADE, related_name='target_library', default='')
-    auther = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='auther', default='')
+    target = models.ForeignKey(GenerateLibrary, on_delete=models.CASCADE, related_name='target_library', default=None)
+    auther = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='auther', default=None)
     name = models.CharField(max_length=50, blank=True, null=True)
     file = models.FileField(upload_to='library_file')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -216,8 +216,8 @@ class PostfileToLibrary(models.Model):
         return str(self.target)
 class ConnectLibrary(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    target = models.ForeignKey(GenerateLibrary, on_delete=models.CASCADE, related_name='対象ライブラリ', default='')
-    group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name="接続先スタジオ", default='')
+    target = models.ForeignKey(GenerateLibrary, on_delete=models.CASCADE, related_name='対象ライブラリ', default=None)
+    group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name="接続先スタジオ", default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.target

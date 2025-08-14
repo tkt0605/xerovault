@@ -311,6 +311,9 @@
         <template #default>
           <div class="mt-2 space-y-4">
             <!-- 選択カード -->
+            <div class="text-xl">
+              これは <span class="inline-block bg-zinc-100 dark:bg-zinc-700 px-2 py-0.5 rounded text-xs font-medium tracking-wide">#{{ selectedVote?.goal?.header }}</span>に関連する投票です
+            </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <!-- YES -->
               <button type="button" :aria-pressed="choice === 'yes'" @click="choice = 'yes'" class="group relative w-full rounded-2xl border border-gray-200 dark:border-zinc-700 p-4 text-left
@@ -379,14 +382,14 @@
             </button>
             <div class="flex items-center gap-2">
               <button class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-semibold
-                 enabled:hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2" type="button" @click="EditVote(selectedVote.goal.id)" :disabled="!choice || loading">
+                 enabled:hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2" type="button" @click="EditVote(selectedVote?.goal?.id)" :disabled="!choice || loading">
                 <svg  v-if="loading" class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" stroke-width="4" />
                   <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4" />
                 </svg>
                 <span>変更する</span>
               </button>
-              <button type="button" @click="doSubmit(selectedVote.goal.id)" :disabled="!choice || loading"
+              <button type="button" @click="doSubmit(selectedVote?.goal?.id)" :disabled="!choice || loading"
                 class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-semibold
                  enabled:hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2">
                 <svg v-if="loading" class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -836,6 +839,7 @@ const Docking = async () => {
       console.log('成功:', response);
       group.value = await authGroup.fetchGroupId(routeId);
       goals.value = await authGoal.fetchGoalsByGroup(routeId);
+      closeDockingLibrary();
       return router.push(`/studio/${routeId}`);
     }
   } catch (err) {
@@ -1061,7 +1065,7 @@ const handleClose = () => {
 const doSubmit = async (routeId) => {
   const selected = choice.value;
   error.value = '';
-  if (selected) {
+  if (!selected) {
     error.value = '賛成または反対を選択してください。'
     return
   }
@@ -1080,20 +1084,21 @@ const doSubmit = async (routeId) => {
       })
     });
     const raw = await res.text(); // ← 本文を必ず吸う
-    let body = null;
-    try { body = raw ? JSON.parse(raw) : null; } catch { }
+    let data = null;
+    try { data = raw ? JSON.parse(raw) : null; } catch { }
 
     if (!res.ok) {
       const msg =
-        (body && (body.detail || body.error)) ||
-        (typeof body === 'string' ? body : '') ||
+        (data && (data.detail || data.error)) ||
+        (typeof data === 'string' ? data : '') ||
         raw || `HTTP ${res.status}`;
       error.value = msg;                      // ← 画面に表示
-      console.error('vote 400 body:', body || raw);
-      return;
+      console.error('vote 400 data:', data || raw);
+      return data;
     }
-    handleClose()
-    return res.json();
+    console.log(`投票完了:`, data);
+    handleClose();
+    return data;
   } catch (e) {
     error.value = (e && e.message) || '送信に失敗しました。時間をおいて再度お試しください。'
   } finally {
@@ -1103,7 +1108,7 @@ const doSubmit = async (routeId) => {
 const EditVote = async(routeId) => {
   const selected = choice.value;
   error.value = '';
-  if (selected) {
+  if (!selected) {
     error.value = '賛成または反対を選択してください。'
     return
   }
@@ -1111,7 +1116,7 @@ const EditVote = async(routeId) => {
     loading.value = true;
     const res = await fetch(`${config.public.apiBase}goals/${routeId}/vote/`, {
       method: 'PATCH',
-      header: {
+      headers: {
         'Authorization': `Bearer ${authStore.accessToken}`,
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -1121,20 +1126,21 @@ const EditVote = async(routeId) => {
       }),
     });
     const raw = await res.text(); // ← 本文を必ず吸う
-    let body = null;
-    try { body = raw ? JSON.parse(raw) : null; } catch { }
+    let data = null;
+    try { data = raw ? JSON.parse(raw) : null; } catch { }
 
     if (!res.ok) {
       const msg =
-        (body && (body.detail || body.error)) ||
-        (typeof body === 'string' ? body : '') ||
+        (data && (data.detail || data.error)) ||
+        (typeof data === 'string' ? data : '') ||
         raw || `HTTP ${res.status}`;
       error.value = msg;                      // ← 画面に表示
-      console.error('vote 400 body:', body || raw);
+      console.error('vote 400 data:', data || raw);
       return;
     }
-    handleClose()
-    return res.json();
+    console.log(`投票完了:`, data);
+    handleClose();
+    return data;
   } catch (err) {
     error.value = (err && err.message) || '送信に失敗'; 
   }finally{

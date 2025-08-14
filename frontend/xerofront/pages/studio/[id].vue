@@ -19,7 +19,6 @@
                     </button>
                     <div class="flex justify-center gap-3 text-sm mt-2">
                         <span
-                            :class="$colorMode?.value === 'dark' ? 'bg-zinc-800/80 text-white' : 'bg-zinc-100 text-gray-800'"
                             class="px-3 py-1 rounded-full">
                             #{{ group.tag || 'タグ未設定' }}
                         </span>
@@ -154,7 +153,7 @@
                     <div
                         class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
                         <div v-for="vote in allvotes" :key="vote.id" @click="emitVote(vote.id)"
-                            class="group bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 border-b border-zinc-200 dark:border-zinc-700 rounded-xl px-6 py-4 transition-colors cursor-pointer shadow-sm">
+                            class="group bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 border-b border-zinc-200 dark:border-zinc-700 px-6 py-4 transition-colors cursor-pointer shadow-sm">
                             <!-- 上段：説明とユーザー -->
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                 <!-- 投票内容 -->
