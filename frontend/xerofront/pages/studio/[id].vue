@@ -9,7 +9,7 @@
             backgroundPosition: 'center',
             backdropFilter: 'blur(8px)'
         }">
-        <div class="dark:bg-zinc-800 backdrop-blur-md py-4 pt-16">
+        <div class="dark:bg-zinc-800 backdrop-blur-md py-4 pt-4">
             <div class="max-w-6xl mx-auto px-6 space-y-4">
                 <div class="text-center ">
                     <button>
@@ -99,7 +99,7 @@
                         {{ tab }}
                     </button>
                 </div>
-                <div v-if="activeTab === 'ゴール'">
+                <!-- <div v-if="activeTab === 'ゴール'">
                     <div
                         class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
                         <div v-for="goal in goals" :key="goal.id"
@@ -112,6 +112,31 @@
                                         class="text-lg sm:text-xl font-semibold tracking-wide break-all dark:text-white">
                                         {{ goal.header || '見出し無し' }}
                                     </h3>
+                                </div>                 
+                                <span v-if="goal.progress >= 100" class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                                    完了
+                                </span>
+                                <div class="mt-2">
+                                    <div class="h-2.5 w-full rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
+                                        <div
+                                            class="h-full rounded-full transition-all duration-300"
+                                            :class="progressBarClass(goal.progress)"
+                                            :style="{ width: Math.min(Math.max(goal.progress ?? 0, 0), 100) + '%' }"
+                                            role="progressbar"
+                                            :aria-valuenow="clamp(goal.progress)"
+                                            aria-valuemin="0"
+                                            aria-valuemax="100"
+                                        />
+                                    </div>
+                                    <div class="mt-1 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                                        <span>{{ clamp(goal.progress) }}%</span>
+                                        <span class="inline-flex items-center gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M7 11h10v2H7z" />
+                                            </svg>
+                                            <span class="sr-only">進捗バー</span>
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="text-sm ml-12 text-zinc-400 mt-1">
                                     {{ goal.deadline ? '締め切り: ' + formatDate(goal.deadline) : '📅 締め切りなし' }}
@@ -119,14 +144,126 @@
                             </div>
                         </div>
                     </div>
+                </div> -->
+                  <div v-if="activeTab === 'ゴール'">
+    <!-- 空状態 -->
+    <div v-if="!goals?.length" class="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-8 text-center">
+      <p class="text-sm text-zinc-500 dark:text-zinc-400">まだゴールがありません。</p>
+      <p class="text-xs text-zinc-400 mt-1">右上の「＋」から作成しましょう。</p>
+    </div>
+
+    <!-- リスト -->
+    <!-- <div v-else class="rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-white/40 dark:bg-zinc-900/40 backdrop-blur"> -->
+    <div v-else class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+      <ul class="divide-y divide-zinc-200 dark:divide-zinc-800">
+        <li
+          v-for="goal in goals"
+          :key="goal.id"
+          class="group"
+        >
+          <button
+            type="button"
+            class="w-full text-left p-4 sm:p-5 flex flex-col gap-3 transition-colors
+                   hover:bg-zinc-50 dark:hover:bg-zinc-800/60 focus:outline-none focus-visible:ring-2
+                   focus-visible:ring-blue-500"
+            @click="PushToNextpage(goal.id)"
+            @keydown.enter.prevent="PushToNextpage(goal.id)"
+            @keydown.space.prevent="PushToNextpage(goal.id)"
+            :aria-label="`ゴール詳細を開く: ${goal.header || '見出し無し'}`"
+          >
+            <!-- ヘッダー行 -->
+            <div class="flex items-start gap-3 sm:gap-4">
+              <img
+                :src="goal?.assignee?.avater || defaultAvatar"
+                @error="onAvatarError"
+                class="size-10 sm:size-12 rounded-full object-cover ring-2 ring-white dark:ring-zinc-700 shadow"
+                alt=""
+                loading="lazy"
+              />
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <h3
+                    class="text-base sm:text-lg font-semibold tracking-wide text-zinc-800 dark:text-zinc-50
+                           line-clamp-1 break-all"
+                  >
+                    {{ goal.header || '見出し無し' }}
+                  </h3>
+                  <!-- 完了バッジ -->
+                  <span
+                    v-if="goal.progress >= 100"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium
+                           bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
+                  >
+                    完了
+                  </span>
                 </div>
+
+                <!-- 進捗バー -->
+                <div class="mt-2">
+                  <div class="h-2.5 w-full rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
+                    <div
+                      class="h-full rounded-full transition-all duration-300"
+                      :class="progressBarClass(goal.progress)"
+                      :style="{ width: Math.min(Math.max(goal.progress ?? 0, 0), 100) + '%' }"
+                      role="progressbar"
+                      :aria-valuenow="clamp(goal.progress)"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    />
+                  </div>
+                  <div class="mt-1 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                    <span>{{ clamp(goal.progress) }}%</span>
+                    <span class="inline-flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M7 11h10v2H7z" />
+                      </svg>
+                      <span class="sr-only">進捗バー</span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- メタ情報 -->
+                <div class="mt-2 text-xs sm:text-[13px] text-zinc-500 dark:text-zinc-400 flex flex-wrap items-center gap-3">
+                  <span class="inline-flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M7 2h10a2 2 0 0 1 2 2v2H5V4a2 2 0 0 1 2-2zm12 6v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8h14z" />
+                    </svg>
+                    {{ goal.deadline ? ('締め切り: ' + formatDate(goal.deadline)) : '📅 締め切りなし' }}
+                  </span>
+
+                  <span
+                    v-if="goal?.assignee?.name"
+                    class="inline-flex items-center gap-1"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5z"/>
+                    </svg>
+                    {{ goal.assignee.name }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- 右側の軽いCTA（ホバーで表示） -->
+              <!-- <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                <span
+                  class="inline-flex items-center rounded-xl px-2 py-1 text-[11px] font-medium
+                         bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200"
+                >
+                  詳細へ →
+                </span>
+              </div> -->
+            </div>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
                 <div v-else-if="activeTab === 'ライブラリ'" class="space-y-4">
                     <div
                         class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
                         <div v-for="lib in alllibrary" :key="lib.id" @click="emitLibrary(lib.target.id)" class="bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 p-4
                         shadow-sm transition cursor-pointer border-b border-zinc-200 dark:border-zinc-700">
                             <div class="flex items-center justify-between">
-                                <!-- 上段：フォルダアイコン + ライブラリ名 -->
                                 <div class="flex items-center gap-3">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
                                         class="text-amber-500 dark:text-yellow-300" viewBox="0 0 16 16">
@@ -153,52 +290,36 @@
                     <div
                         class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
                         <div v-for="vote in allvotes" :key="vote.id" @click="emitVote(vote.id)"
-                            class="group bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 border-b border-zinc-200 dark:border-zinc-700 px-6 py-4 transition-colors cursor-pointer shadow-sm">
+                            class="group bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 border-b border-zinc-200 dark:border-zinc-700 p-4 transition-colors cursor-pointer shadow-sm">
                             <!-- 上段：説明とユーザー -->
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                                 <!-- 投票内容 -->
-                                <div class="flex items-start gap-3">
-                                    <div class="pt-1">
-                                        <!-- SVGアイコン -->
-                                        <button class="hover:bg-zinc-100 rounded-full" @click="DeleteVote(vote.id)">
-                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                class="w-5 h-5 text-indigo-500 dark:text-indigo-300" fill="currentColor"
-                                                viewBox="0 0 16 16">
-                                                <path
-                                                    d="M6 6.207v9.043a.75.75 0 0 0 1.5 0V10.5a.5.5 0 0 1 1 0v4.75a.75.75 0 0 0 1.5 0v-8.5a.25.25 0 1 1 .5 0v2.5a.75.75 0 0 0 1.5 0V6.5a3 3 0 0 0-3-3H6.236a1 1 0 0 1-.447-.106l-.33-.165A.83.83 0 0 1 5 2.488V.75a.75.75 0 0 0-1.5 0v2.083c0 .715.404 1.37 1.044 1.689L5.5 5c.32.32.5.754.5 1.207" />
-                                                <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
-                                            </svg>
-                                        </button>
+                                 <div class="flex items-center justify-between flex-1">
+                                    <div class="flex items-center items-start gap-3">
+                                        <div class="pt-1">
+                                            <div class="flex items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
+                                                <img :src="vote.voter.avater" alt="avatar"
+                                                class="w-10 h-10 rounded-full border border-white dark:border-zinc-600 object-cover shadow" />
+                                            </div>
+                                        </div>
+                                        <h3 class="sm:text-xl font-semibold text-zinc-800 dark:text-white break-words leading-snug">
+                                            {{ vote.explain }}
+                                        </h3>
                                     </div>
-                                    <h3
-                                        class="text-lg font-semibold text-zinc-800 dark:text-white break-words leading-snug">
-                                        {{ vote.explain }}
-                                    </h3>
-                                </div>
-
-                                <!-- 投稿者情報 -->
-                                <div class="flex items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
-                                    <img :src="vote.voter.avater" alt="avatar"
-                                        class="w-8 h-8 rounded-full border border-white dark:border-zinc-600 object-cover shadow" />
-                                    <div class="flex flex-col">
-                                        <span>{{ vote.voter.email }}</span>
-                                        <time class="text-xs text-zinc-400">{{ formatDate(vote.created_at) }}</time>
-                                    </div>
+                                    <span v-if="vote.goal.progress >= 100" class="px-2 py-1 rounded bg-green-600 text-white text-xs">
+                                        達成済み
+                                    </span>
                                 </div>
                             </div>
-
-                            <!-- 関連ゴール -->
-                            <div v-if="vote.goal?.header" class="mt-3 pl-8 text-sm text-zinc-500 dark:text-zinc-400">
+                            <div v-if="vote.goal?.header" class="pl-12 mt-[-4px] sm:text-xl text-zinc-500 dark:text-zinc-400">
                                 <span
-                                    class="inline-block bg-zinc-100 dark:bg-zinc-700 px-2 py-0.5 rounded text-xs font-medium tracking-wide">
-                                    #{{ vote.goal.header }}
+                                    class="inline-block bg-zinc-100 dark:bg-zinc-700 px-2 py-0.5 rounded text-sm font-medium tracking-wide">
+                                    #{{ vote.goal.header }}の投票
                                 </span>
-                                に関連する投票です
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </main>
@@ -336,4 +457,57 @@ const DeleteVote = async (voteId) => {
         throw err;
     }
 };
+
+
+const props = defineProps({
+  activeTab: { type: String, required: true },
+  goals: { type: Array, default: () => [] } // [{ id, header, progress, deadline, assignee: { avater, name } }]
+})
+
+// 親の関数をそのまま使う場合は emit に変えるか、ここで直接 useRouter() で遷移
+// const PushToNextpage = (id) => {
+//   const r = useRouter()
+//   r.push(`/goal/${id}`)
+// }
+
+// // YYYY/MM/DD 形式に整形
+// const formatDate = (d) => {
+//   try {
+//     const date = new Date(d)
+//     if (Number.isNaN(date.getTime())) return '日付不明'
+//     return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2,'0')}/${String(date.getDate()).padStart(2,'0')}`
+//   } catch {
+//     return '日付不明'
+//   }
+// }
+
+// 0〜100 に丸める
+const clamp = (n) => {
+  const v = typeof n === 'number' ? n : 0
+  return Math.min(100, Math.max(0, Math.round(v)))
+}
+
+// 進捗バーの色クラス
+const progressBarClass = (p) => {
+  const v = clamp(p)
+  if (v < 40) return 'bg-red-500'
+  if (v < 80) return 'bg-yellow-500'
+  return 'bg-green-500'
+}
+
+// アバターのデフォルト（SVG）
+const defaultAvatar = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+  <svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 24 24' fill='none'>
+    <rect width='24' height='24' rx='12' fill='#71717A'/>
+    <path d='M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-4 0-7 2-7 4v1h14v-1c0-2-3-4-7-4z' fill='white'/>
+  </svg>
+`)
+
+// 画像エラー時フォールバック
+const onAvatarError = (e) => {
+  const img = e.target
+  if (img && img.tagName === 'IMG') {
+    img.src = defaultAvatar
+  }
+}
 </script>

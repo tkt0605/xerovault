@@ -150,15 +150,20 @@ class GoalSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = Goal
-        fields = ['id', 'group','header', 'description', "created_at", "deadline", "assignee", "is_concrete", "is_completed"]
+        fields = ['id', 'group','header', 'description', "created_at", "deadline", "assignee", "is_concrete" , "is_completed"]
         read_only_fields = ['id', "assignee" ,'created_at']
 class GoalReadSerializer(serializers.ModelSerializer):
     group = GenerateGroupSerializer(read_only=True)
     assignee = CustomUserSerializer(read_only = True)
+    progress = serializers.SerializerMethodField()
     class Meta:
         model = Goal
-        fields = ['id', 'group','header' , 'description', "created_at", "deadline", "assignee", "is_concrete", "is_completed"]
-
+        fields = ['id', 'group','header' , 'description',"progress" ,"created_at", "deadline", "assignee", "is_concrete" , "is_completed"]
+    def get_progress(self, obj):
+        prog = getattr(obj, 'progress_anno', None)
+        if prog is not None:
+            return int(round(prog))
+        return obj.vote_progress()
 class ConnectLibrarySerializer(serializers.ModelSerializer):
     target = serializers.SlugRelatedField(
         slug_field = "id",

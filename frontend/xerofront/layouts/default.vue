@@ -314,6 +314,7 @@
             <div class="text-xl">
               これは <span class="inline-block bg-zinc-100 dark:bg-zinc-700 px-2 py-0.5 rounded text-xs font-medium tracking-wide">#{{ selectedVote?.goal?.header }}</span>に関連する投票です
             </div>
+            <div></div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <!-- YES -->
               <button type="button" :aria-pressed="choice === 'yes'" @click="choice = 'yes'" class="group relative w-full rounded-2xl border border-gray-200 dark:border-zinc-700 p-4 text-left
@@ -359,17 +360,6 @@
                 </div>
               </button>
             </div>
-
-            <!-- 
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                コメント（任意）
-              </label>
-              <textarea v-model="note" rows="3" placeholder="理由や補足があれば書いてください" class="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900
-                 text-gray-900 dark:text-white placeholder-gray-400 px-3 py-2 focus:outline-none
-                 focus:ring-2 focus:ring-indigo-400" />
-              <p v-if="error" class="mt-1 text-xs text-rose-500">{{ error }}</p>
-            </div> -->
           </div>
         </template>
 
@@ -1083,6 +1073,9 @@ const doSubmit = async (routeId) => {
         is_yes: selected === 'yes'
       })
     });
+    routeId.progress = res.progress
+    routeId.is_completed = res.completed
+    routeId.myVote = res.vote.is_yes  
     const raw = await res.text(); // ← 本文を必ず吸う
     let data = null;
     try { data = raw ? JSON.parse(raw) : null; } catch { }
