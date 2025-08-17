@@ -12,6 +12,7 @@ from django.dispatch import receiver
 from datetime import timedelta
 import datetime
 from uuid import UUID
+from django.contrib.postgres.indexes import GinIndex
 from typing import TYPE_CHECKING
 # --- 定数定義: スコアのルールと重み付けを定義 ---
 BASE_SCORE = 100  # デフォルトのスコア
@@ -124,6 +125,11 @@ class GenerateGroup(models.Model):
             self.score = new_score
             self.save(update_fields=['score'])
             print(f"グループ '{self.name}' のスコアが {self.score} に更新されました。")
+    class Meta:
+        indexes = [
+            GinIndex(fields=["name"], name="idx_group_name_trgm", opclasses=["gin_trgm_ops"]),
+            GinIndex(fields=["tag"],  name="idx_group_tag_trgm",  opclasses=["gin_trgm_ops"]),
+        ]
 class Goal(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='目標')
@@ -216,6 +222,11 @@ class GenerateLibrary(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.name
+    class Meta:
+        indexes = [
+            GinIndex(fields=["name"], name="idx_library_name_trgm", opclasses=["gin_trgm_ops"]),
+            GinIndex(fields=["tag"],  name="idx_library_tag_trgm",  opclasses=["gin_trgm_ops"]),
+        ]
 class PostfileToLibrary(models.Model):
     target = models.ForeignKey(GenerateLibrary, on_delete=models.CASCADE, related_name='target_library', default=None)
     auther = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='auther', default=None)
