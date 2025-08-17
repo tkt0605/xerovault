@@ -5,13 +5,13 @@
     </header>
     <div class="flex flex-1 overflow-hidden">
       <aside class="hidden md:block">
-        <Aside @toggle-sidebar="toggleSidebar" @Token-dialog="TokenDialog()" @Library-dialog="LibraryDailog()"
+        <Aside  @search-dialog="openSearchDialog" @toggle-sidebar="toggleSidebar" @Token-dialog="TokenDialog()" @Library-dialog="LibraryDailog()"
           @Group-dialog="GroupDailog" :isOpen="isSidebarOpen" @close="isSidebarOpen = false" />
       </aside>
       <main class="flex-1 overflow-y-auto">
         <NuxtPage @Member-dialog="ShowMember()" @QR-dialog="QRdialog()" @Goal-dialog="CreateGoal()"
           @DockingtoStudio-dialog="DockingLibrary()" @Goalvote-dialog="GoalVoting()" @Vote-dialog="Votedialog(voteId)"
-          @Folder-dialog="openFolder(libraryId)" />
+          @Folder-dialog="openFolder(libraryId)"/>
       </main>
 
       <!-- Dialog コンポーネントは省略 -->
@@ -312,7 +312,9 @@
           <div class="mt-2 space-y-4">
             <!-- 選択カード -->
             <div class="text-xl">
-              これは <span class="inline-block bg-zinc-100 dark:bg-zinc-700 px-2 py-0.5 rounded text-xs font-medium tracking-wide">#{{ selectedVote?.goal?.header }}</span>に関連する投票です
+              これは <span
+                class="inline-block bg-zinc-100 dark:bg-zinc-700 px-2 py-0.5 rounded text-xs font-medium tracking-wide">#{{
+                  selectedVote?.goal?.header }}</span>に関連する投票です
             </div>
             <div></div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -371,9 +373,11 @@
               キャンセル（Esc）
             </button>
             <div class="flex items-center gap-2">
-              <button class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-semibold
-                 enabled:hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2" type="button" @click="EditVote(selectedVote?.goal?.id)" :disabled="!choice || loading">
-                <svg  v-if="loading" class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+              <button
+                class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-semibold
+                 enabled:hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2"
+                type="button" @click="EditVote(selectedVote?.goal?.id)" :disabled="!choice || loading">
+                <svg v-if="loading" class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" stroke-width="4" />
                   <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4" />
                 </svg>
@@ -493,6 +497,8 @@
           </div>
         </template>
       </Dialog>
+      <SearchDialog v-model="openSearch" :fetcher="fetchSuggestions" :toLabel="(x) => x.title"
+        :toDesc="(x) => x.subtitle" placeholder="ライブラリ・スタジオを検索…" :initialQuery="''" />
     </div>
   </div>
 </template>
@@ -501,6 +507,7 @@ import Header from '~/components/Header.vue';
 import Aside from '~/components/Aside.vue';
 import '~/assets/css/index.css';
 import Dialog from '~/components/MainDialog.vue';
+import SearchDialog from '~/components/SearchDialog.vue';
 import { useAuthStore } from '~/store/auth';
 import { useAuthGroups } from '~/store/group';
 import { useGoalStore } from '~/store/goal';
@@ -513,6 +520,7 @@ import { useRuntimeConfig } from '#imports';
 import { eventBus } from '#imports';
 const openTokenDailog = ref(false);
 const openGroupDailog = ref(false);
+const openSearch = ref(false);
 const authGroup = useAuthGroups();
 const authGoal = useGoalStore();
 const openLibraryDailog = ref(false);
@@ -590,6 +598,21 @@ onBeforeUnmount(() => {
   eventBus.off('Vote-dialog', handleVotedialog);
   eventBus.off('Folder-dialog', openFolder);
 });
+async function fetchSyggestions(q) {
+  const res = await $fetch(`${config.public.apiBase}serch/`, {
+    query: { q }
+  });
+  return res.items
+}
+function onSelect(items) {
+
+}
+function onSubmit(query) {
+
+}
+const openSearchDialog = () => {
+  openSearch.value = true;
+};
 const selectedVote = computed(() => {
   if (Array.isArray(allvotes.value)) {
     return allvotes.value.find((v) => v.id === selectedVoteId.value);
@@ -1075,7 +1098,7 @@ const doSubmit = async (routeId) => {
     });
     routeId.progress = res.progress
     routeId.is_completed = res.completed
-    routeId.myVote = res.vote.is_yes  
+    routeId.myVote = res.vote.is_yes
     const raw = await res.text(); // ← 本文を必ず吸う
     let data = null;
     try { data = raw ? JSON.parse(raw) : null; } catch { }
@@ -1098,7 +1121,7 @@ const doSubmit = async (routeId) => {
     loading.value = false
   }
 };
-const EditVote = async(routeId) => {
+const EditVote = async (routeId) => {
   const selected = choice.value;
   error.value = '';
   if (!selected) {
@@ -1135,8 +1158,8 @@ const EditVote = async(routeId) => {
     handleClose();
     return data;
   } catch (err) {
-    error.value = (err && err.message) || '送信に失敗'; 
-  }finally{
+    error.value = (err && err.message) || '送信に失敗';
+  } finally {
     loading.value = false;
   }
 };
@@ -1155,7 +1178,7 @@ const onKey = (e) => {
 
 onMounted(() => window.addEventListener('keydown', onKey))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
-const openfile = async(f)=>{
+const openfile = async (f) => {
   const config = useRuntimeConfig();
   const authStore = useAuthStore();
   try {
@@ -1165,16 +1188,16 @@ const openfile = async(f)=>{
         "Authorization": `Bearer ${authStore.accessToken}`
       },
     });
-    if (!res.ok){
-      const msg = await res.text().catch(()=>'');
+    if (!res.ok) {
+      const msg = await res.text().catch(() => '');
       throw new Error(`HTTP ${res.status} ${msg}`);
     }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const previewable = /^(image|video|audio|text|application\/pdf)/i.test(blob.type);
-    if (previewable){
+    if (previewable) {
       window.open(url, '_blank');
-    }else{
+    } else {
       const a = document.createElement('a');
       a.href = url;
       a.download = (f.file?.split('/')?.pop()) || 'download';

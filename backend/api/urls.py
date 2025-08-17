@@ -4,7 +4,20 @@ from django.conf import settings
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenBlacklistView
 from api import views
-from api.views import GoalVoteViewSet, RegisterAPI,MessageViewSet , EmailLoginAPI, LogoutAPI, CustomUserViewSet,ConnectLibraryViewSet , GenerateGroupviewSet, GenerateLibraryviewSet, GoalViewSet, GetFilesView
+from api.views import ( 
+    GoalVoteViewSet,
+    RegisterAPI,
+    MessageViewSet,
+    EmailLoginAPI, 
+    LogoutAPI,
+    CustomUserViewSet,
+    ConnectLibraryViewSet, 
+    GenerateGroupviewSet, 
+    GenerateLibraryviewSet, 
+    GoalViewSet, 
+    GetFilesView,
+    GlobalSearchAPI
+)
 router = routers.DefaultRouter()
 router.register(r'users', CustomUserViewSet, basename='user')
 router.register(r'groups', GenerateGroupviewSet, basename='group')
@@ -23,8 +36,7 @@ urlpatterns = [
     path('logout/', LogoutAPI.as_view(), name='logout'),
     path('login/', EmailLoginAPI.as_view(), name='login'),
     path('signup/', RegisterAPI.as_view(), name='signup'),
-    # path('invite/create/', InviteCreateView.as_view(), name='invite-create'),
-    # path('upload_library/', UploadMultipleFilesView.as_view(), name='upload_file_library'),
+    path('search/', GlobalSearchAPI.as_view(), name='search'),
     path('', include(router.urls))
 ]
 if settings.DEBUG:

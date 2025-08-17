@@ -4,10 +4,40 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import  CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, GroupNotification, Message, PostfileToLibrary, GoalVote
+from .models import (
+    CustomUser,
+    GenerateGroup,
+    GenerateLibrary, 
+    Goal,
+    ConnectLibrary,
+    GroupNotification,
+    Message,
+    PostfileToLibrary,
+    GoalVote
+    )
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
-from .serializers import GoalVoteSerializer, PostLibraryCreateSerializer, GoalVoteReadSerializer, RegisterSerializer,MessageSerializer,MessageReadSerializer , CustomUserSerializer, CustomUserDetairsSerializer, EmailLoginSerializer, LogoutSerializer, GenerateGroupSerializer, GenerateGroupReadSerializer, GenerateLibrarySerializer, GenerateLibraryReadSerializer, GoalSerializer, GoalReadSerializer, ConnectLibrarySerializer, ConnectLibraryReadSerializer, PostLibraryReadSerializer
+from .serializers import (
+    GoalVoteSerializer,
+    PostLibraryCreateSerializer,
+    GoalVoteReadSerializer,
+    RegisterSerializer,
+    MessageSerializer,
+    MessageReadSerializer,
+    CustomUserSerializer,
+    CustomUserDetairsSerializer,
+    EmailLoginSerializer,
+    LogoutSerializer,
+    GenerateGroupSerializer,
+    GenerateGroupReadSerializer,
+    GenerateLibrarySerializer,
+    GenerateLibraryReadSerializer,
+    GoalSerializer,
+    GoalReadSerializer,
+    ConnectLibrarySerializer,
+    ConnectLibraryReadSerializer,
+    PostLibraryReadSerializer
+    )
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import timedelta
 from django.contrib.auth import get_user_model
@@ -26,7 +56,31 @@ from .utils.utils import pretty_filename
 from django.db import transaction
 from django.db.models import Count, Q, F, FloatField, Value
 from django.db.models.functions import NullIf, Coalesce
+from .pagination import DefaultPagination
+from rest_framework.pagination import PageNumberPagination
+from .services.search import GlobalSearchEngine, SearchMode
 User = get_user_model()
+class GlobalSearchPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+# class GlobalSearchAPI(APIView):
+#     permission_classes = [IsAuthenticated]
+#     def get(self, request):
+#         q = request.query_params.get('q', '').strip()
+#         mode: SearchMode = request.query_params.get('mode', 'basic')
+#         svc = GlobalSearchEngine(q=q, mode=mode)
+#         rows = list(svc.combined())
+#         paginator = GlobalSearchPagination()
+#         page = paginator.paginate_queryset(rows, request, view=self)
+#         return paginator.get_paginated_response(page)
+class GlobalSearchAPI(APIView):
+    def get(self, request):
+        q = request.query_params.get('q', '')
+        mode = request.query_params.get('mode', 'basic')
+        engine = GlobalSearchEngine(q, mode)
+        results = engine.combined(limit=50)  # or paginate yourself
+        return Response(results)
 class EmailLoginAPI(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
@@ -83,25 +137,6 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(approver, many=True)
         return Response(serializer.data)
 
-# class GeneratePublicTokenViewSet(viewsets.ModelViewSet):
-#     queryset = GeneratePublicToken.objects.all()
-#     serializer_class = GeneratePublicTokenSerializer
-#     permission_classes = [IsAuthenticated]
-#     def get_permissions(self):
-#         if self.action in ['create', 'list']:
-#             return [AllowAny()]
-#         return super().get_permissions()
-#     def get_serializer_class(self):
-#         if self.action == 'retrieve':
-#             return GeneratePublicTokenReadSerializer
-#         return super().get_serializer_class()
-#     @action(detail=False, methods=['post'], permission_classes = [IsAuthenticated])
-#     def generate_token(self, request):
-#         serializer = GeneratePublicTokenSerializer(data=request.data)
-#         if serializer.is_valid():
-#             token = serializer.save()
-#             return Response({'token': token.token}, status=201)
-#         return Response(serializer.errors, status=400)
 class InviteCreateView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
@@ -353,32 +388,7 @@ class GoalViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
         )
-    # @action(detail=True, methods=['post', 'patch', 'delete'], permission_classes=[IsAuthenticated])
-    # def vote(self, request, pk=None):
-    #     goal = self.get_object()
-    #     user = request.user
-    #     is_member = goal.group.members.filter(id=user.id).exists()
-    #     is_owner = (goal.group.owner_id == user.id)
-    #     if not (is_member or is_owner):
-    #         return Response({'detail': 'このユーザーはグループのメンバー又は、オーナーではありません。'}, status=status.HTTP_403_FORBIDDEN)
-    #     if request.method.lower() == 'delete':
-    #         deleted, _ = GoalVote.objects.filter(goal=goal, voter=user).delete()
-    #         if deleted:
-    #             goal.check_voting_completion()
-    #             return Response(status=status.HTTP_204_NO_CONTENT)
-    #         return Response({"detail": "投票が見つかりません。"}, status=status.HTTP_404_NOT_FOUND)
-    #     raw = request.data.get('is_yes')
-    #     if isinstance(raw, str):
-    #         is_yes = raw.lower() in ('true', '1', 'yes', 'y', 't')
-    #     else:
-    #         is_yes = bool(raw)
-    #     vote, created = GoalVote.objects.update_or_create(
-    #         goal=goal, voter=user, defaults={'is_yes': is_yes}
-    #     )
-    #     goal.check_voting_completion()
-    #     return Response({'vote': {'is_yes': vote.is_yes}},
-    #                     status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
-    #                     )
+
 class ConnectLibraryViewSet(viewsets.ModelViewSet):
     queryset = ConnectLibrary.objects.all()
     serializer_class = ConnectLibrarySerializer
@@ -438,35 +448,7 @@ class ConnectLibraryViewSet(viewsets.ModelViewSet):
 
 
 
-# class InviteAppoverViewSet(viewsets.ModelViewSet):
-#     queryset = InviteAppover.objects.all()
-#     permission_classes = [IsAuthenticated]
-#     serializer_class = InviteAppoverSerializer
-#     def get_serializer_class(self):
-#         if self.action == 'retrieve':
-#             return InviteApproverReadSerializer
-#         return super().get_serializer_class()
-#     def perform_create(self, serializer):
-#         serializer.save(inviter=self.request.user)
-#     @action(detail=True, methods=['post'], url_path='approver')
-#     def approver_invite(self, request, *args, **kwargs):
-#         invite = self.get_object()
-#         if invite.expires_at:
-#             return Response({'error': 'この招待リンクは期限切れです。'}, status=400)
-#         if invite.is_approved:
-#             return Response({'error': 'このリンクは既に利用されています。'}, status=400)
-#         invite.invitee = request.user
-#         invite.is_approved = True
-#         invite.save()
-#         return Response(self.get_serializer(invite).data, status=200)
-#     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
-#     def my_friends(self, request):
-#         user = self.request.user
-#         my_list = InviteAppover.objects.filter(
-#             Q(inviter=user)
-#         )
-#         serializer = InviteApproverReadSerializer(my_list, many=True)
-#         return Response(serializer.data)
+
 
 class MessageViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -475,13 +457,6 @@ class MessageViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return MessageReadSerializer
         return MessageSerializer 
-    # def get_queryset(self):
-    #     request = cast(Request, self.request)
-    #     queryset = Message.objects.all()
-    #     group_id = request.query_params.get('group')
-    #     if group_id:
-    #         return self.queryset.filter(group=group_id)
-    #     return queryset
     def get_queryset(self):
         request = cast(Request, self.request)
         user = self.request.user
@@ -564,32 +539,7 @@ class GetFilesView(viewsets.ModelViewSet):
             content_type=content_type,
         )
         return resp
-        # try:
-        #     obj = self.get_object()
-        # except PostfileToLibrary.DoesNotExist:
-        #     raise Http404
-        # f = obj.file  # FileField
-        # # 保存名を日本語で（例: DB/Storage上のfile.name から）
-        # raw_name = os.path.basename(f.name)
-        # display_name = unquote(raw_name)  # 念のためURLエンコードを解除
-        # content_type = mimetypes.guess_type(display_name)[0] or 'application/octet-stream'
 
-        # resp = FileResponse(f.open('rb'), content_type=content_type)
-
-        # # inline か attachment を切り替え（任意）
-        # disp = 'inline'
-        # if request.query_params.get('download') == '1':
-        #     disp = 'attachment'
-
-        # # ASCII用に安全化した代替名（空白やカンマなども避けるのが吉）
-        # ascii_fallback = quote(display_name)  # ここは本来ASCIIのみが望ましい
-
-        # # 両対応: filename (ASCII) + filename* (UTF-8)
-        # resp['Content-Disposition'] = (
-        #     f'{disp}; name="{ascii_fallback}"; '
-        #     f"name*=UTF-8''{quote(display_name)}"
-        # )
-        # return resp
 class GoalVoteViewSet(viewsets.ModelViewSet):
     serializer_class = GoalVoteSerializer
     permission_classes = [IsAuthenticated]
@@ -605,11 +555,6 @@ class GoalVoteViewSet(viewsets.ModelViewSet):
         if group_id:
             qs = qs.filter(goal__group=group_id)
         return qs.order_by('-created_at')
-        # queryset = GoalVote.objects.all()
-        # group_id = self.request.query_params.get('group')
-        # if group_id:
-        #     return queryset.filter(group=group_id)
-        # return queryset
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return GoalVoteReadSerializer

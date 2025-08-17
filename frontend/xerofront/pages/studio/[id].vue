@@ -18,8 +18,7 @@
                         </h1>
                     </button>
                     <div class="flex justify-center gap-3 text-sm mt-2">
-                        <span
-                            class="px-3 py-1 rounded-full">
+                        <span class="px-3 py-1 rounded-full">
                             #{{ group.tag || 'タグ未設定' }}
                         </span>
                         <span :class="group.is_public
@@ -145,109 +144,97 @@
                         </div>
                     </div>
                 </div> -->
-                  <div v-if="activeTab === 'ゴール'">
-    <!-- 空状態 -->
-    <div v-if="!goals?.length" class="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-8 text-center">
-      <p class="text-sm text-zinc-500 dark:text-zinc-400">まだゴールがありません。</p>
-      <p class="text-xs text-zinc-400 mt-1">右上の「＋」から作成しましょう。</p>
-    </div>
+                <div v-if="activeTab === 'ゴール'">
+                    <!-- 空状態 -->
+                    <div v-if="!goals?.length"
+                        class="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-8 text-center">
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400">まだゴールがありません。</p>
+                        <p class="text-xs text-zinc-400 mt-1">右上の「＋」から作成しましょう。</p>
+                    </div>
 
-    <!-- リスト -->
-    <!-- <div v-else class="rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-white/40 dark:bg-zinc-900/40 backdrop-blur"> -->
-    <div v-else>
-      <ul class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-        <li
-          v-for="goal in goals"
-          :key="goal.id"
-          class="group bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 border-b border-zinc-200 dark:border-zinc-700 transition-colors cursor-pointer shadow-sm"
-        >
-          <button
-            type="button"
-            class="w-full text-left p-4 sm:p-5 flex flex-col gap-3 transition-colors
+                    <!-- リスト -->
+                    <!-- <div v-else class="rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-white/40 dark:bg-zinc-900/40 backdrop-blur"> -->
+                    <div v-else>
+                        <ul
+                            class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                            <li v-for="goal in goals" :key="goal.id"
+                                class="group bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 border-b border-zinc-200 dark:border-zinc-700 transition-colors cursor-pointer shadow-sm">
+                                <button type="button" class="w-full text-left p-4 sm:p-5 flex flex-col gap-3 transition-colors
                    hover:bg-zinc-50 dark:hover:bg-zinc-800/60 focus:outline-none focus-visible:ring-2
-                   focus-visible:ring-blue-500"
-            @click="PushToNextpage(goal.id)"
-            @keydown.enter.prevent="PushToNextpage(goal.id)"
-            @keydown.space.prevent="PushToNextpage(goal.id)"
-            :aria-label="`ゴール詳細を開く: ${goal.header || '見出し無し'}`"
-          >
-            <!-- ヘッダー行 -->
-            <div class="flex items-start gap-3 sm:gap-4">
-              <img
-                :src="goal?.assignee?.avater || defaultAvatar"
-                @error="onAvatarError"
-                class="size-10 sm:size-12 rounded-full object-cover ring-2 ring-white dark:ring-zinc-700 shadow"
-                alt=""
-                loading="lazy"
-              />
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-2">
-                  <h3
-                    class="text-base sm:text-lg font-semibold tracking-wide text-zinc-800 dark:text-zinc-50
-                           line-clamp-1 break-all"
-                  >
-                    {{ goal.header || '見出し無し' }}
-                  </h3>
-                  <!-- 完了バッジ -->
-                  <span
-                    v-if="goal.progress >= 100"
-                    class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium
-                           bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
-                  >
-                    完了
-                  </span>
-                </div>
+                   focus-visible:ring-blue-500" @click="PushToNextpage(goal.id)"
+                                    @keydown.enter.prevent="PushToNextpage(goal.id)"
+                                    @keydown.space.prevent="PushToNextpage(goal.id)"
+                                    :aria-label="`ゴール詳細を開く: ${goal.header || '見出し無し'}`">
+                                    <!-- ヘッダー行 -->
+                                    <div class="flex items-start gap-3 sm:gap-4">
+                                        <img :src="goal?.assignee?.avater || defaultAvatar" @error="onAvatarError"
+                                            class="size-10 sm:size-12 rounded-full object-cover ring-2 ring-white dark:ring-zinc-700 shadow"
+                                            alt="" loading="lazy" />
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-center gap-2">
+                                                <h3 class="text-base sm:text-lg font-semibold tracking-wide text-zinc-800 dark:text-zinc-50
+                           line-clamp-1 break-all">
+                                                    {{ goal.header || '見出し無し' }}
+                                                </h3>
+                                                <!-- 完了バッジ -->
+                                                <span v-if="goal.progress >= 100" class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium
+                           bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                                                    完了
+                                                </span>
+                                            </div>
 
-                <!-- 進捗バー -->
-                <div class="mt-2">
-                  <div class="h-2.5 w-full rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
-                    <div
-                      class="h-full rounded-full transition-all duration-300"
-                      :class="progressBarClass(goal.progress)"
-                      :style="{ width: Math.min(Math.max(goal.progress ?? 0, 0), 100) + '%' }"
-                      role="progressbar"
-                      :aria-valuenow="clamp(goal.progress)"
-                      aria-valuemin="0"
-                      aria-valuemax="100"
-                    />
-                  </div>
-                  <div class="mt-1 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                    <span>{{ clamp(goal.progress) }}%</span>
-                    <span class="inline-flex items-center gap-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M7 11h10v2H7z" />
-                      </svg>
-                      <span class="sr-only">進捗バー</span>
-                    </span>
-                  </div>
-                </div>
+                                            <!-- 進捗バー -->
+                                            <div class="mt-2">
+                                                <div
+                                                    class="h-2.5 w-full rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
+                                                    <div class="h-full rounded-full transition-all duration-300"
+                                                        :class="progressBarClass(goal.progress)"
+                                                        :style="{ width: Math.min(Math.max(goal.progress ?? 0, 0), 100) + '%' }"
+                                                        role="progressbar" :aria-valuenow="clamp(goal.progress)"
+                                                        aria-valuemin="0" aria-valuemax="100" />
+                                                </div>
+                                                <div
+                                                    class="mt-1 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                                                    <span>{{ clamp(goal.progress) }}%</span>
+                                                    <span class="inline-flex items-center gap-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5"
+                                                            viewBox="0 0 24 24" fill="currentColor">
+                                                            <path d="M7 11h10v2H7z" />
+                                                        </svg>
+                                                        <span class="sr-only">進捗バー</span>
+                                                    </span>
+                                                </div>
+                                            </div>
 
-                <!-- メタ情報 -->
-                <div class="mt-2 text-xs sm:text-[13px] text-zinc-500 dark:text-zinc-400 flex flex-wrap items-center gap-3">
-                  <span class="inline-flex items-center gap-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M7 2h10a2 2 0 0 1 2 2v2H5V4a2 2 0 0 1 2-2zm12 6v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8h14z" />
-                    </svg>
-                    {{ goal.deadline ? ('締め切り: ' + formatDate(goal.deadline)) : '📅 締め切りなし' }}
-                  </span>
+                                            <!-- メタ情報 -->
+                                            <div
+                                                class="mt-2 text-xs sm:text-[13px] text-zinc-500 dark:text-zinc-400 flex flex-wrap items-center gap-3">
+                                                <span class="inline-flex items-center gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4"
+                                                        viewBox="0 0 24 24" fill="currentColor">
+                                                        <path
+                                                            d="M7 2h10a2 2 0 0 1 2 2v2H5V4a2 2 0 0 1 2-2zm12 6v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8h14z" />
+                                                    </svg>
+                                                    {{ goal.deadline ? ('締め切り: ' + formatDate(goal.deadline)) : '📅締め切りなし' }}
+                                                </span>
 
-                  <span
-                    v-if="goal?.assignee?.name"
-                    class="inline-flex items-center gap-1"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5z"/>
-                    </svg>
-                    {{ goal.assignee.name }}
-                  </span>
+                                                <span v-if="goal?.assignee?.name"
+                                                    class="inline-flex items-center gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4"
+                                                        viewBox="0 0 24 24" fill="currentColor">
+                                                        <path
+                                                            d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5z" />
+                                                    </svg>
+                                                    {{ goal.assignee.name }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-              </div>
-            </div>
-          </button>
-        </li>
-      </ul>
-    </div>
-  </div>
                 <div v-else-if="activeTab === 'ライブラリ'" class="space-y-4">
                     <div
                         class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
@@ -284,24 +271,28 @@
                             <!-- 上段：説明とユーザー -->
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                                 <!-- 投票内容 -->
-                                 <div class="flex items-center justify-between flex-1">
+                                <div class="flex items-center justify-between flex-1">
                                     <div class="flex items-center items-start gap-3">
                                         <div class="pt-1">
-                                            <div class="flex items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
+                                            <div
+                                                class="flex items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
                                                 <img :src="vote.voter.avater" alt="avatar"
-                                                class="w-10 h-10 rounded-full border border-white dark:border-zinc-600 object-cover shadow" />
+                                                    class="w-10 h-10 rounded-full border border-white dark:border-zinc-600 object-cover shadow" />
                                             </div>
                                         </div>
-                                        <h3 class="sm:text-xl font-semibold text-zinc-800 dark:text-white break-words leading-snug">
+                                        <h3
+                                            class="sm:text-xl font-semibold text-zinc-800 dark:text-white break-words leading-snug">
                                             {{ vote.explain }}
                                         </h3>
                                     </div>
-                                    <span v-if="vote.goal.progress >= 100" class="px-2 py-1 rounded bg-green-600 text-white text-xs">
+                                    <span v-if="vote.goal.progress >= 100"
+                                        class="px-2 py-1 rounded bg-green-600 text-white text-xs">
                                         達成済み
                                     </span>
                                 </div>
                             </div>
-                            <div v-if="vote.goal?.header" class="pl-12 mt-[-4px] sm:text-xl text-zinc-500 dark:text-zinc-400">
+                            <div v-if="vote.goal?.header"
+                                class="pl-12 mt-[-4px] sm:text-xl text-zinc-500 dark:text-zinc-400">
                                 <span
                                     class="inline-block bg-zinc-100 dark:bg-zinc-700 px-2 py-0.5 rounded text-sm font-medium tracking-wide">
                                     #{{ vote.goal.header }}の投票
@@ -450,21 +441,21 @@ const DeleteVote = async (voteId) => {
 
 
 const props = defineProps({
-  activeTab: { type: String, required: true },
-  goals: { type: Array, default: () => [] } // [{ id, header, progress, deadline, assignee: { avater, name } }]
+    activeTab: { type: String, required: true },
+    goals: { type: Array, default: () => [] } // [{ id, header, progress, deadline, assignee: { avater, name } }]
 })
 // 0〜100 に丸める
 const clamp = (n) => {
-  const v = typeof n === 'number' ? n : 0
-  return Math.min(100, Math.max(0, Math.round(v)))
+    const v = typeof n === 'number' ? n : 0
+    return Math.min(100, Math.max(0, Math.round(v)))
 }
 
 // 進捗バーの色クラス
 const progressBarClass = (p) => {
-  const v = clamp(p)
-  if (v < 40) return 'bg-red-500'
-  if (v < 80) return 'bg-yellow-500'
-  return 'bg-green-500'
+    const v = clamp(p)
+    if (v < 40) return 'bg-red-500'
+    if (v < 80) return 'bg-yellow-500'
+    return 'bg-green-500'
 }
 
 // アバターのデフォルト（SVG）
@@ -477,9 +468,9 @@ const defaultAvatar = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
 
 // 画像エラー時フォールバック
 const onAvatarError = (e) => {
-  const img = e.target
-  if (img && img.tagName === 'IMG') {
-    img.src = defaultAvatar
-  }
+    const img = e.target
+    if (img && img.tagName === 'IMG') {
+        img.src = defaultAvatar
+    }
 }
 </script>

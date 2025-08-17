@@ -16,6 +16,7 @@ services:
       - '8000:8000'
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings
+      # - PYTHONPATH=/backend:${PYTHONPATH}
       - DATABASE_URL=postgres://takato:0605@xero-db:5432/xero_db
       - POSTGRES_DB=xero_db
       - POSTGRES_USER=takato
