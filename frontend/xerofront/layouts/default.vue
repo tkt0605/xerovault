@@ -5,13 +5,14 @@
     </header>
     <div class="flex flex-1 overflow-hidden">
       <aside class="hidden md:block">
-        <Aside  @search-dialog="openSearchDialog" @toggle-sidebar="toggleSidebar" @Token-dialog="TokenDialog()" @Library-dialog="LibraryDailog()"
-          @Group-dialog="GroupDailog" :isOpen="isSidebarOpen" @close="isSidebarOpen = false" />
+        <Aside @search-dialog="openSearchDialog" @toggle-sidebar="toggleSidebar" @Token-dialog="TokenDialog()"
+          @Library-dialog="LibraryDailog()" @Group-dialog="GroupDailog" :isOpen="isSidebarOpen"
+          @close="isSidebarOpen = false" />
       </aside>
       <main class="flex-1 overflow-y-auto">
         <NuxtPage @Member-dialog="ShowMember()" @QR-dialog="QRdialog()" @Goal-dialog="CreateGoal()"
           @DockingtoStudio-dialog="DockingLibrary()" @Goalvote-dialog="GoalVoting()" @Vote-dialog="Votedialog(voteId)"
-          @Folder-dialog="openFolder(libraryId)"/>
+          @Folder-dialog="openFolder(libraryId)" />
       </main>
 
       <!-- Dialog コンポーネントは省略 -->
@@ -497,8 +498,10 @@
           </div>
         </template>
       </Dialog>
-      <SearchDialog v-model="openSearch" :fetcher="fetchSuggestions" :toLabel="(x) => x.title"
-        :toDesc="(x) => x.subtitle" placeholder="ライブラリ・スタジオを検索…" :initialQuery="''" />
+      <SearchDialog v-model="showSearch" :fetcher="fetchSuggestions" :toLabel="(x) => x.title"
+        :toDesc="(x) => x.subtitle" placeholder="ライブラリ・スタジオを検索…" :initialQuery="''"
+        @select="(item) => console.log('選択:', item)" />
+
     </div>
   </div>
 </template>
@@ -518,9 +521,31 @@ import { useRoute, useRouter } from 'vue-router';
 import { QrcodeCanvas } from 'qrcode.vue';
 import { useRuntimeConfig } from '#imports';
 import { eventBus } from '#imports';
+import { useSearchStore } from '~/store/search';
 const openTokenDailog = ref(false);
 const openGroupDailog = ref(false);
-const openSearch = ref(false);
+const showSearch = ref(false);
+const search = useSearchStore();
+const fetchSuggestions = async (q) => {
+  try{
+    const token = useAuthStore().accessToken;
+    const config = useRuntimeConfig();
+    const res = await $fetch(`${config.public.apiBase}search/?q=${encodeURIComponent(q)}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    });
+    console.log('結果：', res);
+    // 検索結果を整形
+    return [
+      ...res.groups.map(g => ({ title: g.name, subtitle: 'グループ', data: g })),
+      ...res.libraries.map(l => ({ title: l.name, subtitle: 'ライブラリ', data: l })),
+    ];
+  } catch (e) {
+    console.error("検索エラー:", e);
+    return [];
+  }
+}
 const authGroup = useAuthGroups();
 const authGoal = useGoalStore();
 const openLibraryDailog = ref(false);
@@ -599,7 +624,7 @@ onBeforeUnmount(() => {
   eventBus.off('Folder-dialog', openFolder);
 });
 async function fetchSyggestions(q) {
-  const res = await $fetch(`${config.public.apiBase}serch/`, {
+  const res = await $fetch(`${config.public.apiBase}search/`, {
     query: { q }
   });
   return res.items
@@ -611,7 +636,7 @@ function onSubmit(query) {
 
 }
 const openSearchDialog = () => {
-  openSearch.value = true;
+  showSearch.value = true;
 };
 const selectedVote = computed(() => {
   if (Array.isArray(allvotes.value)) {

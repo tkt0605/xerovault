@@ -64,21 +64,11 @@ class GlobalSearchPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 100
-# class GlobalSearchAPI(APIView):
-#     permission_classes = [IsAuthenticated]
-#     def get(self, request):
-#         q = request.query_params.get('q', '').strip()
-#         mode: SearchMode = request.query_params.get('mode', 'basic')
-#         svc = GlobalSearchEngine(q=q, mode=mode)
-#         rows = list(svc.combined())
-#         paginator = GlobalSearchPagination()
-#         page = paginator.paginate_queryset(rows, request, view=self)
-#         return paginator.get_paginated_response(page)
 class GlobalSearchAPI(APIView):
     def get(self, request):
         q = request.query_params.get('q', '')
         mode = request.query_params.get('mode', 'basic')
-        engine = GlobalSearchEngine(q, mode)
+        engine = GlobalSearchEngine(q, mode, request=request)
         results = engine.combined(limit=50)  # or paginate yourself
         return Response(results)
 class EmailLoginAPI(APIView):
