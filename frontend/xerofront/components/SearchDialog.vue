@@ -108,6 +108,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { routerKey } from 'vue-router'
 import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '~/store/auth'
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
   placeholder: { type: String, default: '検索…' },
@@ -128,10 +129,13 @@ const active = ref(-1)
 const titleId = `search-dialog-${Math.random().toString(36).slice(2)}`
 const optionId = (i) => `opt-${i}-${titleId}`
 const activeDescId = computed(() => (active.value >= 0 ? optionId(active.value) : null))
-
-const HISTORY_KEY = 'search_history'
+const authStore = useAuthStore();
+const user = authStore?.user?.id;
+const HISTORY_KEY = `search_history_${user}`;
 const history = ref(loadHistory())
-const historyToShow = computed(() => history.value.slice(0, props.historyLimit))
+const historyToShow = computed(
+  () => history.value.slice(0, props.historyLimit)
+)
 
 function loadHistory() {
   try {
