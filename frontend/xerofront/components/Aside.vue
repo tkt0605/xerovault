@@ -1,6 +1,6 @@
 <template>
   <aside
-  class="hidden md:block md:fixed md:top-16 md:left-0 md:z-40 md:w-72 md:h-[calc(100vh-4rem)] md:overflow-y-auto
+  class="hidden md:block md:fixed md:top-20 md:left-0 md:z-40 md:w-72 md:h-[calc(100vh-4rem)] md:overflow-y-auto
          bg-white dark:bg-black border-r dark:border-zinc-700 p-4 flex flex-col gap-6"
   >
     <!-- 操作ボタン -->

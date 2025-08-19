@@ -3,74 +3,115 @@ from django.db.models import Q, QuerySet, Value, CharField, F, FloatField
 from django.utils.timezone import now
 from django.contrib.postgres.search import SearchQuery, SearchVector, SearchRank
 from django.contrib.postgres.search import TrigramSimilarity
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from api.models import GenerateGroup, GenerateLibrary
-
+from django.db.models.functions import Cast, Coalesce
+# from typing import TYPE_CHECKING
+# if TYPE_CHECKING:
+#     from api.models import GenerateGroup, GenerateLibrary
+from api.models import GenerateGroup, GenerateLibrary
 SearchMode = Literal['basic', 'fuzzy', 'fts']
 
 
 class GlobalSearchEngine:
-    def __init__(self, q: str, mode: SearchMode = 'basic', fuzzy_threshold: float = 0.2):
+    def __init__(self, q: str, mode: SearchMode = 'basic', fuzzy_threshold: float = 0.2, request=None):
         self.q = (q or '').strip()
         self.mode = mode
         self.fuzzy_threshold = fuzzy_threshold
+        self.request = request
 
     # ===== public =====
     def run(self) -> Tuple[QuerySet, QuerySet]:
-        """グループとライブラリの2系統の検索結果（values() の dict クエリセット）を返す"""
-        if not self.q:
-            from api.models import GenerateGroup, GenerateLibrary
-            return (
-                GenerateGroup.objects.none().values('id', 'created_at'),
-                GenerateLibrary.objects.none().values('id', 'created_at'),
+        user = self.request.user
+        qs_g = GenerateGroup.objects.filter(
+            Q(owner=user)|Q(members=user)
             )
+        qs_l = GenerateLibrary.objects.filter(
+            owner=user
+        )
+        """グループとライブラリの2系統の検索結果（values() の dict クエリセット）を返す"""
+        group_qs = qs_g.filter(name__icontains=self.q).annotate(
+            search_score=Value(1.0, output_field=FloatField())
+        ).values("id", "name", "created_at", "search_score")
 
-        if self.mode == 'basic':
-            return self._basic_group(), self._basic_library()
-        elif self.mode == 'fuzzy':
-            return self._fuzzy_group(), self._fuzzy_library()
-        elif self.mode == 'fts':
-            return self._fts_group(), self._fts_library()
-        else:
-            # 不明モードは basic
-            return self._basic_group(), self._basic_library()
+        library_qs = qs_l.filter(name__icontains=self.q).annotate(
+            search_score=Value(1.0, output_field=FloatField())
+        ).values("id", "name", "created_at", "search_score")
+
+        return group_qs, library_qs
+        # if not self.q:
+        #     from api.models import GenerateGroup, GenerateLibrary
+        #     return (
+        #         GenerateGroup.objects.none().values('id', 'created_at'),
+        #         GenerateLibrary.objects.none().values('id', 'created_at'),
+        #     )
+
+        # if self.mode == 'basic':
+        #     return self._basic_group(), self._basic_library()
+        # elif self.mode == 'fuzzy':
+        #     return self._fuzzy_group(), self._fuzzy_library()
+        # elif self.mode == 'fts':
+        #     return self._fts_group(), self._fts_library()
+        # else:
+        #     # 不明モードは basic
+        #     return self._basic_group(), self._basic_library()
 
     def combined(self, limit: int | None = None, offset: int = 0) -> List[Dict]:
-        """二系統を結合して score, created_at で降順ソートした配列を返す"""
         g_qs, l_qs = self.run()
-        rows = list(g_qs) + list(l_qs)
-        rows.sort(
-            key=lambda r: (r.get('score') or 0.0, r.get('created_at') or now()),
-            reverse=True,
-        )
+        # スコア付け & ソート処理（任意）
+        def process(rows):
+            for i in rows:
+                if 'search_score' in i:
+                    i['score'] = i.pop('search_score')
+            return sorted(rows, key=lambda i: (i.get('score') or 0.0, i.get('created_at') or now()), reverse=True)
+
+        groups = process(list(g_qs))
+        libraries = process(list(l_qs))
+
         if offset or limit is not None:
             end = None if limit is None else offset + limit
-            return rows[offset:end]
-        return rows
+            groups = groups[offset:end]
+            libraries = libraries[offset:end]
 
+        return {
+            "groups": groups,
+            "libraries": libraries,
+        }
     # ===== bases (values+annotate 共通化) =====
     def _decorate_group_values(self, qs) -> QuerySet:
-        """GenerateGroup ベースの qs に共通注釈/values を付与"""
-        qs = qs.annotate(
-            kind=Value('studio', output_field=CharField()),
-            title=F('name'),
-            description=F('tag'),
+        return (
+            qs
+            # 既存の IntField `score` を Float にキャストして search_score に
+            .annotate(search_score=Cast(Coalesce(F('score'), Value(0)), FloatField()))
+            .order_by('-search_score')
+            .values(
+                'id',
+                'name',
+                'tag',
+                'is_public',
+                'created_at',
+                'updated_at',
+                'search_score',   # レスポンスキーは score のまま出す
+            )
+            .distinct()  # M2M 結合で重複が出る保険
         )
-        # score が無い場合のデフォルト（0.0）
-        qs = qs.annotate(score=Value(0.0, output_field=FloatField()))
-        return qs.values('id', 'created_at', 'kind', 'title', 'description', 'score')
+
 
     def _decorate_library_values(self, qs) -> QuerySet:
-        """GenerateLibrary ベースの qs に共通注釈/values を付与"""
-        qs = qs.annotate(
-            kind=Value('library', output_field=CharField()),
-            title=F('name'),
-            description=F('tag'),
+        return (
+            qs
+            # Library には score フィールドが無いので、計算 or デフォルト値
+            .annotate(search_score=Value(0.0, output_field=FloatField()))
+            .order_by('-search_score')
+            .values(
+                'id',
+                'name',
+                'tag',
+                'is_public',
+                'created_at',
+                'updated_at',
+                'search_score'
+            )
+            .distinct()
         )
-        qs = qs.annotate(score=Value(0.0, output_field=FloatField()))
-        return qs.values('id', 'created_at', 'kind', 'title', 'description', 'score')
 
     # ===== basic =====
     def _basic_group(self) -> QuerySet:
