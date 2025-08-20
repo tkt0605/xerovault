@@ -79,20 +79,20 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.email
 def get_default_expired():
     return timezone.now() + timedelta(hours=24)
-# class InviteAppover(models.Model):
-#     token = models.UUIDField(default=uuid.uuid4, unique=True)
-#     inviter = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
-#     invitee = models.ForeignKey( AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='group_invite_received', null=True, blank=True)
-#     is_approved = models.BooleanField(default=False)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     expires_at = models.DateTimeField(default=get_default_expired)
-#     def __str__(self) -> str:
-#         return f"{self.inviter}が{self.invitee}をリスト追加"
-#     @property
-#     def is_expired(self):
-#         return timezone.now() > self.expires_at
-#     class Meta:
-#         ordering = ['-created_at']
+class InviteAppover(models.Model):
+    token = models.UUIDField(default=uuid.uuid4, unique=True)
+    inviter = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
+    invitee = models.ForeignKey( AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='group_invite_received', null=True, blank=True)
+    is_approved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(default=get_default_expired)
+    def __str__(self) -> str:
+        return f"{self.inviter}が{self.invitee}をリスト追加"
+    @property
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+    class Meta:
+        ordering = ['-created_at']
 class GenerateGroup(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, unique=True)
@@ -284,4 +284,17 @@ class GoalVote(models.Model):
         ]
         indexes = [models.Index(fields=['group', 'goal']), models.Index(fields=['voter'])]
     def __str__(self):
-        return f"{self.voter.email} の {self.goal.description[:20]} への投票"
+        return f"{self.voter.email} の {self.goal.description[:20]} への投票箱を作成"
+    
+# class Vote(models.Model):
+#     goal_vote = models.ForeignKey(GoalVote, on_delete=models.CASCADE, related_name='target_goalvote')
+#     voter = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='voter')
+#     is_yes = models.BooleanField()
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     class Meta:
+#         constraints = [
+#             models.UniqueConstraint(fields=['goal', 'voter'], name='uniq_goal_voter'),
+#         ]
+#         indexes = [models.Index(fields=['group', 'goal']), models.Index(fields=['voter'])]
+#     def __str__(self):
+#         return f"{self.voter.email}がf{self.goal_vote.goal.description[:20]}へ投票"

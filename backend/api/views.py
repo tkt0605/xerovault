@@ -13,7 +13,8 @@ from .models import (
     GroupNotification,
     Message,
     PostfileToLibrary,
-    GoalVote
+    GoalVote,
+    InviteAppover
     )
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
@@ -36,7 +37,9 @@ from .serializers import (
     GoalReadSerializer,
     ConnectLibrarySerializer,
     ConnectLibraryReadSerializer,
-    PostLibraryReadSerializer
+    PostLibraryReadSerializer,
+    InviteAppoverSerializer,
+    InviteApproverReadSerializer
     )
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import timedelta
@@ -354,7 +357,7 @@ class GoalViewSet(viewsets.ModelViewSet):
             is_yes = raw.lower() in ('true', '1', 'yes', 'y', 't')
         else:
             is_yes = bool(raw)
-
+        # ここを、投票専用のモデルに変換。
         with transaction.atomic():
             vote, created = GoalVote.objects.update_or_create(
                 goal=goal,
@@ -552,3 +555,32 @@ class GoalVoteViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user
         return serializer.save(voter=user)
+# class InviteAppoverViewSet(viewsets.ModelViewSet):
+#     queryset = InviteAppover.objects.all()
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = InviteAppoverSerializer
+#     def get_serializer_class(self):
+#         if self.action == ['activate', 'retrieve']:
+#             return InviteApproverReadSerializer
+#         return super().get_serializer_class()
+#     def perform_create(self, serializer):
+#         serializer.save(inviter=self.request.user)
+#     @action(detail=True, methods=['post'], url_path='approver')
+#     def approver_invite(self, request, *args, **kwargs):
+#         invite = self.get_object()
+#         if invite.expires_at:
+#             return Response({'error': 'この招待リンクは期限切れです。'}, status=400)
+#         if invite.is_approved:
+#             return Response({'error': 'このリンクは既に利用されています。'}, status=400)
+#         invite.invitee = request.user
+#         invite.is_approved = True
+#         invite.save()
+#         return Response(self.get_serializer(invite).data, status=200)
+#     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+#     def my_friends(self, request):
+#         user = self.request.user
+#         my_list = InviteAppover.objects.filter(
+#             Q(inviter=user)
+#         )
+#         serializer = InviteApproverReadSerializer(my_list, many=True)
+#         return Response(serializer.data)
