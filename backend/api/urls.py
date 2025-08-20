@@ -16,7 +16,9 @@ from api.views import (
     GenerateLibraryviewSet, 
     GoalViewSet, 
     GetFilesView,
-    GlobalSearchAPI
+    GlobalSearchAPI,
+    # InviteAppoverViewSet,
+    InviteCreateView
 )
 router = routers.DefaultRouter()
 router.register(r'users', CustomUserViewSet, basename='user')
@@ -37,6 +39,7 @@ urlpatterns = [
     path('login/', EmailLoginAPI.as_view(), name='login'),
     path('signup/', RegisterAPI.as_view(), name='signup'),
     path('search/', GlobalSearchAPI.as_view(), name='search'),
+    path('invite/create/', InviteCreateView.as_view(), name='invite-create'),
     path('', include(router.urls))
 ]
 if settings.DEBUG:

@@ -1,7 +1,18 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
-from .models import CustomUser, GenerateGroup, GenerateLibrary, Goal, ConnectLibrary, Message, PostfileToLibrary, GoalVote
+from .models import (
+ CustomUser, 
+ GenerateGroup, 
+ GenerateLibrary, 
+ Goal, 
+ ConnectLibrary, 
+ Message, 
+ PostfileToLibrary, 
+ GoalVote,
+ InviteAppover
+)
+    
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import IntegrityError, transaction
 import os
@@ -198,38 +209,38 @@ class ConnectLibraryReadSerializer(serializers.ModelSerializer):
             'created_at'
         ]
 
-# class InviteAppoverSerializer(serializers.ModelSerializer):
-#     group = serializers.SlugRelatedField(
-#         slug_field='id',
-#         queryset = GenerateGroup.objects.all(),
-#         required = False,
-#         allow_null = True
-#     )
-#     inviter = serializers.SlugRelatedField(
-#         slug_field='email',
-#         queryset = CustomUser.objects.all(),
-#         required = False,
-#         allow_null = True
-#     )
-#     invitee = serializers.SlugRelatedField(
-#         slug_field = 'email',
-#         queryset = CustomUser.objects.all(),
-#         required = False,
-#         allow_null = True
-#     )
-#     class Meta:
-#         model = InviteAppover
-#         fields = ['token', 'group', 'inviter', 'invitee', 'is_approved', 'created_at', 'expires_at']
-#         read_only_fields = ['created_at', 'expires_at']
-# class InviteApproverReadSerializer(serializers.ModelSerializer):
-#     group = GenerateGroupSerializer(read_only=True)
-#     inviter = CustomUserSerializer(read_only=True)
-#     invitee = CustomUserSerializer(read_only=True)
-#     class Meta:
-#         model = InviteAppover
-#         fields = [
-#             'token', 'group', 'inviter', 'invitee', 'is_approved', 'created_at', 'expires_at'
-#         ]
+class InviteAppoverSerializer(serializers.ModelSerializer):
+    group = serializers.SlugRelatedField(
+        slug_field='id',
+        queryset = GenerateGroup.objects.all(),
+        required = False,
+        allow_null = True
+    )
+    inviter = serializers.SlugRelatedField(
+        slug_field='email',
+        queryset = CustomUser.objects.all(),
+        required = False,
+        allow_null = True
+    )
+    invitee = serializers.SlugRelatedField(
+        slug_field = 'email',
+        queryset = CustomUser.objects.all(),
+        required = False,
+        allow_null = True
+    )
+    class Meta:
+        model = InviteAppover
+        fields = ['token', 'group', 'inviter', 'invitee', 'is_approved', 'created_at', 'expires_at']
+        read_only_fields = ['created_at', 'expires_at']
+class InviteApproverReadSerializer(serializers.ModelSerializer):
+    group = GenerateGroupSerializer(read_only=True)
+    inviter = CustomUserSerializer(read_only=True)
+    invitee = CustomUserSerializer(read_only=True)
+    class Meta:
+        model = InviteAppover
+        fields = [
+            'token', 'group', 'inviter', 'invitee', 'is_approved', 'created_at', 'expires_at'
+        ]
 
 class MessageSerializer(serializers.ModelSerializer):
     group = serializers.SlugRelatedField(
