@@ -167,11 +167,22 @@ class Goal(models.Model):
             self.is_concrete = False
         return super().save(*args, **kwargs)
     def vote_progress(self):
+        # total_members = self.group.members.count()
+        # if total_members == 0:
+        #     return 0
+        # yes_vote = self.votes.filter(is_yes=True).count()
+        # return int(yes_vote / total_members * 100)
         total_members = self.group.members.count()
         if total_members == 0:
             return 0
-        yes_vote = self.votes.filter(is_yes=True).count()
-        return int(yes_vote / total_members * 100)
+        vote_box = GoalVote.objects.filter(goal=self).first()
+        if not vote_box:
+            return 0
+        total = Vote.objects.filter(goal_vote=vote_box).count()
+        if total == 0:
+            return 0
+        yes = Vote.objects.filter(goal_vote=vote_box, is_yes=True).count()
+        return int(yes / total_members *100)
     def check_voting_completion(self, threshold=90):
         if self.vote_progress() >= threshold:
             self.is_completed = True
@@ -275,7 +286,7 @@ class GoalVote(models.Model):
     goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name='votes')
     explain = models.CharField(max_length=50, blank=True, null=True, help_text='この投票の目的や背景を説明するテキスト')
     voter = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='goal_votes')
-    is_yes = models.BooleanField()
+    # is_yes = models.BooleanField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -286,15 +297,14 @@ class GoalVote(models.Model):
     def __str__(self):
         return f"{self.voter.email} の {self.goal.description[:20]} への投票箱を作成"
     
-# class Vote(models.Model):
-#     goal_vote = models.ForeignKey(GoalVote, on_delete=models.CASCADE, related_name='target_goalvote')
-#     voter = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='voter')
-#     is_yes = models.BooleanField()
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     class Meta:
-#         constraints = [
-#             models.UniqueConstraint(fields=['goal', 'voter'], name='uniq_goal_voter'),
-#         ]
-#         indexes = [models.Index(fields=['group', 'goal']), models.Index(fields=['voter'])]
-#     def __str__(self):
-#         return f"{self.voter.email}がf{self.goal_vote.goal.description[:20]}へ投票"
+class Vote(models.Model):
+    goal_vote = models.ForeignKey(GoalVote, on_delete=models.CASCADE, related_name='target_goalvote')
+    voter = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='voter')
+    is_yes = models.BooleanField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['goal_vote', 'voter'], name='uniq_voter'),
+        ]
+    def __str__(self):
+        return f"{self.voter.email}がf{self.goal_vote.goal.description[:20]}へ投票"
