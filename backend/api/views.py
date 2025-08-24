@@ -14,7 +14,8 @@ from .models import (
     Message,
     PostfileToLibrary,
     GoalVote,
-    InviteAppover
+    InviteAppover,
+    Vote
     )
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
@@ -310,7 +311,7 @@ class GoalViewSet(viewsets.ModelViewSet):
             Goal.objects.select_related("group", "assignee")
             .annotate(
                 member_count = Count("group__members", distinct=True),
-                yes_counter = Count("votes", filter = Q(votes__is_yes=True), distinct=True),
+                yes_counter = Count("votes__target_goalvote", filter = Q(votes__target_goalvote__is_yes=True), distinct=True),
             )
             .annotate(
                 progress_anno = Coalesce(
@@ -329,16 +330,35 @@ class GoalViewSet(viewsets.ModelViewSet):
     def vote(self, request, pk=None):
         goal: Goal = self.get_object()
         user = request.user
-
         # 権限チェック：オーナー or メンバー
         if not (goal.group.members.filter(id=user.id).exists() or goal.group.owner_id == user.id):
             return Response({'detail': 'このユーザーはグループのメンバー又は、オーナーではありません。'},
                             status=status.HTTP_403_FORBIDDEN)
-
+        qs = GoalVote.objects.filter(goal=goal, voter=user)
+        if qs.count() > 1:
+            logger.warning(f"[GoalVote重複] goal={goal.id}, voter={request.user.id}")
+            goal_vote = qs.first()
+        elif qs.exists():
+            goal_vote = qs.first()
+        else:
+            goal_vote = GoalVote.objects.create(
+                goal = goal,
+                voter = user,
+                group = goal.group,
+                explain = '自動生成された投票箱'
+            )
+        # goal_vote, _ = GoalVote.objects.get_or_create(
+        #     goal = goal,
+        #     voter = user,
+        #     defaults= {
+        #         'group': goal.group,
+        #         'explain': '自動作成された投票箱',
+        #     }
+        # )
         # --- DELETE: 投票削除 ---
         if request.method == 'DELETE':
             with transaction.atomic():
-                deleted, _ = GoalVote.objects.filter(goal=goal, voter=user).delete()
+                deleted, _ = Vote.objects.filter(goal_vote = goal_vote, voter=user).delete()
                 # 達成解除の仕様：必要なら check で解除/維持を決める
                 completed = goal.check_voting_completion()
                 progress = goal.vote_progress()
@@ -358,9 +378,10 @@ class GoalViewSet(viewsets.ModelViewSet):
         else:
             is_yes = bool(raw)
         # ここを、投票専用のモデルに変換。
+        
         with transaction.atomic():
-            vote, created = GoalVote.objects.update_or_create(
-                goal=goal,
+            vote, created = Vote.objects.update_or_create(
+                goal_vote=goal_vote,
                 voter=user,
                 defaults={
                     'is_yes': is_yes,
@@ -540,7 +561,7 @@ class GoalVoteViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         request = cast(Request, self.request)
         user = self.request.user
-        qs = GoalVote.objects.select_related('goal', 'voter', 'goal__group')
+        qs = GoalVote.objects.all().select_related('goal', 'voter', 'group').prefetch_related('target_goalvote').distinct()
         qs = qs.filter(
             Q(goal__group__members = user) | Q(goal__group__owner = user)
         )

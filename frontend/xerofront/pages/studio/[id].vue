@@ -84,8 +84,8 @@
                     </button>
                     <button @click="$emit('Goalvote-dialog')"
                         class="flex-1 min-w-0 p-6 text-center hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
-                        <p class="text-lg text-yellow-400 font-semibold">ゴールの投票</p>
-                        <p class="text-sm dark:text-white-400 mt-1">ゴールの結果投票</p>
+                        <p class="text-lg text-yellow-400 font-semibold">投票箱を作成</p>
+                        <p class="text-sm dark:text-white-400 mt-1">ゴールの投票箱</p>
                     </button>
                 </div>
                 <div class="flex space-x-4  mb-4">
@@ -236,7 +236,12 @@
                     </div>
                 </div>
                 <div v-else-if="activeTab === 'ライブラリ'" class="space-y-4">
-                    <div
+                    <div v-if="!alllibrary?.length"
+                        class="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-8 text-center">
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400">まだドッキングされたライブラリがありません。</p>
+                        <p class="text-xs text-zinc-400 mt-1">右上の「＋」から追加しましょう。</p>
+                    </div>
+                    <div v-else
                         class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
                         <div v-for="lib in alllibrary" :key="lib.id" @click="emitLibrary(lib.target.id)" class="bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 p-4
                         shadow-sm transition cursor-pointer border-b border-zinc-200 dark:border-zinc-700">
@@ -264,7 +269,12 @@
                 </div>
 
                 <div v-else-if="activeTab === '投票'" class="space-y-6">
-                    <div
+                    <div v-if="!allvotes?.length"
+                        class="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-8 text-center">
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400">まだ投票箱がありません。</p>
+                        <p class="text-xs text-zinc-400 mt-1">右上の「＋」から作成しましょう。</p>
+                    </div>
+                    <div v-else
                         class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
                         <div v-for="vote in allvotes" :key="vote.id" @click="emitVote(vote.id)"
                             class="group bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 border-b border-zinc-200 dark:border-zinc-700 p-4 transition-colors cursor-pointer shadow-sm">
@@ -288,6 +298,9 @@
                                     <span v-if="vote.goal.progress >= 100"
                                         class="px-2 py-1 rounded bg-green-600 text-white text-xs">
                                         達成済み
+                                    </span>
+                                    <span v-if="isVoting" class="px-2 py-1 rounded bg-yellow-600 text-white text-xs">
+                                        投票済み
                                     </span>
                                 </div>
                             </div>
@@ -320,7 +333,13 @@ import { QrcodeSvg } from 'qrcode.vue';
 import { useRuntimeConfig } from "#app";
 import { eventBus } from '~/utils/eventBus';
 import Dialog from '~/components/MainDialog.vue';
-const colorMode = useColorMode()
+import { 
+    hasVote, 
+    getVote, 
+    setVote, 
+    loadVote 
+} from '~/composables/useVoteHistory.js';
+const colorMode = useColorMode();
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
@@ -347,6 +366,7 @@ const authLibrary = useAuthLibrary();
 const tabs = ['ゴール', 'ライブラリ', '投票'];
 const activeTab = ref('ゴール');
 const currentUser = computed(() => authStore.currentUser);
+const isVoteing = ref(false);
 onMounted(async () => {
     try {
         await authStore.restoreSession();
@@ -375,7 +395,7 @@ function emitVote(voteId) {
 function emitLibrary(libraryId) {
     console.log('ライブラリID:', libraryId);
     eventBus.emit('Folder-dialog', libraryId);
-}
+};
 const mygoals = computed(() => {
     return allgoals.value.filter((item) => item.assignee?.email === authStore.user?.email)
 });
@@ -386,6 +406,16 @@ const PushToNextpage = async (id) => {
         console.error("アクセス失敗：", err);
     }
 };
+const isVoting = () => {
+    const userId = authStore.user?.id;
+    const goalId = props.vote.id;
+    const isVote = hasVote(userId, goalId);
+    if (isVote){
+        console.log("取得成功：", isVote);
+        return;
+    }
+    return isVote;
+}
 const JoinCreateForm = async () => {
     const config = useRuntimeConfig();
     const routeId = route.params.id;

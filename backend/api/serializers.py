@@ -10,7 +10,8 @@ from .models import (
  Message, 
  PostfileToLibrary, 
  GoalVote,
- InviteAppover
+ InviteAppover,
+ Vote
 )
     
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -324,12 +325,12 @@ class GoalVoteSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=GenerateGroup.objects.all())
     goal = serializers.PrimaryKeyRelatedField(queryset=Goal.objects.all())
     voter = serializers.SlugRelatedField(slug_field='email', read_only=True)
-    is_yes = serializers.BooleanField(required=True)
+    # is_yes = serializers.BooleanField(required=True)
     explain = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = GoalVote
-        fields = ['id', 'group', 'goal', 'voter', 'explain', 'is_yes', 'created_at']
+        fields = ['id', 'group', 'goal', 'voter', 'explain', 'created_at']
         read_only_fields = ['id', 'voter', 'created_at']
 
     def validate(self, attrs):
@@ -360,4 +361,4 @@ class GoalVoteReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GoalVote
-        fields = ['id', 'group', 'goal', 'voter', 'explain', 'is_yes', 'created_at']
+        fields = ['id', 'group', 'goal', 'voter', 'explain', 'created_at']

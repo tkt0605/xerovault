@@ -5,6 +5,7 @@ from .models import(
     Goal, 
     PostfileToLibrary,
     GoalVote,
+    Vote
 )
 from django.contrib.auth.admin import UserAdmin as baseUserAdmin
 from api.model.custom_token import CustomOutStandingToken, CustomBlackListToken
@@ -38,3 +39,4 @@ admin.site.register(CustomBlackListToken, CustomBlackListTokenAdmin)
 admin.site.register(Goal)
 admin.site.register(PostfileToLibrary)
 admin.site.register(GoalVote)
+admin.site.register(Vote)

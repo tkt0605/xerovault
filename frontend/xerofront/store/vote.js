@@ -8,7 +8,7 @@ export const useAuthVote = defineStore('vote', {
         votes: [],
     }),
     actions: {
-        async CreateVote(groupId, goalId, voteType, is_yes) {
+        async CreateVote(groupId, goalId, voteType) {
             const config = useRuntimeConfig();
             const authStore = useAuthStore();
             try {
@@ -22,7 +22,6 @@ export const useAuthVote = defineStore('vote', {
                         group: groupId,
                         goal: goalId,
                         explain: voteType,
-                        is_yes: is_yes
                     })
                 });
                 if (!response.ok) {

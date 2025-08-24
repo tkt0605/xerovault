@@ -374,7 +374,7 @@
               キャンセル（Esc）
             </button>
             <div class="flex items-center gap-2">
-              <button
+              <button v-if="isVoting(selectedVote?.goal?.id)"
                 class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-semibold
                  enabled:hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2"
                 type="button" @click="EditVote(selectedVote?.goal?.id)" :disabled="!choice || loading">
@@ -384,7 +384,7 @@
                 </svg>
                 <span>変更する</span>
               </button>
-              <button type="button" @click="doSubmit(selectedVote?.goal?.id)" :disabled="!choice || loading"
+              <button v-else type="button" @click="doSubmit(selectedVote?.goal?.id)" :disabled="!choice || loading"
                 class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-semibold
                  enabled:hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2">
                 <svg v-if="loading" class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -522,12 +522,19 @@ import { QrcodeCanvas } from 'qrcode.vue';
 import { useRuntimeConfig } from '#imports';
 import { eventBus } from '#imports';
 import { useSearchStore } from '~/store/search';
+import {
+  hasVote,
+  getVote,
+  setVote,
+  loadVote
+} from '~/composables/useVoteHistory.js';
+const userId = computed(() =>authStore.user?.id);
 const openTokenDailog = ref(false);
 const openGroupDailog = ref(false);
 const showSearch = ref(false);
 const search = useSearchStore();
 const fetchSuggestions = async (q) => {
-  try{
+  try {
     const token = useAuthStore().accessToken;
     const config = useRuntimeConfig();
     const res = await $fetch(`${config.public.apiBase}search/?q=${encodeURIComponent(q)}`, {
@@ -889,7 +896,6 @@ const Voting = async () => {
   const goalId = selectedGoalId.value;
   const routeId = route.params.id;
   const vote = voteValue.value.trim();
-  const is_yes = ref(false);
   try {
     if (!goalId) {
       console.error('ゴールIDが選択されていません。');
@@ -897,8 +903,7 @@ const Voting = async () => {
     }
     console.log("ゴールのID:", goalId);
     console.log("投票の内容:", vote);
-    console.log("投票の選択:", is_yes.value);
-    const response = await authVote.CreateVote(routeId, goalId, vote, is_yes.value);
+    const response = await authVote.CreateVote(routeId, goalId, vote);
     if (response) {
       console.log('投票の作成成功:', response);
       isVotingdailog.value = false;
@@ -1089,17 +1094,23 @@ const choice = ref('')
 const note = ref('')
 const loading = ref(false)
 const error = ref('')
-
 // 送信イベント（JSは配列で定義）
 const emit = defineEmits(['submit'])
+// const isVoting = (goalId) => {
+//   return hasVote(userId, goalId);
+// };ity
+const isVoting = computed(() => {
+  const goalId = props.goal?.id;
+  if (!userId || !goalId) return false;
 
+  return hasVote(userId, goalId);
+});
 const handleClose = () => {
   choice.value = ''
   note.value = ''
   error.value = ''
   openVotedialog.value = false
 }
-
 const doSubmit = async (routeId) => {
   const selected = choice.value;
   error.value = '';
@@ -1124,10 +1135,11 @@ const doSubmit = async (routeId) => {
     routeId.progress = res.progress
     routeId.is_completed = res.completed
     routeId.myVote = res.vote.is_yes
-    const raw = await res.text(); // ← 本文を必ず吸う
+    const raw = await res.text();
     let data = null;
-    try { data = raw ? JSON.parse(raw) : null; } catch { }
-
+    try {
+      data = raw ? JSON.parse(raw) : null;
+    } catch { }
     if (!res.ok) {
       const msg =
         (data && (data.detail || data.error)) ||
@@ -1137,8 +1149,9 @@ const doSubmit = async (routeId) => {
       console.error('vote 400 data:', data || raw);
       return data;
     }
+    setVote(userId, routeId, selected);
     console.log(`投票完了:`, data);
-    handleClose();
+    openVotedialog.value = false;
     return data;
   } catch (e) {
     error.value = (e && e.message) || '送信に失敗しました。時間をおいて再度お試しください。'
@@ -1154,34 +1167,39 @@ const EditVote = async (routeId) => {
     return
   }
   try {
-    loading.value = true;
-    const res = await fetch(`${config.public.apiBase}goals/${routeId}/vote/`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${authStore.accessToken}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        is_yes: selected === 'yes'
-      }),
-    });
-    const raw = await res.text(); // ← 本文を必ず吸う
-    let data = null;
-    try { data = raw ? JSON.parse(raw) : null; } catch { }
+    if (hasVote(userId, routeId)) {
+      loading.value = true;
+      const res = await fetch(`${config.public.apiBase}goals/${routeId}/vote/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${authStore.accessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          is_yes: selected === 'yes'
+        }),
+      });
+      const raw = await res.text(); // ← 本文を必ず吸う
+      let data = null;
+      try { data = raw ? JSON.parse(raw) : null; } catch { }
 
-    if (!res.ok) {
-      const msg =
-        (data && (data.detail || data.error)) ||
-        (typeof data === 'string' ? data : '') ||
-        raw || `HTTP ${res.status}`;
-      error.value = msg;                      // ← 画面に表示
-      console.error('vote 400 data:', data || raw);
+      if (!res.ok) {
+        const msg =
+          (data && (data.detail || data.error)) ||
+          (typeof data === 'string' ? data : '') ||
+          raw || `HTTP ${res.status}`;
+        error.value = msg;                      // ← 画面に表示
+        console.error('vote 400 data:', data || raw);
+        return;
+      }
+      console.log(`投票完了:`, data);
+      openVotedialog.value = false;
+      return data;
+    }else{
+      doSubmit();
       return;
     }
-    console.log(`投票完了:`, data);
-    handleClose();
-    return data;
   } catch (err) {
     error.value = (err && err.message) || '送信に失敗';
   } finally {
