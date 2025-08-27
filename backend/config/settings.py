@@ -15,6 +15,7 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 load_dotenv()
+import dj_database_url
 AES_SECRET_KEY = os.environ.get("AES_SECRET_KEY").encode()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,11 +26,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-&i4%yfpcf=k)z-8cx3o=1+1&3wwtc0y+pgxboev_ymq*@p@o^!'
+# SECRET_KEY=os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
+# DEBUG = True
+DEBUG=os.environ.get('DJANGO_DEBUG')
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
+# ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -57,8 +60,8 @@ INSTALLED_APPS = [
     "dj_rest_auth",
 
 ]
-SITE_ID = 1
-
+# SITE_ID = 1
+SITE_ID = int(os.environ.get('DJANGO_SITE_ID', '1'))
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
@@ -100,12 +103,18 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         # 'NAME': BASE_DIR / 'db.sqlite3',
-        'NAME': 'xero_db',
-        'USER': 'takato',
-        'PASSWORD': '0605',
-        'HOST': 'xero-db',
-        'PORT': '5432',
-    }
+        # 'NAME': 'xero_db',
+        # 'USER': 'takato',
+        # 'PASSWORD': '0605',
+        # 'HOST': 'xero-db',
+        # 'PORT': '5432',
+        'NAME': os.environ.get('POSTGRES_DB'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': os.environ.get('POSTGRES_HOST'),
+        'PORT': os.environ.get('POSTGRES_PORT')
+    },
+    "default": dj_database_url.parse(os.environ['DATABASE_URL'], conn_max_age=600)
 }
 
 
@@ -185,7 +194,7 @@ SIMPLE_JWT = {
 }
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
 ]
 CORS_ALLOWED_HEADERS = [
     "authorization",
@@ -202,3 +211,304 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
+# """
+# Django settings for config project — Azure production-ready
+# """
+
+# from pathlib import Path
+# from datetime import timedelta
+# import os
+# from urllib.parse import urlparse
+
+# from dotenv import load_dotenv
+# load_dotenv()
+
+# # --------------------------------------------------------------------------------------
+# # Paths & base
+# # --------------------------------------------------------------------------------------
+# BASE_DIR = Path(__file__).resolve().parent.parent
+
+# # --------------------------------------------------------------------------------------
+# # Helper utilities
+# # --------------------------------------------------------------------------------------
+# def getenv_bool(key: str, default: bool = False) -> bool:
+#     val = os.environ.get(key)
+#     if val is None:
+#         return default
+#     return str(val).strip().lower() in {"1", "true", "yes", "on"}
+
+# def getenv_list(key: str, default=None, sep=","):
+#     if default is None:
+#         default = []
+#     raw = os.environ.get(key)
+#     if not raw:
+#         return default
+#     return [x.strip() for x in raw.split(sep) if x.strip()]
+
+# def ensure_scheme(url: str) -> str:
+#     # CSRF_TRUSTED_ORIGINS は scheme 必須（https://）
+#     if not url:
+#         return ""
+#     if "://" in url:
+#         return url
+#     return f"https://{url}"
+
+# # --------------------------------------------------------------------------------------
+# # Secrets & core flags
+# # --------------------------------------------------------------------------------------
+# SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+# if not SECRET_KEY:
+#     raise RuntimeError("DJANGO_SECRET_KEY is required in production.")
+
+# DEBUG = getenv_bool("DJANGO_DEBUG", False)
+
+# # Azure の FQDN やカスタムドメインを必ず指定。例: "xerovault-api.azurewebsites.net,api.xerovault.com"
+# ALLOWED_HOSTS = getenv_list("DJANGO_ALLOWED_HOSTS")
+
+# # Optional app-level symmetric key (your code expects bytes)
+# AES_SECRET = os.environ.get("AES_SECRET_KEY")
+# AES_SECRET_KEY = AES_SECRET.encode() if AES_SECRET else None
+
+# # --------------------------------------------------------------------------------------
+# # Applications
+# # --------------------------------------------------------------------------------------
+# INSTALLED_APPS = [
+#     "corsheaders",
+#     "api",
+#     "django_extensions",
+#     "adminlog.apps.AdminlogConfig",
+
+#     "django.contrib.admin",
+#     "django.contrib.auth",
+#     "django.contrib.contenttypes",
+#     "django.contrib.sessions",
+#     "django.contrib.messages",
+#     "django.contrib.staticfiles",
+
+#     "django.contrib.sites",
+
+#     "allauth",
+#     "allauth.account",
+#     "allauth.socialaccount",
+
+#     "rest_framework",
+#     "rest_framework.authtoken",
+#     "rest_framework_simplejwt",
+#     "rest_framework_simplejwt.token_blacklist",
+
+#     # Whitenoise manifest storage uses hashed names
+# ]
+
+# SITE_ID = int(os.environ.get("DJANGO_SITE_ID", "1"))
+
+# MIDDLEWARE = [
+#     "corsheaders.middleware.CorsMiddleware",            # ← 一番上付近
+#     "django.middleware.security.SecurityMiddleware",
+#     "whitenoise.middleware.WhiteNoiseMiddleware",       # ← 追加（静的ファイル高速配信）
+#     "django.contrib.sessions.middleware.SessionMiddleware",
+#     "django.middleware.common.CommonMiddleware",
+#     "django.middleware.csrf.CsrfViewMiddleware",
+#     "django.contrib.auth.middleware.AuthenticationMiddleware",
+#     "django.contrib.messages.middleware.MessageMiddleware",
+#     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+#     "allauth.account.middleware.AccountMiddleware",
+# ]
+
+# ROOT_URLCONF = "config.urls"
+
+# TEMPLATES = [
+#     {
+#         "BACKEND": "django.template.backends.django.DjangoTemplates",
+#         "DIRS": [BASE_DIR / "templates"],   # 必要に応じて
+#         "APP_DIRS": True,
+#         "OPTIONS": {
+#             "context_processors": [
+#                 "django.template.context_processors.debug",
+#                 "django.template.context_processors.request",
+#                 "django.contrib.auth.context_processors.auth",
+#                 "django.contrib.messages.context_processors.messages",
+#             ],
+#         },
+#     },
+# ]
+
+# WSGI_APPLICATION = "config.wsgi.application"
+
+# # --------------------------------------------------------------------------------------
+# # Database (Azure Postgres Flexible Server 推奨)
+# # 優先: DATABASE_URL (postgres://USER:PASSWORD@HOST:PORT/NAME?sslmode=require)
+# # 併用: 個別変数（POSTGRES_*）。sslmode=require を強制。
+# # --------------------------------------------------------------------------------------
+# DATABASE_URL = os.environ.get("DATABASE_URL", "")
+
+# if DATABASE_URL:
+#     # 簡易パーサ（dj-database-url を使ってもOK）
+#     uri = urlparse(DATABASE_URL)
+#     DB_NAME = uri.path[1:] if uri.path.startswith("/") else uri.path
+#     DB_OPTS = dict(
+#         ENGINE="django.db.backends.postgresql",
+#         NAME=DB_NAME,
+#         USER=uri.username,
+#         PASSWORD=uri.password,
+#         HOST=uri.hostname,
+#         PORT=str(uri.port or "5432"),
+#         OPTIONS={"sslmode": "require"},
+#     )
+# else:
+#     DB_OPTS = dict(
+#         ENGINE="django.db.backends.postgresql",
+#         NAME=os.environ.get("POSTGRES_DB", "xero_db"),
+#         USER=os.environ.get("POSTGRES_USER", "takato"),
+#         PASSWORD=os.environ.get("POSTGRES_PASSWORD", "0605"),
+#         HOST=os.environ.get("POSTGRES_HOST", "xero-db"),
+#         PORT=os.environ.get("POSTGRES_PORT", "5432"),
+#         OPTIONS={"sslmode": os.environ.get("POSTGRES_SSLMODE", "require")},
+#     )
+
+# DATABASES = {
+#     "default": DB_OPTS
+# }
+
+# # --------------------------------------------------------------------------------------
+# # Password validation
+# # --------------------------------------------------------------------------------------
+# AUTH_PASSWORD_VALIDATORS = [
+#     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+#     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+#      "OPTIONS": {"min_length": int(os.environ.get("AUTH_MIN_LENGTH", "8"))}},
+#     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+#     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+# ]
+
+# # --------------------------------------------------------------------------------------
+# # Internationalization
+# # --------------------------------------------------------------------------------------
+# LANGUAGE_CODE = "ja"
+# TIME_ZONE = "Asia/Tokyo"
+# USE_I18N = True
+# USE_TZ = True
+
+# # --------------------------------------------------------------------------------------
+# # Static / Media (Whitenoise + local)
+# # 本番は「collectstatic → Whitenoise」構成が最も簡便＆安価（Azure Blob を使う場合は django-storages に切替）
+# # --------------------------------------------------------------------------------------
+# STATIC_URL = "/static/"
+# STATIC_ROOT = BASE_DIR / "staticfiles"
+# STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# MEDIA_URL = "/media/"
+# MEDIA_ROOT = BASE_DIR / "media"
+
+# # --------------------------------------------------------------------------------------
+# # Auth / Allauth
+# # --------------------------------------------------------------------------------------
+# DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# AUTH_USER_MODEL = "api.CustomUser"
+
+# LOGIN_REDIRECT_URL = "/"
+# LOGIN_URL = "/accounts/login"
+# LOGOUT_REDIRECT_URL = "/"
+
+# ACCOUNT_LOGIN_METHODS = {"email"}
+# ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+# ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+# ACCOUNT_UNIQUE_EMAIL = True
+# ACCOUNT_EMAIL_VERIFICATION = os.environ.get("ACCOUNT_EMAIL_VERIFICATION", "mandatory")  # mandatory/optional/none
+
+# AUTHENTICATION_BACKENDS = (
+#     "django.contrib.auth.backends.ModelBackend",
+#     "allauth.account.auth_backends.AuthenticationBackend",
+# )
+
+# # --------------------------------------------------------------------------------------
+# # DRF / JWT
+# # --------------------------------------------------------------------------------------
+# REST_FRAMEWORK = {
+#     "DEFAULT_AUTHENTICATION_CLASSES": (
+#         "rest_framework_simplejwt.authentication.JWTAuthentication",
+#         "rest_framework.authentication.SessionAuthentication",
+#         "rest_framework.authentication.TokenAuthentication",
+#     ),
+#     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+# }
+
+# REST_AUTH_SERIALIZERS = {
+#     "USER_DETAILS_SERIALIZER": "api.serializers.CustomUserDetairsSerializer",
+# }
+
+# SIMPLE_JWT = {
+#     "AUTH_HEADER_TYPES": ("Bearer",),
+#     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.environ.get("JWT_ACCESS_MINUTES", "60"))),
+#     "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.environ.get("JWT_REFRESH_DAYS", "7"))),
+#     "ROTATE_REFRESH_TOKENS": True,
+#     "BLACKLIST_AFTER_ROTATION": True,
+# }
+
+# # --------------------------------------------------------------------------------------
+# # CORS / CSRF
+# # フロント複数URLを FRONTEND_URLS="https://app.example.com,https://purple-moss-0000.staticapps.net" のように設定
+# # --------------------------------------------------------------------------------------
+# FRONTEND_URLS = getenv_list("FRONTEND_URLS")
+# CORS_ALLOWED_ORIGINS = [ensure_scheme(u) for u in FRONTEND_URLS]
+# CORS_ALLOW_CREDENTIALS = True
+
+# # CSRF Trusted Origins (https scheme 必須)
+# CSRF_TRUSTED_ORIGINS = [ensure_scheme(u) for u in getenv_list("CSRF_TRUSTED_ORIGINS")] or CORS_ALLOWED_ORIGINS
+
+# # 本番Cookie設定（フロントが別ドメインの場合 SameSite=None; Secure 必須）
+# CSRF_COOKIE_SECURE = not DEBUG
+# SESSION_COOKIE_SECURE = not DEBUG
+# CSRF_COOKIE_SAMESITE = "None" if not DEBUG else "Lax"
+# SESSION_COOKIE_SAMESITE = "None" if not DEBUG else "Lax"
+
+# # --------------------------------------------------------------------------------------
+# # Security headers (production hardened)
+# # --------------------------------------------------------------------------------------
+# SECURE_SSL_REDIRECT = getenv_bool("SECURE_SSL_REDIRECT", not DEBUG)
+# SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Azure App Service のリバースプロキシ
+# SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", "31536000"))  # 1年
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = getenv_bool("SECURE_HSTS_INCLUDE_SUBDOMAINS", True)
+# SECURE_HSTS_PRELOAD = getenv_bool("SECURE_HSTS_PRELOAD", True)
+# SECURE_REFERRER_POLICY = os.environ.get("SECURE_REFERRER_POLICY", "strict-origin-when-cross-origin")
+# X_FRAME_OPTIONS = os.environ.get("X_FRAME_OPTIONS", "DENY")
+
+# # --------------------------------------------------------------------------------------
+# # Email (Allauth の確認メール送信) — 例: SendGrid / SMTP
+# # --------------------------------------------------------------------------------------
+# EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+# EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.sendgrid.net")
+# EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+# EMAIL_USE_TLS = getenv_bool("EMAIL_USE_TLS", True)
+# EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "apikey")  # SendGrid の場合は固定 "apikey"
+# EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")    # ここに SG の API Key
+# DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@example.com")
+
+# # --------------------------------------------------------------------------------------
+# # Logging (Azure での可観測性向上)
+# # --------------------------------------------------------------------------------------
+# LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "app": {
+#             "format": "[%(asctime)s] %(levelname)s %(name)s %(message)s"
+#         },
+#     },
+#     "handlers": {
+#         "console": {
+#             "class": "logging.StreamHandler",
+#             "formatter": "app",
+#         },
+#     },
+#     "root": {"handlers": ["console"], "level": LOG_LEVEL},
+#     "loggers": {
+#         "django.request": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+#         "django.security": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+#     },
+# }
+
+# # --------------------------------------------------------------------------------------
+# # Admin log model (your custom app)
+# # --------------------------------------------------------------------------------------
+# ADMIN_LOG_MODEL = "adminlog.LogEntry"

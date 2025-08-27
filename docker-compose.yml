@@ -16,13 +16,13 @@ services:
       - '8000:8000'
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings
-      # - PYTHONPATH=/backend:${PYTHONPATH}
-      - DATABASE_URL=postgres://takato:0605@xero-db:5432/xero_db
-      - POSTGRES_DB=xero_db
-      - POSTGRES_USER=takato
-      - POSTGRES_PASSWORD=0605
-      - POSTGRES_HOST=xero-db
-      - POSTGRES_PORT=5432
+      # # - PYTHONPATH=/backend:${PYTHONPATH}
+      # - DATABASE_URL=postgres://takato:0605@xero-db:5432/xero_db
+      # - POSTGRES_DB=xero_db
+      # - POSTGRES_USER=takato
+      # - POSTGRES_PASSWORD=0605
+      # - POSTGRES_HOST=xero-db
+      # - POSTGRES_PORT=5432
     depends_on:
       - xero-db
     networks:
@@ -49,10 +49,12 @@ services:
   xero-db:
     image: postgres:16
     container_name: xero-db
-    environment:
-      - POSTGRES_USER=takato
-      - POSTGRES_PASSWORD=0605
-      - POSTGRES_DB=xero_db
+    env_file:
+      - .env
+    # environment:
+    #   - POSTGRES_USER=takato
+    #   - POSTGRES_PASSWORD=0605
+    #   - POSTGRES_DB=xero_db
     ports:
       - '5432:5432'
     volumes:
