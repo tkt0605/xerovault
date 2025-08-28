@@ -1,21 +1,19 @@
 #!/bin/bash
-
+set -e
 # ========= 基本設定 =========
-RG_NAME="xerovault-rg"
-LOCATION="japaneast"
-LOCATION_STATIC="eastasia"
-PG_NAME="xerovaultpg6483"
-PG_ADMIN="takato"
-PG_PASS="StrongPass123"     # ← 実際は .env に入れること！
-PG_DB="xerovault_db"
-BACKEND_APP="xerovault-api"
-FRONTEND_APP="xerovault-frontend"
-DOCKER_IMAGE="ghcr.io/username/xerovault-backend:latest"
-PLAN_NAME="xerovault-plan"
-SECRET_KEY="django-insecure-&i4%yfpcf=k)z-8cx3o=1+1&3wwtc0y+pgxboev_ymq*@p@o^!"
-GITHUB_REPOSITORY="https://github.com/tkt0605/xerovault"
-ALLOWED_ORIGINS="https://gray-mushroom-0eb277800.1.azurestaticapps.net"
-
+if [ -f .env ]; then
+  echo "📦 Loading environment variables from .env..."
+  while IFS='=' read -r key value; do
+    # 空行やコメント行をスキップ
+    [[ "$key" =~ ^#.*$ || -z "$key" ]] && continue
+    # 行末コメント除去（=の後に # がある場合に対応）
+    value="${value%%#*}"
+    export "$key=$(echo "$value" | xargs)"  # 前後の空白除去
+  done < .env
+else
+  echo "❌ .env file not found. Aborting."
+  exit 1
+fi
 # ========= 環境変数の設定（Djangoの設定） =========
 az webapp config appsettings set \
   --name ${BACKEND_APP} \

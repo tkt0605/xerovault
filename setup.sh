@@ -1,57 +1,48 @@
 #!/bin/bash
 
-# ========= 基本設定 =========
-RG_NAME="xerovault-rg"
-LOCATION="japaneast"
-LOCATION_STATIC="eastasia"
-PG_NAME="xerovaultpg6483"
-PG_ADMIN="takato"
-PG_PASS="StrongPass123"     # ← 実際は .env に入れること！
-PG_DB="xerovault_db"
-BACKEND_APP="xerovault-api"
-FRONTEND_APP="xerovault-frontend"
-DOCKER_IMAGE="ghcr.io/username/xerovault-backend:latest"
-PLAN_NAME="xerovault-plan"
-SECRET_KEY="django-insecure-&i4%yfpcf=k)z-8cx3o=1+1&3wwtc0y+pgxboev_ymq*@p@o^!"
-GITHUB_REPOSITORY="https://github.com/tkt0605/xerovault"
-ALLOWED_ORIGINS="https://gray-mushroom-0eb277800.1.azurestaticapps.net"
+set -e  # エラーで即終了
 
-# =========  MICROSOFT.WEB作成コマンド　=========
-
-echo "Checking Microsoft.Web resource provider registration..."
-
+# ======== .env を読み込み ========
+if [ -f .env ]; then
+  echo "📦 Loading environment variables from .env..."
+  while IFS='=' read -r key value; do
+    # 空行やコメント行をスキップ
+    [[ "$key" =~ ^#.*$ || -z "$key" ]] && continue
+    # 行末コメント除去（=の後に # がある場合に対応）
+    value="${value%%#*}"
+    export "$key=$(echo "$value" | xargs)"  # 前後の空白除去
+  done < .env
+else
+  echo "❌ .env file not found. Aborting."
+  exit 1
+fi
+# ======== Microsoft.Web の登録確認 ========
+echo "🌐 Checking Microsoft.Web resource provider..."
 REG_STATE=$(az provider show --namespace Microsoft.Web --query "registrationState" -o tsv)
-
 if [[ "$REG_STATE" != "Registered" ]]; then
-  echo "Microsoft.Web is not registered. Registering now..."
+  echo "⏳ Registering Microsoft.Web..."
   az provider register --namespace Microsoft.Web
-  echo "Waiting for Microsoft.Web to register..."
-  # 簡易待機（5秒×最大6回 = 最大30秒）
-  for i in {1..6}; do
+  for i in {1..10}; do
     sleep 5
     REG_STATE=$(az provider show --namespace Microsoft.Web --query "registrationState" -o tsv)
     echo "Current state: $REG_STATE"
-    if [[ "$REG_STATE" == "Registered" ]]; then
-      echo "Microsoft.Web successfully registered!"
-      break
-    fi
+    if [[ "$REG_STATE" == "Registered" ]]; then break; fi
   done
-else
-  echo "Microsoft.Web is already registered."
 fi
+echo "✅ Microsoft.Web is registered."
 
-# ========= リソース・グループの作成　=========
-az group create \
-  --name ${RG_NAME} \
-  --location ${LOCATION}
+# ======== リソースグループ作成 ========
+echo "🧱 Creating resource group..."
+az group create --name $RG_NAME --location $LOCATION
 
-# =========　Postgresql Flexible Serverの作成　=========
+# ======== PostgreSQL Flexible Server ========
+echo "🐘 Creating PostgreSQL flexible server..."
 az postgres flexible-server create \
-  --resource-group ${RG_NAME} \
-  --location ${LOCATION} \
-  --name ${PG_NAME} \
-  --admin-user ${PG_ADMIN} \
-  --admin-password ${PG_PASS} \
+  --resource-group $RG_NAME \
+  --location $LOCATION \
+  --name $PG_NAME \
+  --admin-user $PG_ADMIN \
+  --admin-password $PG_PASS \
   --sku-name Standard_B1ms \
   --tier Burstable \
   --storage-size 32 \
@@ -59,35 +50,66 @@ az postgres flexible-server create \
   --public-access All \
   --yes
 
-# ========= DB作成 =========
+# ======== PostgreSQL Database 作成 ========
+echo "📘 Creating database $PG_DB..."
 az postgres flexible-server db create \
-  --resource-group ${RG_NAME} \
-  --server-name ${PG_NAME} \
-  --database-name ${PG_DB} \
+  --resource-group $RG_NAME \
+  --server-name $PG_NAME \
+  --database-name $PG_DB
 
-# ========= App Service Plan 作成 =========
-az appservice plan create \
-  --name ${PLAN_NAME} \
-  --resource-group ${RG_NAME} \
-  --sku B1 \
-  --is-linux
+# ======== App Service Plan（存在チェック付き） ========
+if ! az appservice plan show -g "$RG_NAME" -n "$PLAN_NAME" >/dev/null 2>&1; then
+  echo "⚙️ Creating App Service Plan..."
+  az appservice plan create \
+    --name $PLAN_NAME \
+    --resource-group $RG_NAME \
+    --sku B1 \
+    --is-linux
+else
+  echo "✅ App Service Plan already exists."
+fi
 
-# ========= WebApp作成 =========
+# ======== WebApp for Containers 作成 ========
+echo "🚀 Creating WebApp..."
 az webapp create \
-  --resource-group ${RG_NAME} \
-  --plan ${PLAN_NAME} \
-  --name ${BACKEND_APP} \
-  --deployment-container-image-name ${DOCKER_IMAGE}
+  --resource-group $RG_NAME \
+  --plan $PLAN_NAME \
+  --name $BACKEND_APP \
+  --runtime "PYTHON:3.11"
 
-# ========= Nuxt用 Static Web App 作成（Optional） =========
+# ======== コンテナイメージ設定 ========
+echo "🛠️ Configuring container image..."
+az webapp config container set \
+  --name $BACKEND_APP \
+  --resource-group $RG_NAME \
+  --docker-custom-image-name $DOCKER_IMAGE \
+  --docker-registry-server-url https://ghcr.io \
+  --docker-registry-server-user tkt0605 \
+  --docker-registry-server-password $GITHUB_PAT
+
+# ======== WebApp 環境変数（App Settings） ========
+echo "🔐 Setting environment variables..."
+az webapp config appsettings set \
+  --resource-group $RG_NAME \
+  --name $BACKEND_APP \
+  --settings \
+  DJANGO_DEBUG=false \
+  DJANGO_ALLOWED_HOSTS="${BACKEND_APP}.azurewebsites.net" \
+  DATABASE_URL="postgresql://${PG_ADMIN}:${PG_PASS}@${PG_NAME}.postgres.database.azure.com:5432/${PG_DB}?sslmode=require" \
+  SECRET_KEY="$SECRET_KEY" \
+  SECURE_SSL_REDIRECT=true \
+  LOG_LEVEL=INFO
+
+# ======== Static Web App (Nuxt Frontend) 作成 ========
+echo "🎨 Creating Static Web App (Nuxt frontend)..."
 az staticwebapp create \
-  --name ${FRONTEND_APP} \
-  --resource-group ${RG_NAME} \
-  --source ${GITHUB_REPOSITORY} \
-  --location ${LOCATION_STATIC} \
+  --name $FRONTEND_APP \
+  --resource-group $RG_NAME \
+  --source $GITHUB_REPOSITORY \
+  --location $LOCATION_STATIC \
   --branch main \
   --app-location "frontend/xerofront/" \
   --output-location ".output/public" \
-  --login-with-github
+  --token $GITHUB_PAT
 
-echo "✅ Azure resource setup completed successfully!"
+echo "✅ All Azure resources have been created successfully!"
