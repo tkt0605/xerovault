@@ -16,9 +16,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 import dj_database_url
-<<<<<<< HEAD
 AES_SECRET_KEY = os.environ.get("AES_SECRET_KEY").encode()
-=======
 
 def env_bool(name: str, default: bool = False) -> bool:
     val = os.environ.get(name)
@@ -39,7 +37,6 @@ def must_get(name:str, default: None):
     return v
 
 AES_SECRET_KEY = os.environ.get("AES_SECRET_KEY", 'bWGJPRCeMAFUjLrEIlgIUzbs9kwD/n4G').encode()
->>>>>>> b0c3d81 (Remove GitHub token and secrets)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -48,7 +45,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-<<<<<<< HEAD
 SECRET_KEY = 'django-insecure-&i4%yfpcf=k)z-8cx3o=1+1&3wwtc0y+pgxboev_ymq*@p@o^!'
 # SECRET_KEY=os.environ.get('DJANGO_SECRET_KEY')
 
@@ -56,7 +52,6 @@ SECRET_KEY = 'django-insecure-&i4%yfpcf=k)z-8cx3o=1+1&3wwtc0y+pgxboev_ymq*@p@o^!
 # DEBUG = True
 DEBUG=os.environ.get('DJANGO_DEBUG')
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
-=======
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-&i4%yfpcf=k)z-8cx3o=1+1&3wwtc0y+pgxboev_ymq*@p@o^!')
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -64,7 +59,6 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-&i4%yfpcf=k)z-
 # DEBUG=os.environ.get('DJANGO_DEBUG')
 DEBUG = env_bool('DJANGO_DEBUG', default=True)
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", default=['localhost', '127.0.0.1'])
->>>>>>> b0c3d81 (Remove GitHub token and secrets)
 # ALLOWED_HOSTS = ['*']
 
 
@@ -147,25 +141,13 @@ else:
     if all([pg_name, pg_host, pg_pass, pg_port, pg_user]):
         db =  {
         'ENGINE': 'django.db.backends.postgresql',
-<<<<<<< HEAD
-        # 'NAME': BASE_DIR / 'db.sqlite3',
-        # 'NAME': 'xero_db',
-        # 'USER': 'takato',
-        # 'PASSWORD': '0605',
-        # 'HOST': 'xero-db',
-        # 'PORT': '5432',
-=======
->>>>>>> b0c3d81 (Remove GitHub token and secrets)
         'NAME': os.environ.get('POSTGRES_DB'),
         'USER': os.environ.get('POSTGRES_USER'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
         'HOST': os.environ.get('POSTGRES_HOST'),
         'PORT': os.environ.get('POSTGRES_PORT')
-<<<<<<< HEAD
     },
-    "default": dj_database_url.parse(os.environ['DATABASE_URL'], conn_max_age=600)
-=======
-        }
+    # "default": dj_database_url.parse(os.environ['DATABASE_URL'], conn_max_age=600)
     else:
         db = {
             "ENGINE": "django.db.backends.sqlite3",
@@ -173,7 +155,6 @@ else:
         }
 DATABASES = {
     'default': db
->>>>>>> b0c3d81 (Remove GitHub token and secrets)
 }
 # DATABASES = {
 #     'default': {
@@ -261,13 +242,6 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     'ROTATE_REFRESH_TOKENS': True,     # ← 必須
 }
-<<<<<<< HEAD
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
-=======
->>>>>>> b0c3d81 (Remove GitHub token and secrets)
 CORS_ALLOWED_HEADERS = [
     "authorization",
     "content-type",
@@ -311,13 +285,6 @@ SECURE_HSTS_PRELOAD=env_bool('SECURE_HSTS_PRELOAD', default=not DEBUG)
 # Django settings for config project — Azure production-ready
 # """
 
-<<<<<<< HEAD
-# """
-# Django settings for config project — Azure production-ready
-# """
-
-=======
->>>>>>> b0c3d81 (Remove GitHub token and secrets)
 # from pathlib import Path
 # from datetime import timedelta
 # import os
