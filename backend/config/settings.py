@@ -16,7 +16,30 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 import dj_database_url
+<<<<<<< HEAD
 AES_SECRET_KEY = os.environ.get("AES_SECRET_KEY").encode()
+=======
+
+def env_bool(name: str, default: bool = False) -> bool:
+    val = os.environ.get(name)
+    if val is None:
+        return default
+    return str(val).strip().lower() in ('1', 'true', 'yes', 'on')
+
+def env_list(name: str, default: None):
+    raw = os.environ.get(name)
+    if not raw:
+        return default or []
+    return [s.strip() for s in raw.split(',')if s.strip()]
+
+def must_get(name:str, default: None):
+    v = os.environ.get(name)
+    if v is None:
+        return RuntimeError(f"Required environment variable missing: {name}")
+    return v
+
+AES_SECRET_KEY = os.environ.get("AES_SECRET_KEY", 'bWGJPRCeMAFUjLrEIlgIUzbs9kwD/n4G').encode()
+>>>>>>> b0c3d81 (Remove GitHub token and secrets)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,6 +48,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+<<<<<<< HEAD
 SECRET_KEY = 'django-insecure-&i4%yfpcf=k)z-8cx3o=1+1&3wwtc0y+pgxboev_ymq*@p@o^!'
 # SECRET_KEY=os.environ.get('DJANGO_SECRET_KEY')
 
@@ -32,6 +56,15 @@ SECRET_KEY = 'django-insecure-&i4%yfpcf=k)z-8cx3o=1+1&3wwtc0y+pgxboev_ymq*@p@o^!
 # DEBUG = True
 DEBUG=os.environ.get('DJANGO_DEBUG')
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
+=======
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-&i4%yfpcf=k)z-8cx3o=1+1&3wwtc0y+pgxboev_ymq*@p@o^!')
+
+# SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG = True
+# DEBUG=os.environ.get('DJANGO_DEBUG')
+DEBUG = env_bool('DJANGO_DEBUG', default=True)
+ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", default=['localhost', '127.0.0.1'])
+>>>>>>> b0c3d81 (Remove GitHub token and secrets)
 # ALLOWED_HOSTS = ['*']
 
 
@@ -58,6 +91,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "rest_framework.authtoken",
     "dj_rest_auth",
+    "whitenoise.runserver_nostatic"
 
 ]
 # SITE_ID = 1
@@ -72,7 +106,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # "allauth.account.middleware.AuthenticationMiddleware",
-    'allauth.account.middleware.AccountMiddleware'
+    'allauth.account.middleware.AccountMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware"
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -99,23 +134,57 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
+db = None
+DATABASE_URL = os.environ.get('DATABASE_URL', 'AZURE_DATABASE_URL ')
+if DATABASE_URL:
+    db = dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=env_bool("DB_SSL_REQUIRE", False))
+else:
+    pg_name = os.environ.get('POSTGRES_DB')
+    pg_user = os.environ.get('POSTGRES_USER')
+    pg_pass = os.environ.get('POSTGRES_PASSWORD')
+    pg_host = os.environ.get('POSTGRES_HOST')
+    pg_port = os.environ.get('POSTGRES_PORT')
+    if all([pg_name, pg_host, pg_pass, pg_port, pg_user]):
+        db =  {
         'ENGINE': 'django.db.backends.postgresql',
+<<<<<<< HEAD
         # 'NAME': BASE_DIR / 'db.sqlite3',
         # 'NAME': 'xero_db',
         # 'USER': 'takato',
         # 'PASSWORD': '0605',
         # 'HOST': 'xero-db',
         # 'PORT': '5432',
+=======
+>>>>>>> b0c3d81 (Remove GitHub token and secrets)
         'NAME': os.environ.get('POSTGRES_DB'),
         'USER': os.environ.get('POSTGRES_USER'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
         'HOST': os.environ.get('POSTGRES_HOST'),
         'PORT': os.environ.get('POSTGRES_PORT')
+<<<<<<< HEAD
     },
     "default": dj_database_url.parse(os.environ['DATABASE_URL'], conn_max_age=600)
+=======
+        }
+    else:
+        db = {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+DATABASES = {
+    'default': db
+>>>>>>> b0c3d81 (Remove GitHub token and secrets)
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.environ.get('POSTGRES_DB'),
+#         'USER': os.environ.get('POSTGRES_USER'),
+#         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+#         'HOST': os.environ.get('POSTGRES_HOST'),
+#         'PORT': os.environ.get('POSTGRES_PORT')
+#     }
+# }
 
 
 # Password validation
@@ -151,7 +220,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 STATIC_URL = '/staticfiles/'
-
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -192,10 +261,13 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     'ROTATE_REFRESH_TOKENS': True,     # ← 必須
 }
+<<<<<<< HEAD
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+=======
+>>>>>>> b0c3d81 (Remove GitHub token and secrets)
 CORS_ALLOWED_HEADERS = [
     "authorization",
     "content-type",
@@ -205,16 +277,47 @@ CORS_ALLOWED_HEADERS = [
     "accept-endcoding",
     "user-agent",
 ]
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000"
-]
+CSRF_TRUSTED_ORIGINS = env_list(
+    "CORS_ALLOWED_ORIGINS",
+    default=[
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000",
+        "https://xerovault-frontend.azurestaticapps.net",
+        "https://xerovault-api.azurewebsites.net",
+    ]
+)
+CORS_ALLOWED_ORIGINS = env_list(
+    "CSRF_TRUSTED_ORIGINS",
+    default=[
+        "https://xerovault-api.azurewebsites.net",
+        "https://xerovault-frontend.azurestaticapps.net",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
+) 
+print(">>> CSRF_TRUSTED_ORIGINS =", CSRF_TRUSTED_ORIGINS)
+print(">>> CORS_ALLOWED_ORIGINS =", CORS_ALLOWED_ORIGINS)
 
-
+CORS_ALLOW_CREDENTIALS = True  # Cookie を使う場合
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", default=not DEBUG)
+SESSION_COOKIE_SECURE=env_bool('SESSION_COOKIE_SECURE', default=not DEBUG)
+CSRF_COOKIE_SECURE=env_bool('CSRF_COOKIE_SECURE', default=not DEBUG)
+SECURE_HSTS_SECONDS=31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS=env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=not DEBUG)
+SECURE_HSTS_PRELOAD=env_bool('SECURE_HSTS_PRELOAD', default=not DEBUG)
 # """
 # Django settings for config project — Azure production-ready
 # """
 
+<<<<<<< HEAD
+# """
+# Django settings for config project — Azure production-ready
+# """
+
+=======
+>>>>>>> b0c3d81 (Remove GitHub token and secrets)
 # from pathlib import Path
 # from datetime import timedelta
 # import os

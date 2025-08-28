@@ -1,17 +1,30 @@
 FROM python:3.11-slim
 
+# 環境変数・PATH設定
 ENV PYTHONPATH="/backend:${PYTHONPATH}"
+
+# 必要パッケージのインストール（MySQLビルドのため）
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    default-libmysqlclient-dev \
+    gcc \
+    libpq-dev \
     pkg-config \
+    default-libmysqlclient-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# ユーザー作成（将来 devcontainer などで使うなら）
 ARG USERNAME=vscode
 RUN useradd -ms /bin/bash $USERNAME \
-    && echo "$USERnam ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers 
+    && echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# 作業ディレクトリ設定
 WORKDIR /backend
-COPY . /backend/
+
+# 依存ファイルのみ先にコピー（キャッシュ活用）
 COPY requirements.txt /backend/
-RUN pip3 install --upgrade pip
-RUN pip3 install --no-cache -r requirements.txt
-CMD [ "gunicorn", "config.wsgi.application", "--bind", "0.0.0.0:8000"]
+RUN pip3 install --upgrade pip && pip3 install --no-cache-dir -r requirements.txt
+
+# アプリケーションコードをコピー
+COPY . /backend/
+
+# Gunicorn 本番起動
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]
