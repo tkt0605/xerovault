@@ -53,5 +53,10 @@ export default defineNuxtConfig({
     preference: 'system', // 'dark' または 'light' にもできる
     fallback: 'light',
     classSuffix: '',       // クラス名に `-dark` などのサフィックスをつけない
+  },
+  nitro: {
+    output: {
+      dir: 'dist'
+    }
   }
 });

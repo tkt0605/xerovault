@@ -5,3 +5,7 @@ node_modules/
 
 __pycache__/
 *.pyc
+.env
+setup.sh
+setup.django.sh
+.env.production
