@@ -61,6 +61,10 @@
     "dockerComposeFile":[
         "../docker-compose.yml"
     ] ,
+    "build": {
+        "context": "../backend",
+        "dockerfile": "../backend/Dockerfile.backend"
+    },
     "service": "xero-backend",
     "workspaceFolder": "/backend",
     "extensions":[

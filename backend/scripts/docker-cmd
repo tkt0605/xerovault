@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -e
+PORT=${PORT:-8000}
+# WEBSITES_PORT=${WEBSITES_PORT:-8000}
+# PYTHON MAGRATE
+python manage.py migrate --noinput
+
+exec gunicorn config.wsgi:application --preload --bind 0.0.0.0:${PORT} --workers 3 --timeout 120

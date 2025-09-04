@@ -16,8 +16,6 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 import dj_database_url
-AES_SECRET_KEY = os.environ.get("AES_SECRET_KEY").encode()
-
 def env_bool(name: str, default: bool = False) -> bool:
     val = os.environ.get(name)
     if val is None:
@@ -51,7 +49,7 @@ SECRET_KEY = 'django-insecure-&i4%yfpcf=k)z-8cx3o=1+1&3wwtc0y+pgxboev_ymq*@p@o^!
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
 DEBUG=os.environ.get('DJANGO_DEBUG')
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
+# ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-&i4%yfpcf=k)z-8cx3o=1+1&3wwtc0y+pgxboev_ymq*@p@o^!')
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -129,7 +127,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 db = None
-DATABASE_URL = os.environ.get('DATABASE_URL', 'AZURE_DATABASE_URL ')
+# DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL=os.environ.get('AZURE_DATABASE_URL')
 if DATABASE_URL:
     db = dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=env_bool("DB_SSL_REQUIRE", False))
 else:
@@ -256,7 +255,7 @@ CSRF_TRUSTED_ORIGINS = env_list(
     default=[
         "http://localhost:3000", 
         "http://127.0.0.1:3000",
-        "https://xerovault-frontend.azurestaticapps.net",
+        "https://proud-moss-09498e000.2.azurestaticapps.net",
         "https://xerovault-api.azurewebsites.net",
     ]
 )
@@ -264,7 +263,7 @@ CORS_ALLOWED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS",
     default=[
         "https://xerovault-api.azurewebsites.net",
-        "https://xerovault-frontend.azurestaticapps.net",
+        "https://proud-moss-09498e000.2.azurestaticapps.net",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
     ]
@@ -273,14 +272,20 @@ print(">>> CSRF_TRUSTED_ORIGINS =", CSRF_TRUSTED_ORIGINS)
 print(">>> CORS_ALLOWED_ORIGINS =", CORS_ALLOWED_ORIGINS)
 
 CORS_ALLOW_CREDENTIALS = True  # Cookie を使う場合
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
-SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", default=not DEBUG)
-SESSION_COOKIE_SECURE=env_bool('SESSION_COOKIE_SECURE', default=not DEBUG)
-CSRF_COOKIE_SECURE=env_bool('CSRF_COOKIE_SECURE', default=not DEBUG)
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", default=False)
+SESSION_COOKIE_SECURE=env_bool('SESSION_COOKIE_SECURE', default=False)
+CSRF_COOKIE_SECURE=env_bool('CSRF_COOKIE_SECURE', default=False)
 SECURE_HSTS_SECONDS=31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS=env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=not DEBUG)
-SECURE_HSTS_PRELOAD=env_bool('SECURE_HSTS_PRELOAD', default=not DEBUG)
+SECURE_HSTS_INCLUDE_SUBDOMAINS=env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=False)
+SECURE_HSTS_PRELOAD=env_bool('SECURE_HSTS_PRELOAD', default=False)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+
+
+
+
 # """
 # Django settings for config project — Azure production-ready
 # """
@@ -526,7 +531,7 @@ SECURE_HSTS_PRELOAD=env_bool('SECURE_HSTS_PRELOAD', default=not DEBUG)
 # CSRF_TRUSTED_ORIGINS = [ensure_scheme(u) for u in getenv_list("CSRF_TRUSTED_ORIGINS")] or CORS_ALLOWED_ORIGINS
 
 # # 本番Cookie設定（フロントが別ドメインの場合 SameSite=None; Secure 必須）
-# CSRF_COOKIE_SECURE = not DEBUG
+# CSRF_COOKIE_SECURE = False
 # SESSION_COOKIE_SECURE = not DEBUG
 # CSRF_COOKIE_SAMESITE = "None" if not DEBUG else "Lax"
 # SESSION_COOKIE_SAMESITE = "None" if not DEBUG else "Lax"
