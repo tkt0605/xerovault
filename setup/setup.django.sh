@@ -1,19 +1,23 @@
 #!/bin/bash
 set -e
+# ========= Backendリソースの起動SHELL　========
 # ========= 基本設定 =========
-if [ -f .env ]; then
-  echo "📦 Loading environment variables from .env..."
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENV_PATH="$SCRIPT_DIR/../.env.production"
+
+if [ -f "$ENV_PATH" ]; then
+  echo "📦 Loading environment variables from $ENV_PATH..."
   while IFS='=' read -r key value; do
-    # 空行やコメント行をスキップ
     [[ "$key" =~ ^#.*$ || -z "$key" ]] && continue
-    # 行末コメント除去（=の後に # がある場合に対応）
     value="${value%%#*}"
-    export "$key=$(echo "$value" | xargs)"  # 前後の空白除去
-  done < .env
+    export "$key"="$(echo "$value" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+  done < "$ENV_PATH"
 else
-  echo "❌ .env file not found. Aborting."
+  echo "❌ .env.production file not found at $ENV_PATH. Aborting."
   exit 1
 fi
+
 # ========= 環境変数の設定（Djangoの設定） =========
 az webapp config appsettings set \
   --name ${BACKEND_APP} \

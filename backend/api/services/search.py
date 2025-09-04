@@ -1,9 +1,9 @@
 from typing import Iterable, Literal, Tuple, List, Dict
 from django.db.models import Q, QuerySet, Value, CharField, F, FloatField
 from django.utils.timezone import now
-from django.contrib.postgres.search import SearchQuery, SearchVector, SearchRank
-from django.contrib.postgres.search import TrigramSimilarity
-from django.db.models.functions import Cast, Coalesce
+# from django.contrib.postgres.search import SearchQuery, SearchVector, SearchRank
+# from django.contrib.postgres.search import TrigramSimilarity
+# from django.db.models.functions import Cast, Coalesce
 # from typing import TYPE_CHECKING
 # if TYPE_CHECKING:
 #     from api.models import GenerateGroup, GenerateLibrary

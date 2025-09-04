@@ -2,18 +2,21 @@
 
 set -e  # エラーで即終了
 
+# ========= リソースの起動・作成SHELL　========
 # ======== .env を読み込み ========
-if [ -f .env ]; then
-  echo "📦 Loading environment variables from .env..."
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENV_PATH="$SCRIPT_DIR/../.env.production"
+
+if [ -f "$ENV_PATH" ]; then
+  echo "📦 Loading environment variables from $ENV_PATH..."
   while IFS='=' read -r key value; do
-    # 空行やコメント行をスキップ
     [[ "$key" =~ ^#.*$ || -z "$key" ]] && continue
-    # 行末コメント除去（=の後に # がある場合に対応）
     value="${value%%#*}"
-    export "$key=$(echo "$value" | xargs)"  # 前後の空白除去
-  done < .env
+    export "$key"="$(echo "$value" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+  done < "$ENV_PATH"
 else
-  echo "❌ .env file not found. Aborting."
+  echo "❌ .env.production file not found at $ENV_PATH. Aborting."
   exit 1
 fi
 # ======== Microsoft.Web の登録確認 ========
@@ -85,7 +88,16 @@ az webapp config container set \
   --docker-custom-image-name $DOCKER_IMAGE \
   --docker-registry-server-url https://ghcr.io \
   --docker-registry-server-user tkt0605 \
-  --docker-registry-server-password $GITHUB_PAT
+  # --docker-registry-server-password "$GITHUB_PAT"
+
+az webapp config appsettings set \
+  --name ${BACKEND_APP} \
+  --resource-group ${RG_NAME} \
+  --settings\
+  PORT=8000\
+  WEBSITES_PORT=8000\
+  STARTUP_COMMAND="/backend/scripts/docker-cmd"\
+  # DOCKER_REGISTRY_SERVER_PASSWORD="$GITHUB_PAT"
 
 # ======== WebApp 環境変数（App Settings） ========
 echo "🔐 Setting environment variables..."
@@ -100,16 +112,19 @@ az webapp config appsettings set \
   SECURE_SSL_REDIRECT=true \
   LOG_LEVEL=INFO
 
-# ======== Static Web App (Nuxt Frontend) 作成 ========
+
+# # ======== Static Web App (Nuxt Frontend) 作成 ========
 echo "🎨 Creating Static Web App (Nuxt frontend)..."
 az staticwebapp create \
-  --name $FRONTEND_APP \
-  --resource-group $RG_NAME \
-  --source $GITHUB_REPOSITORY \
-  --location $LOCATION_STATIC \
+  --name "$FRONTEND_APP" \
+  --resource-group "$RG_NAME" \
+  --source "$GITHUB_REPOSITORY" \
+  --location "$LOCATION_STATIC" \
   --branch main \
   --app-location "frontend/xerofront/" \
   --output-location ".output/public" \
-  --token $GITHUB_PAT
+  --login-with-github
+  # --token "$GITHUB_PAT"
 
 echo "✅ All Azure resources have been created successfully!"
+ 
