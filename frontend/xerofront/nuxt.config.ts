@@ -32,7 +32,8 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     public: {
-      apiBase: 'http://localhost:8000/api/'
+      // apiBase: 'http://localhost:8000/api/'
+      apiBase: 'https://xerovault-api-v1.azurewebsites.net/api/'
     }
   },
   i18n: {

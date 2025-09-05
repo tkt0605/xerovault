@@ -255,15 +255,15 @@ CSRF_TRUSTED_ORIGINS = env_list(
     default=[
         "http://localhost:3000", 
         "http://127.0.0.1:3000",
-        "https://proud-moss-09498e000.2.azurestaticapps.net",
-        "https://xerovault-api.azurewebsites.net",
+        "https://content-hk1.infrastructure.2.azurestaticapps.net",
+        "https://xerovault-api-v2.azurewebsites.net",
     ]
 )
 CORS_ALLOWED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS",
     default=[
-        "https://xerovault-api.azurewebsites.net",
-        "https://proud-moss-09498e000.2.azurestaticapps.net",
+        "https://xerovault-api-v2.azurewebsites.net",
+        "https://content-hk1.infrastructure.2.azurestaticapps.net",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
     ]

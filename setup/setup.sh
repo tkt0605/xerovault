@@ -7,18 +7,12 @@ set -e  # エラーで即終了
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_PATH="$SCRIPT_DIR/../.env.production"
+echo "📦 Loading environment variables from $ENV_PATH..."
 
-if [ -f "$ENV_PATH" ]; then
-  echo "📦 Loading environment variables from $ENV_PATH..."
-  while IFS='=' read -r key value; do
-    [[ "$key" =~ ^#.*$ || -z "$key" ]] && continue
-    value="${value%%#*}"
-    export "$key"="$(echo "$value" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
-  done < "$ENV_PATH"
-else
-  echo "❌ .env.production file not found at $ENV_PATH. Aborting."
-  exit 1
-fi
+# 手動で読み込んでみる
+set -a
+source "$ENV_PATH"
+set +a
 # ======== Microsoft.Web の登録確認 ========
 echo "🌐 Checking Microsoft.Web resource provider..."
 REG_STATE=$(az provider show --namespace Microsoft.Web --query "registrationState" -o tsv)
@@ -44,8 +38,8 @@ az postgres flexible-server create \
   --resource-group $RG_NAME \
   --location $LOCATION \
   --name $PG_NAME \
-  --admin-user $PG_ADMIN \
-  --admin-password $PG_PASS \
+  --admin-user $PG_USER \
+  --admin-password $PG_PASSWORD \
   --sku-name Standard_B1ms \
   --tier Burstable \
   --storage-size 32 \
@@ -85,33 +79,26 @@ echo "🛠️ Configuring container image..."
 az webapp config container set \
   --name $BACKEND_APP \
   --resource-group $RG_NAME \
-  --docker-custom-image-name $DOCKER_IMAGE \
-  --docker-registry-server-url https://ghcr.io \
-  --docker-registry-server-user tkt0605 \
-  # --docker-registry-server-password "$GITHUB_PAT"
+  --container-image-name $DOCKER_IMAGE \
+  --container-registry-url https://ghcr.io \
+  --container-registry-user tkt0605 \
+  --container-registry-password "$GITHUB_PAT"
 
+# ========= 環境変数の設定（Djangoの設定） =========
 az webapp config appsettings set \
-  --name ${BACKEND_APP} \
-  --resource-group ${RG_NAME} \
-  --settings\
-  PORT=8000\
-  WEBSITES_PORT=8000\
-  STARTUP_COMMAND="/backend/scripts/docker-cmd"\
-  # DOCKER_REGISTRY_SERVER_PASSWORD="$GITHUB_PAT"
-
-# ======== WebApp 環境変数（App Settings） ========
-echo "🔐 Setting environment variables..."
-az webapp config appsettings set \
-  --resource-group $RG_NAME \
-  --name $BACKEND_APP \
+  --name "$BACKEND_APP" \
+  --resource-group "$RG_NAME" \
   --settings \
+  PORT=8181 \
+  WEBSITES_PORT=8181 \
+  STARTUP_COMMAND="/backend/scripts/docker-cmd" \
   DJANGO_DEBUG=false \
   DJANGO_ALLOWED_HOSTS="${BACKEND_APP}.azurewebsites.net" \
-  DATABASE_URL="postgresql://${PG_ADMIN}:${PG_PASS}@${PG_NAME}.postgres.database.azure.com:5432/${PG_DB}?sslmode=require" \
-  SECRET_KEY="$SECRET_KEY" \
+  DATABASE_URL="postgresql://${PG_USER}:${PG_PASSWORD}@${PG_NAME}.postgres.database.azure.com:5432/${PG_DB}?sslmode=require" \
+  SECRET_KEY="$DJANGO_SECRET_KEY" \
   SECURE_SSL_REDIRECT=true \
-  LOG_LEVEL=INFO
-
+  LOG_LEVEL=INFO \
+  CORS_ALLOWED_ORIGINS="$CORS_ALLOWED_ORIGINS"
 
 # # ======== Static Web App (Nuxt Frontend) 作成 ========
 echo "🎨 Creating Static Web App (Nuxt frontend)..."
@@ -120,11 +107,12 @@ az staticwebapp create \
   --resource-group "$RG_NAME" \
   --source "$GITHUB_REPOSITORY" \
   --location "$LOCATION_STATIC" \
-  --branch main \
+  --branch  "$GITHUB_BRANCH"\
   --app-location "frontend/xerofront/" \
   --output-location ".output/public" \
-  --login-with-github
-  # --token "$GITHUB_PAT"
+  --login-with-github \
+  --token "${GITHUB_PAT}"
+
 
 echo "✅ All Azure resources have been created successfully!"
  
