@@ -1,9 +1,17 @@
 #!/bin/bash
 
 set -e
-PORT=${PORT:-8000}
+PORT=${PORT:-8181}
 # WEBSITES_PORT=${WEBSITES_PORT:-8000}
 # PYTHON MAGRATE
 python manage.py migrate --noinput
+
+echo "🛠️ Creating superuser..."
+echo "from django.contrib.auth import get_user_model; \
+      User = get_user_model(); \
+      User.objects.filter(email='takatokomada17@gmail.com').exists() or \
+      User.objects.create_superuser('takatokomada17@gmail.com', '20050605')" \
+    | python manage.py shell
+
 
 exec gunicorn config.wsgi:application --preload --bind 0.0.0.0:${PORT} --workers 3 --timeout 120

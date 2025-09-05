@@ -5,24 +5,30 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_PATH="$SCRIPT_DIR/../.env.production"
+echo "📦 Loading environment variables from $ENV_PATH..."
 
-if [ -f "$ENV_PATH" ]; then
-  echo "📦 Loading environment variables from $ENV_PATH..."
-  while IFS='=' read -r key value; do
-    [[ "$key" =~ ^#.*$ || -z "$key" ]] && continue
-    value="${value%%#*}"
-    export "$key"="$(echo "$value" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
-  done < "$ENV_PATH"
-else
-  echo "❌ .env.production file not found at $ENV_PATH. Aborting."
-  exit 1
-fi
+# 手動で読み込んでみる
+set -a
+source "$ENV_PATH"
+set +a
 
-# ========= 環境変数の設定（Djangoの設定） =========
-az webapp config appsettings set \
-  --name ${BACKEND_APP} \
-  --resource-group ${RG_NAME} \
-  --settings DJANGO_SECRET_KEY=${SECRET_KEY} \
-             DJANGO_ALLOWED_HOSTS=${BACKEND_APP}.azurewebsites.net \
-             DATABASE_URL="postgres://${PG_ADMIN}:${PG_PASS}@${PG_NAME}.postgres.database.azure.com:5432/${PG_DB}" \
-             CORS_ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+echo "✅ PAT: $GITHUB_PAT"
+# 確認
+echo "PAT: ${GITHUB_PAT}"
+az webapp config appsettings delete \
+  --name "$BACKEND_APP" \
+  --resource-group "$RG_NAME" \
+  --setting-names \
+    DOCKER_REGISTRY_SERVER_URL \
+    DOCKER_REGISTRY_SERVER_USERNAME \
+    DOCKER_REGISTRY_SERVER_PASSWORD \
+    DOCKER_CUSTOM_IMAGE_NAME
+
+
+az webapp config container set \
+  --name "$BACKEND_APP" \
+  --resource-group "$RG_NAME" \
+  --container-image-name "$DOCKER_IMAGE" \
+  --container-registry-url "https://ghcr.io" \
+  --container-registry-user "tkt0605" \
+  --container-registry-password "$GITHUB_PAT"
