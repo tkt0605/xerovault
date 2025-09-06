@@ -37,7 +37,7 @@ COPY . /backend/
 RUN chmod +x /backend/scripts/docker-cmd
 
 # コンテナがリッスンするポート
-EXPOSE 8181
+EXPOSE 8000
 
 # Gunicorn起動スクリプトをCMDで指定（絶対パスで）
 CMD ["/backend/scripts/docker-cmd"]

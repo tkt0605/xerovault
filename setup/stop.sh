@@ -15,8 +15,7 @@ set +a
 #
 echo "🚫 WebAppを停止中..."
 az webapp stop --name $BACKEND_APP --resource-group $RG_NAME 
-#
-echo "🚫 Postgres Flexible Serverを停止中..."
-az postgres flexible-server stop --name $PG_NAME --resource-group $RG_NAME
+# echo "🚫 Postgres Flexible Serverを停止中..."
+# az postgres flexible-server stop --name $PG_NAME --resource-group $RG_NAME
 
 echo "👌 全リソースの停止完了。"

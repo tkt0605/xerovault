@@ -2,7 +2,7 @@
 set -e
 
 # AzureがPORTをセットしてない場合は8000を使う
-PORT=${PORT:-8000}
+
 
 # DBマイグレーション
 python manage.py migrate --noinput
@@ -11,4 +11,4 @@ python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 
 # Gunicorn起動
-exec gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120
+exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120

@@ -31,4 +31,4 @@ az webapp config container set \
   --container-image-name "$DOCKER_IMAGE" \
   --container-registry-url "https://ghcr.io" \
   --container-registry-user "tkt0605" \
-  --container-registry-password "$GITHUB_PAT"
+  --container-registry-password $GITHUB_PAT
