@@ -82,16 +82,15 @@ az webapp config container set \
   --container-image-name $DOCKER_IMAGE \
   --container-registry-url https://ghcr.io \
   --container-registry-user tkt0605 \
-  --container-registry-password "$GITHUB_PAT"
+  --container-registry-password $GITHUB_PAT
 
 # ========= 環境変数の設定（Djangoの設定） =========
 az webapp config appsettings set \
   --name "$BACKEND_APP" \
   --resource-group "$RG_NAME" \
   --settings \
-  PORT=8181 \
-  WEBSITES_PORT=8181 \
-  STARTUP_COMMAND="/backend/scripts/docker-cmd" \
+  PORT=$PORT \
+  WEBSITES_PORT=$WEBSITES_PORT \
   DJANGO_DEBUG=false \
   DJANGO_ALLOWED_HOSTS="${BACKEND_APP}.azurewebsites.net" \
   DATABASE_URL="postgresql://${PG_USER}:${PG_PASSWORD}@${PG_NAME}.postgres.database.azure.com:5432/${PG_DB}?sslmode=require" \

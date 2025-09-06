@@ -1,9 +1,19 @@
 #!/bin/bash
-
 set -e
-PORT=${PORT:-8181}
-# WEBSITES_PORT=${WEBSITES_PORT:-8000}
+# SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# ENV_PATH="$SCRIPT_DIR/../.env.production"
+# echo "📦 Loading environment variables from $ENV_PATH..."
+
+# # 手動で読み込む
+# set -a
+# source "$ENV_PATH"
+# set +a
+
 # PYTHON MAGRATE
+export DJANGO_SETTINGS_MODULE=config.settings
+
+# PORT=${PORT:-8181}
+PORT=${PORT:-8000}
 python manage.py migrate --noinput
 
 echo "🛠️ Creating superuser..."

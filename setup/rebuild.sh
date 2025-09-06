@@ -12,10 +12,10 @@ set -a
 source "$ENV_PATH"
 set +a
 
-echo "🪛 PostgreSQL Felxible Serverを再起動中..."
-az postgres flexible-server start \
-  --name $PG_NAME \
-  --resource-group $RG_NAME
+# echo "🪛 PostgreSQL Felxible Serverを再起動中..."
+# az postgres flexible-server start \
+#   --name $PG_NAME \
+#   --resource-group $RG_NAME
 
 echo "Dockerイメージ走らせてます……"
 az webapp config container set \
@@ -24,14 +24,14 @@ az webapp config container set \
   --container-image-name $DOCKER_IMAGE \
   --container-registry-url https://ghcr.io \
   --container-registry-user tkt0605 \
-  --container-registry-password "$GITHUB_PAT"
+  --container-registry-password $GITHUB_PAT
 
 az webapp config appsettings set \
   --name $BACKEND_APP \
   --resource-group $RG_NAME \
   --settings \
-  PORT=8181\
-  WEBSITES_PORT=8181\
+  PORT=$PORT \
+  WEBSITES_PORT=$WEBSITES_PORT \
   # STARTUP_COMMAND="/backend/scripts/docker-cmd"
 echo "✅ Dockerイメージ起動・完了!"
 

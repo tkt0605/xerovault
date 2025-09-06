@@ -26,7 +26,8 @@ echo "  GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
 echo "  GITHUB_BRANCH=$GITHUB_BRANCH"
 echo "  DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY"
 echo "  CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS"
-az webapp config appsettings list \
-  --name $BACKEND_APP \
-  --resource-group $RG_NAME \
-  --query "[?starts_with(name, 'DOCKER_REGISTRY')]"
+echo "  PORT=$PORT"
+echo "  WEBSITES_PORT=$WEBSITES_PORT"
+az webapp log tail \
+  --name xerovault-api-v2 \
+  --resource-group xerovault-rg-v2
