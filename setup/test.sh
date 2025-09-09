@@ -1,14 +1,28 @@
 #!/bin/bash
+set -euo pipefail
 
-set -e
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ENV_PATH="$SCRIPT_DIR/../.env.production"
-echo "📦 Loading environment variables from $ENV_PATH..."
+ENV_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/.env.production"
 
-# 手動で読み込む
-set -a
-source "$ENV_PATH"
-set +a
+if [ -f "$ENV_PATH" ]; then
+  echo "📦 Loading environment variables from $ENV_PATH..."
+
+  while IFS='=' read -r key value || [[ -n "$key" ]]; do
+    # コメント行や空行を無視
+    [[ "$key" =~ ^#.*$ || -z "$key" ]] && continue
+
+    # valueの右側にある # コメントを削除
+    value="${value%%#*}"
+    value="${value%%[[:cntrl:]]}"      # 制御文字も削除
+    value="${value%"${value##*[![:space:]]}"}" # 末尾スペース削除
+    value="${value#\"}"                # 先頭の " を削除
+    value="${value%\"}"                # 末尾の " を削除
+
+    export "$key=$value"
+  done < "$ENV_PATH"
+else
+  echo "❌ .env.production not found at $ENV_PATH"
+  exit 1
+fi
 
 echo "🧪 環境変数チェック:"
 echo "  RG_NAME=$RG_NAME"
@@ -28,6 +42,5 @@ echo "  DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY"
 echo "  CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS"
 echo "  PORT=$PORT"
 echo "  WEBSITES_PORT=$WEBSITES_PORT"
-az webapp log tail \
-  --name xerovault-api-v2 \
-  --resource-group xerovault-rg-v2
+echo "  GITHUB_USERNAME=$GITHUB_USERNAME"
+
