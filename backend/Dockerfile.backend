@@ -1,9 +1,61 @@
+# FROM python:3.11-slim
+
+# # 環境変数・PATH設定
+# ENV PYTHONPATH="/backend"
+# # ENV PYTHONPATH="/backend:${PYTHONPATH}"
+
+# # 必要パッケージのインストール（MySQLビルドのため）
+# RUN apt-get update && apt-get install -y \
+#     gcc \
+#     libpq-dev \
+#     pkg-config \
+#     default-libmysqlclient-dev \
+#     && rm -rf /var/lib/apt/lists/*
+
+# # ユーザー作成（devcontainer用途など）
+# ARG USERNAME=vscode
+# RUN useradd -ms /bin/bash $USERNAME \
+#     && echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# # 作業ディレクトリ
+# WORKDIR /backend
+# # セーフな temp ディレクトリを作成（Azure対応）
+# RUN mkdir -p /home/temp && chmod 777 /home/temp
+
+# # 環境変数で TEMP/PYTHONTEMP を上書き（重要！）
+# ENV TMPDIR=/home/temp
+# ENV TEMP=/home/temp
+# ENV TMP=/home/temp
+
+# # 依存インストール
+# COPY requirements.txt /backend/
+# RUN pip3 install --upgrade pip && pip3 install --no-cache-dir -r requirements.txt
+
+# # アプリケーション全体コピー
+# COPY . /backend/
+
+# # スタートスクリプトに実行権限を再付与（上書き対策）
+# RUN chmod +x /backend/scripts/docker-cmd
+
+# # コンテナがリッスンするポート
+# EXPOSE 8000
+
+# # Gunicorn起動スクリプトをCMDで指定（絶対パスで）
+# # CMD ["/backend/scripts/docker-cmd"]
+# CMD [ "gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120" ]
+
+
 FROM python:3.11-slim
 
-# 環境変数・PATH設定
-ENV PYTHONPATH="/backend:${PYTHONPATH}"
+# ========= 環境変数・PATH設定 =========
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH="/backend" \
+    TMPDIR="/home/temp" \
+    TEMP="/home/temp" \
+    TMP="/home/temp"
 
-# 必要パッケージのインストール（MySQLビルドのため）
+# ========= 必要パッケージのインストール =========
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
@@ -11,33 +63,28 @@ RUN apt-get update && apt-get install -y \
     default-libmysqlclient-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# ユーザー作成（devcontainer用途など）
-ARG USERNAME=vscode
-RUN useradd -ms /bin/bash $USERNAME \
-    && echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
-# 作業ディレクトリ
-WORKDIR /backend
-# セーフな temp ディレクトリを作成（Azure対応）
+# ========= 安全な一時ディレクトリの作成（Azure向け） =========
 RUN mkdir -p /home/temp && chmod 777 /home/temp
 
-# 環境変数で TEMP/PYTHONTEMP を上書き（重要！）
-ENV TMPDIR=/home/temp
-ENV TEMP=/home/temp
-ENV TMP=/home/temp
+# ========= 作業ディレクトリ設定 =========
+WORKDIR /backend
 
-# 依存インストール
-COPY requirements.txt /backend/
-RUN pip3 install --upgrade pip && pip3 install --no-cache-dir -r requirements.txt
+# ========= Python依存ライブラリのインストール =========
+COPY requirements.txt ./
+RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
-# アプリケーション全体コピー
-COPY . /backend/
+# ========= アプリケーションコードのコピー =========
+COPY . .
 
-# スタートスクリプトに実行権限を再付与（上書き対策）
+# ========= 実行スクリプトの権限付与（使わないなら省略可） =========
 RUN chmod +x /backend/scripts/docker-cmd
 
-# コンテナがリッスンするポート
+# ========= コンテナの公開ポート =========
 EXPOSE 8000
 
-# Gunicorn起動スクリプトをCMDで指定（絶対パスで）
-CMD ["/backend/scripts/docker-cmd"]
+# ========= Gunicornの起動コマンド =========
+# App Service では環境変数 PORT が自動で渡される
+
+RUN python manage.py collectstatic --noinput
+
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]

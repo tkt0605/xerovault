@@ -1,21 +1,32 @@
 #!/bin/bash
-set -e
-# ========= 停止リソースの再起動SHELL　========
-# ========= 基本設定 =========
+set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ENV_PATH="$SCRIPT_DIR/../.env.production"
-echo "📦 Loading environment variables from $ENV_PATH..."
+ENV_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/.env.production"
 
-# 手動で読み込んでみる
-set -a
-source "$ENV_PATH"
-set +a
+if [ -f "$ENV_PATH" ]; then
+  echo "📦 Loading environment variables from $ENV_PATH..."
 
-# echo "🪛 PostgreSQL Felxible Serverを再起動中..."
-# az postgres flexible-server start \
-#   --name $PG_NAME \
-#   --resource-group $RG_NAME
+  while IFS='=' read -r key value || [[ -n "$key" ]]; do
+    # コメント行や空行を無視
+    [[ "$key" =~ ^#.*$ || -z "$key" ]] && continue
+
+    # valueの右側にある # コメントを削除
+    value="${value%%#*}"
+    value="${value%%[[:cntrl:]]}"      # 制御文字も削除
+    value="${value%"${value##*[![:space:]]}"}" # 末尾スペース削除
+    value="${value#\"}"                # 先頭の " を削除
+    value="${value%\"}"                # 末尾の " を削除
+
+    export "$key=$value"
+  done < "$ENV_PATH"
+else
+  echo "❌ .env.production not found at $ENV_PATH"
+  exit 1
+fi
+echo "🪛 PostgreSQL Felxible Serverを再起動中..."
+az postgres flexible-server start \
+  --name $PG_NAME \
+  --resource-group $RG_NAME
 
 echo "Dockerイメージ走らせてます……"
 az webapp config container set \
@@ -31,8 +42,7 @@ az webapp config appsettings set \
   --resource-group $RG_NAME \
   --settings \
   PORT=$PORT \
-  WEBSITES_PORT=$WEBSITES_PORT \
-  # STARTUP_COMMAND="/backend/scripts/docker-cmd"
+  WEBSITES_PORT=$WEBSITES_PORT 
 echo "✅ Dockerイメージ起動・完了!"
 
 

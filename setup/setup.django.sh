@@ -1,17 +1,28 @@
 #!/bin/bash
-set -e
-# ========= Backendリソースの起動SHELL　========
-# ========= 基本設定 =========
+set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ENV_PATH="$SCRIPT_DIR/../.env.production"
-echo "📦 Loading environment variables from $ENV_PATH..."
+ENV_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/.env.production"
 
-# 手動で読み込んでみる
-set -a
-source "$ENV_PATH"
-set +a
+if [ -f "$ENV_PATH" ]; then
+  echo "📦 Loading environment variables from $ENV_PATH..."
 
+  while IFS='=' read -r key value || [[ -n "$key" ]]; do
+    # コメント行や空行を無視
+    [[ "$key" =~ ^#.*$ || -z "$key" ]] && continue
+
+    # valueの右側にある # コメントを削除
+    value="${value%%#*}"
+    value="${value%%[[:cntrl:]]}"      # 制御文字も削除
+    value="${value%"${value##*[![:space:]]}"}" # 末尾スペース削除
+    value="${value#\"}"                # 先頭の " を削除
+    value="${value%\"}"                # 末尾の " を削除
+
+    export "$key=$value"
+  done < "$ENV_PATH"
+else
+  echo "❌ .env.production not found at $ENV_PATH"
+  exit 1
+fi
 echo "✅ PAT: $GITHUB_PAT"
 # 確認
 echo "PAT: ${GITHUB_PAT}"

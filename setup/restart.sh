@@ -1,25 +1,42 @@
 #!/bin/bash
-set -e
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ENV_PATH="$SCRIPT_DIR/../.env.production"
-echo "📦 Loading environment variables from $ENV_PATH..."
-set -a
-source "$ENV_PATH"
-set +a
 
+set -euo pipefail
+
+ENV_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/.env.production"
+
+if [ -f "$ENV_PATH" ]; then
+  echo "📦 Loading environment variables from $ENV_PATH..."
+
+  while IFS='=' read -r key value || [[ -n "$key" ]]; do
+    # コメント行や空行を無視
+    [[ "$key" =~ ^#.*$ || -z "$key" ]] && continue
+
+    # valueの右側にある # コメントを削除
+    value="${value%%#*}"
+    value="${value%%[[:cntrl:]]}"      # 制御文字も削除
+    value="${value%"${value##*[![:space:]]}"}" # 末尾スペース削除
+    value="${value#\"}"                # 先頭の " を削除
+    value="${value%\"}"                # 末尾の " を削除
+
+    export "$key=$value"
+  done < "$ENV_PATH"
+else
+  echo "❌ .env.production not found at $ENV_PATH"
+  exit 1
+fi
 echo "🧪 環境変数チェック:"
-echo "  GITHUB_PAT=$GITHUB_PAT"
-echo "  BACKEND_APP=$BACKEND_APP"
-echo "  RG_NAME=$RG_NAME"
+echo   GITHUB_PAT=$GITHUB_PAT
+echo   BACKEND_APP=$BACKEND_APP
+echo   RG_NAME=$RG_NAME
 
 echo "🛠️ Configuring container image..."
 az webapp config container set \
   --name $BACKEND_APP \
   --resource-group $RG_NAME \
   --container-image-name $DOCKER_IMAGE \
-  --container-registry-url https://ghcr.io \
-  --container-registry-user tkt0605 \
-  --container-registry-password $GITHUB_PAT
+  --container-registry-url $GITHUB_URL \
+  --container-registry-user $GITHUB_USERNAME \
+  --container-registry-password "${GITHUB_PAT}"
 
 echo "⚙️ Setting PORT..."
 az webapp config appsettings set \
@@ -38,12 +55,13 @@ az webapp config appsettings set \
   
 az webapp config set \
   --name $BACKEND_APP \
-  --resource-group $RG_NAME \
-  --health-check-path "/health/"
+  --resource-group $RG_NAME 
+
 echo "🔁 Restarting webapp..."
 az webapp restart \
   --name $BACKEND_APP \
   --resource-group $RG_NAME
+
 echo "🔍 Confirming current container image..."
 az webapp config container show \
   --name $BACKEND_APP \
