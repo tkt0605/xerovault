@@ -1,27 +1,18 @@
 #!/bin/bash
 set -e
-# SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# ENV_PATH="$SCRIPT_DIR/../.env.production"
-# echo "📦 Loading environment variables from $ENV_PATH..."
+export RUN_SUPERUSER=1
+echo "🧪 環境変数チェック:"
+echo "  RUN_SUPERUSER=$RUN_SUPERUSER"
 
-# # 手動で読み込む
-# set -a
-# source "$ENV_PATH"
-# set +a
+python manage.py migrate
+python manage.py collectstatic --noinput
 
-# PYTHON MAGRATE
-export DJANGO_SETTINGS_MODULE=config.settings
+if [ "$RUN_SUPERUSER" = "1" ]; then
+  echo "🛠️ Creating superuser..."
+  python manage.py createsuperuser --noinput \
+    --email takatokomada17@gmail.com || echo "✅ Superuser already exists."
+fi
 
-# PORT=${PORT:-8181}
-PORT=${PORT:-8000}
-python manage.py migrate --noinput
-
-echo "🛠️ Creating superuser..."
-echo "from django.contrib.auth import get_user_model; \
-      User = get_user_model(); \
-      User.objects.filter(email='takatokomada17@gmail.com').exists() or \
-      User.objects.create_superuser('takatokomada17@gmail.com', '20050605')" \
-    | python manage.py shell
-
-
-exec gunicorn config.wsgi:application --preload --bind 0.0.0.0:${PORT} --workers 3 --timeout 120
+# アプリ起動
+echo "🚀 Starting app: $@"
+exec "$@"

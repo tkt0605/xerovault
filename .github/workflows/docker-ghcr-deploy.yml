@@ -32,6 +32,6 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile.backend
           push: true
-          tags: ghcr.io/tkt0605/xerovault-backend:1.0.9
+          tags: ghcr.io/tkt0605/xerovault-backend:1.2.3
           provenance: false
           outputs: type=docker

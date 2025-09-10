@@ -16,6 +16,8 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 import dj_database_url
+if os.environ.get("DJANGO_SUPERUSER_PASSWORD"):
+    os.environ["DJANGO_SUPERUSER_PASSWORD"] = os.environ["DJANGO_SUPERUSER_PASSWORD"]
 def env_bool(name: str, default: bool = False) -> bool:
     val = os.environ.get(name)
     if val is None:
@@ -255,7 +257,7 @@ CSRF_TRUSTED_ORIGINS = env_list(
     default=[
         "http://localhost:3000", 
         "http://127.0.0.1:3000",
-        "https://content-hk1.infrastructure.2.azurestaticapps.net",
+        "https://zealous-pond-03af90d00.2.azurestaticapps.net",
         "https://xerovault-api-v2.azurewebsites.net",
     ]
 )
@@ -263,7 +265,7 @@ CORS_ALLOWED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS",
     default=[
         "https://xerovault-api-v2.azurewebsites.net",
-        "https://content-hk1.infrastructure.2.azurestaticapps.net",
+        "https://zealous-pond-03af90d00.2.azurestaticapps.net",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
     ]
