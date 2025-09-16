@@ -62,9 +62,10 @@ az webapp start \
   --name $BACKEND_APP \
   --resource-group $RG_NAME
 
-
 echo "👌 停止中のリソースらを再起動・完了!!"
 
+echo "📡 Tail logs (Ctrl+C to stop)..."
 az webapp log tail \
   --name $BACKEND_APP \
   --resource-group $RG_NAME
+

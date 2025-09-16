@@ -118,7 +118,7 @@ az staticwebapp create \
   --location "$LOCATION_STATIC" \
   --branch  "$GITHUB_BRANCH"\
   --app-location "frontend/xerofront/" \
-  --output-location ".output/public" \
+  --output-location "frontend/xerovault/.output/public" \
   --login-with-github \
   --token "${GITHUB_PAT}"
 
