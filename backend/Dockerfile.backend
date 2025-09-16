@@ -1,5 +1,49 @@
-FROM python:3.11-slim
+# FROM python:3.11-bullseye
+# # ========= 環境変数・PATH設定 =========
+# ENV PYTHONUNBUFFERED=1 \
+#     PYTHONDONTWRITEBYTECODE=1 \
+#     PYTHONPATH="/backend" \
+#     TMPDIR="/home/temp" \
+#     TEMP="/home/temp" \
+#     TMP="/home/temp"
 
+# # ========= 必要パッケージのインストール =========
+# RUN apt-get update && apt-get install -y \
+#     gcc \
+#     libpq-dev \
+#     pkg-config \
+#     # openssh-server \
+#     # libssl-dev \
+#     # libffi-dev \
+#     # libpam-modules \
+#     default-libmysqlclient-dev \
+#     && rm -rf /var/lib/apt/lists/*
+
+# # RUN mkdir -p /var/run/sshd \
+# #     && echo 'root:Docker!' | chpasswd \
+# #     && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+
+# # ========= コンテナの公開ポート =========
+# EXPOSE 8000
+#     # ========= 安全な一時ディレクトリの作成（Azure向け） =========
+# RUN mkdir -p /home/temp && chmod 777 /home/temp
+# # ========= 作業ディレクトリ設定 =========
+# WORKDIR /backend
+# # ========= Python依存ライブラリのインストール =========
+# COPY requirements.txt ./
+# RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+# # ========= ソースコードのコピー =========
+# COPY . .
+# # ========= 起動スクリプトの設定 =========
+# COPY scripts/docker-cmd /backend/scripts/docker-cmd
+# RUN chmod +x /backend/scripts/docker-cmd
+# # ========= コンテナ起動コマンド =========
+# CMD [ "/backend/scripts/docker-cmd" ]
+
+### ========= SSH接続用のDockerの構成 =========
+
+FROM python:3.11-bullseye
 # ========= 環境変数・PATH設定 =========
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -7,33 +51,36 @@ ENV PYTHONUNBUFFERED=1 \
     TMPDIR="/home/temp" \
     TEMP="/home/temp" \
     TMP="/home/temp"
-
-# ========= 必要パッケージのインストール =========
-RUN apt-get update && apt-get install -y \
-    gcc \
-    libpq-dev \
-    pkg-config \
-    default-libmysqlclient-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# ========= 安全な一時ディレクトリの作成（Azure向け） =========
-RUN mkdir -p /home/temp && chmod 777 /home/temp
-
+RUN mkdir -p /var/run/sshd /home/temp && \
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      gcc \
+      libpq-dev \
+      pkg-config \
+      openssh-server \
+      libssl-dev \
+      libffi-dev \
+      libpam-modules \
+      default-libmysqlclient-dev && \
+    echo 'PermitRootLogin yes' > /etc/ssh/sshd_config && \
+    rm -rf /var/lib/apt/lists/*
+# ========= SSHディレクトリ作成と一時ディレクトリ =========
+RUN mkdir -p /var/run/sshd /home/temp && chmod 777 /home/temp
 # ========= 作業ディレクトリ設定 =========
 WORKDIR /backend
-
-# ========= Python依存ライブラリのインストール =========
-COPY requirements.txt ./
+# ========= アプリコードとスクリプトのコピー =========
+COPY . /backend
+# ========= sshd_config と SSH 初期スクリプトの設定 =========
+COPY scripts/sshd_config /etc/ssh/sshd_config
+RUN chmod 644 /etc/ssh/sshd_config
+COPY scripts/ssh_setup.sh /backend/scripts/ssh_setup.sh
+RUN chmod +x scripts/ssh_setup.sh
+# ========= 依存ライブラリのインストール =========
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
-
-# ========= アプリケーションコードのコピー =========
-COPY . .
-RUN chmod +x /backend/scripts/docker-cmd
-
-# ========= コンテナの公開ポート =========
-EXPOSE 8000
-
-# ========= Gunicornの起動コマンド =========
-ENTRYPOINT [ "/backend/scripts/docker-cmd" ]
-
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]
+# ========= アプリ起動スクリプトに実行権限を付与 =========
+COPY scripts/docker-cmd.sh /backend/scripts/docker-cmd.sh
+RUN chmod +x scripts/docker-cmd.sh
+# ========= ポート公開 =========
+EXPOSE 8000 2222
+# ========= コンテナ起動コマンド =========
+CMD ["/backend/scripts/docker-cmd.sh"]
