@@ -63,7 +63,7 @@
     ] ,
     "build": {
         "context": "../backend",
-        "dockerfile": "../backend/Dockerfile.backend"
+        "dockerfile": "../backend/Dockerfile.env"
     },
     "service": "xero-backend",
     "workspaceFolder": "/backend",
