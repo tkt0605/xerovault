@@ -44,5 +44,5 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "frontend/xerofront/dist/public"
-          output_location: "frontend/xerofront/dist/public"
-          skip_app_build: "true"
+          # output_location: "frontend/xerofront/dist/public"
+          skip_app_build: true
