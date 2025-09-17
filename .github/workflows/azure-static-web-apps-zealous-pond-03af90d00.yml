@@ -33,7 +33,7 @@ jobs:
       - name: Generate static site
         run: |
           cd frontend/xerofront
-          npm run generate]
+          npm run generate
           touch dist/public/.nojekyll
           cp dist/public/index.html dist/public/404.html
 
@@ -44,5 +44,4 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "frontend/xerofront/dist/public"
-          # output_location: "frontend/xerofront/dist/public"
           skip_app_build: true
