@@ -1,0 +1,17 @@
+FROM python:3.11-slim
+
+ENV PYTHONPATH="/backend:${PYTHONPATH}"
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    default-libmysqlclient-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+ARG USERNAME=vscode
+RUN useradd -ms /bin/bash $USERNAME \
+    && echo "$USERnam ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers 
+WORKDIR /backend
+COPY . /backend/
+COPY requirements.txt /backend/
+RUN pip3 install --upgrade pip
+RUN pip3 install --no-cache -r requirements.txt
+CMD [ "gunicorn", "config.wsgi.application", "--bind", "0.0.0.0:8000"]
