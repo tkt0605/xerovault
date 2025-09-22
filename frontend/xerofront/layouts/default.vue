@@ -12,7 +12,7 @@
       <main class="flex-1 overflow-y-auto">
         <NuxtPage @Member-dialog="ShowMember()" @QR-dialog="QRdialog()" @Goal-dialog="CreateGoal()"
           @DockingtoStudio-dialog="DockingLibrary()" @Goalvote-dialog="GoalVoting()" @Vote-dialog="Votedialog(voteId)"
-          @Folder-dialog="openFolder(libraryId)" />
+          @Folder-dialog="openFolder(libraryId)" @Library-dialog="LibraryDailog()" @Group-dialog="GroupDailog()"/>
       </main>
 
       <!-- Dialog コンポーネントは省略 -->

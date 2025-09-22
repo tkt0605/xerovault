@@ -7,7 +7,7 @@ export default defineNuxtConfig({
   target: 'static',
   app: {
     head: {
-      title: 'Studio DEMO',
+      title: 'iStudio',
       // meta: [
       //   { charset: 'utf-8' },
       //   { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -16,7 +16,7 @@ export default defineNuxtConfig({
       // ],
       meta: [
         { name: 'robots', content: 'index, follow' },
-        { property: 'og:title', content: 'Studio DEMO' },
+        { property: 'og:title', content: 'iStudio by DeMO' },
         { property: 'og:description', content: 'Xero API の資格情報管理ツール' },
         { property: 'og:type', content: 'website' },
         // { property: 'og:image', content: 'https://example.com/og-image.png' },
@@ -42,14 +42,15 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api/'
-      // apiBase: 'https://xerovault-api-v2.azurewebsites.net/api/' || 'http://localhost:8000/api/'
+      // apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api/'
+      apiBase: 'http://localhost:8000/api/'
     }
   },
   i18n: {
     experimental: {
       bundle: {
-        optimizeTranslationDirective: false // または true（使いたい場合）
+        // optimizeTranslationDirective: false
+        optimizeTranslationDirective: true
       }
     }
   },
@@ -82,5 +83,10 @@ export default defineNuxtConfig({
   generate: {
     subFolders: false,
     fallback: true
+  },
+  vite: {
+    optimizeDeps: {
+      disabled: true
+    }
   }
 });

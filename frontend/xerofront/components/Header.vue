@@ -13,7 +13,7 @@
                 </button>
                 <button @click="goHome" class="group">
                     <div class="text-2xl font-extrabold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-500 dark:from-purple-300 dark:to-blue-400 group-hover:from-indigo-400 group-hover:to-blue-600 transition-all duration-300 px-4 py-2">
-                        Studio DeMO
+                        iStudio
                     </div>
                 </button>
 
