@@ -1,51 +1,94 @@
 <template>
-  <main class="ml-72 flex-1 p-6 bg-gray-50 dark:bg-zinc-800">
-    <!-- トップメッセージ -->
-    <div class="mb-6">
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">
-        ようこそ、{{ currentUser?.email || 'ユーザー' }} さん
+  <!-- <main class="relative flex-1 overflow-y-auto bg-gradient-to-b from-black via-zinc-900 to-black text-white"> -->
+  <main class="text-black dark:text-white  md:ml-72 ml-0 relative flex-1 overflow-y-auto"> 
+    <!-- 粒子背景 -->
+
+    <div class="relative z-10 max-w-6xl mx-auto px-6 py-16 flex flex-col items-center text-center">
+      <!-- Avatar as Planet -->
+      <div class="relative">
+        <img :src="currentUser?.avater"
+          class="w-28 h-28 rounded-full border-4 border-indigo-400 shadow-2xl object-cover" alt="オーナーのアバター" />
+        <div class="absolute inset-0 rounded-full border-2 border-indigo-500 animate-spin-slow"></div>
+      </div>
+
+      <!-- User Info -->
+      <h1 class="mt-6 text-3xl font-extrabold tracking-tight">
+        {{ currentUser?.email || 'オーナー名未設定' }}
       </h1>
-      <p class="text-sm text-gray-500 dark:text-gray-300">今日も安全な情報管理を。</p>
+      <span class="mt-2 text-xs text-purple-200 bg-purple-700/80 px-3 py-1 rounded-full shadow">
+        ログイン・ユーザー
+      </span>
+
+      <!-- Stats with playful animation -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-10 w-full text-sm">
+        <button @click="$emit('Group-dialog')"
+          class=" items-center justify-center p-8 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-500 shadow-lg group transition transform hover:-translate-y-1">
+          <p class="font-semibold text-2xl">{{ My_Studio_Counter }}</p>
+          <p>＋スタジオ</p>
+          <span
+            class="absolute inset-0 bg-white/20 scale-0 group-hover:scale-100 rounded-2xl transition-transform"></span>
+        </button>
+        <button @click="$emit('Group-dialog')"
+          class="items-center justify-center p-8 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-400 shadow-lg group transition transform hover:-translate-y-1">
+          <p class="font-semibold text-2xl">{{ My_Library_Countrer }}</p>
+          <p>＋ライブラリ</p>
+          <span
+            class="absolute inset-0 bg-white/20 scale-0 group-hover:scale-100 rounded-2xl transition-transform"></span>
+        </button>
+        <div class="bg-zinc-800/60 rounded-xl p-6 shadow hover:shadow-lg transition transform hover:-translate-y-1">
+          <p class="font-semibold text-2xl">{{ My_Goal_Counter }}</p>
+          <p>ゴール</p>
+        </div>
+        <div class="bg-zinc-800/60 rounded-xl p-6 shadow flex flex-col items-center relative overflow-hidden">
+          <div class="absolute bottom-0 left-0 w-full h-[67%] bg-green-500/50 animate-pulse"></div>
+          <p class="font-semibold text-2xl relative z-10">67%</p>
+          <p class="relative z-10">今月の達成率</p>
+        </div>
+      </div>
+
+      <!-- Recent Cards -->
+      <div class="mt-12 w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-zinc-800 rounded-xl p-6 shadow-lg hover:rotate-1 hover:shadow-2xl transition transform">
+          <h3 class="text-lg font-bold text-blue-400 mb-3">🧩 最近のスタジオ</h3>
+          <ul class="space-y-2 text-left text-sm" v-if="my_studios.length === 0">
+            <li class="p-2 bg-zinc-700/50 rounded">まだスタジオがありません。</li>
+          </ul>
+          <ul class="space-y-2 text-left text-sm" v-for="my_studio in news_studios" :key="my_studio.id" v-else>
+            <li class="p-2 bg-zinc-700/50 rounded">{{ my_studio.name }}</li>
+          </ul>
+        </div>
+        <div class="bg-zinc-800 rounded-xl p-6 shadow-lg hover:-rotate-1 hover:shadow-2xl transition transform">
+          <h3 class="text-lg font-bold text-green-400 mb-3">📚 最近のライブラリ</h3>
+          <ul class="space-y-2 text-left text-sm" v-if="my_libraries.length === 0">
+            <li class="p-2 bg-zinc-700/50 rounded">まだライブラリがありません。</li>
+          </ul>
+          <ul class="space-y-2 text-left text-sm" v-for="my_library in news_librarys" :key="my_library.id" v-else>
+            <li class="p-2 bg-zinc-700/50 rounded">{{ my_library.name }}</li>
+          </ul>
+        </div>
+      </div>
     </div>
-
-
-    <!-- 自身のスタジオ -->
-    <section class="mb-10">
-      <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">🎛 自分が作成したスタジオ</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div v-for="studio in ownerStudios" :key="studio.id"
-          class="bg-white dark:bg-zinc-900 rounded-xl shadow p-4 hover:shadow-lg transition cursor-pointer"
-          @click="goToStudio(studio.id)">
-          <h3 class="text-lg font-bold text-blue-600 dark:text-blue-400">{{ studio.name }}</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-300 mt-1">{{ studio.description || '説明なし' }}</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 所属スタジオ -->
-    <section class="mb-10">
-      <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">📡 所属しているスタジオ</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div v-for="studio in joinedStudios" :key="studio.id"
-          class="bg-white dark:bg-zinc-900 rounded-xl shadow p-4 hover:shadow-lg transition cursor-pointer"
-          @click="goToStudio(studio.id)">
-          <h3 class="text-lg font-bold text-green-600 dark:text-green-400">{{ studio.name }}</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-300 mt-1">{{ studio.description || '説明なし' }}</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 最近のアクティビティ -->
-    <section>
-      <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">📌 最近のアクティビティ</h2>
-      <div class="bg-white dark:bg-zinc-900 rounded-xl shadow p-4 divide-y dark:divide-zinc-700">
-        <div class="py-2 text-gray-700 dark:text-gray-200">🔒 トークン「開発用APIキー」が作成されました</div>
-        <div class="py-2 text-gray-700 dark:text-gray-200">📁 ライブラリ「研究資料2025」が追加されました</div>
-        <div class="py-2 text-gray-700 dark:text-gray-200">✅ グループ「ゼロボルト研究会」に新しいメンバーが参加</div>
-      </div>
-    </section>
   </main>
 </template>
+
+<style scoped>
+.animate-spin-slow {
+  animation: spin 20s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+</style>
+
+
+
 
 <style scoped>
 .stat-card {
@@ -57,14 +100,59 @@
 import { useAuthStore } from '~/store/auth';
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-
+import { eventBus } from '~/utils/eventBus';
+import { computed } from 'vue';
+import { useAuthGroups } from '~/store/group';
+import { useAuthLibrary } from '~/store/library';
+import { useGoalStore } from '~/store/goal';
 const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 const currentUser = computed(() => authStore.currentUser);
+const groupStore = useAuthGroups();
+const libraryStore = useAuthLibrary();
+const goalStore = useGoalStore();
+const my_studios = ref([]);
+const my_libraries = ref([]);
+const my_goals = ref([]);
 
+onMounted(async()=>{
+  try {
+    await authStore.restoreSession();
+    const userId = authStore?.user?.id;
+    my_studios.value = await groupStore.fetchGroup();
+    my_libraries.value = await libraryStore.fetchMylibrary();
+    my_goals.value = await goalStore.MyGoals();
+  } catch (error) {
+    console.error('セッションの復元中にエラーが発生しました:', error);
+    throw error;
+  }
+})
 
 const JampToInviting = async () => {
   return router.push(`/invite/${authStore.user.id}`);
 };
+function emitStudio() {
+  eventBus.emit('Group-dialog');
+};
+function emitLibrary() {
+  eventBus.emit('Library-dialog');
+};
+const news_studios = computed(() => {
+  if (!Array.isArray(my_studios.value)) return [];
+  return my_studios.value
+  .slice()
+  .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  .slice(0, 3);
+});
+const news_librarys = computed(() => {
+  if (!Array.isArray(my_libraries.value)) return [];
+  return my_libraries.value
+  .slice()
+  .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  .slice(0, 3);
+});
+const My_Studio_Counter = computed(() => my_studios.value.length);
+const My_Library_Countrer = computed(() => my_libraries.value.length);
+const My_Goal_Counter = computed(() => my_goals.value.length);
 </script>

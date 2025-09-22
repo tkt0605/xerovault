@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 node:18-slim
+FROM --platform=linux/amd64 node:20-slim
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /frontend/xerofront
 COPY package*.json ./
@@ -6,3 +6,30 @@ RUN npm install
 COPY . .
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
+
+# Dockerfile.frontend
+
+# FROM --platform=linux/amd64 node:20-slim
+
+# # パッケージ更新と必要なツール（curl）インストール
+# RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# # 作業ディレクトリをセット
+# WORKDIR /app
+
+# # package.json と lock ファイルを先にコピー
+# COPY package*.json ./
+
+# # node_modules を削除し、再現性の高い npm ci を使う
+# RUN npm ci
+
+# # 残りすべてのファイルをコピー
+# COPY . .
+
+# # ポート3000を開放
+# EXPOSE 3000
+
+# # Nuxt開発サーバを起動
+# ENV NODE_ENV=development
+
+# CMD ["npm", "run", "dev"]
