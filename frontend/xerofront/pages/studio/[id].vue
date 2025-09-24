@@ -56,11 +56,14 @@
                         </button>
                     </div>
                 </div>
-                <div class="flex flex-row w-full sm:divide-x divide-y sm:divide-y-0 divide-gray-200 dark:divide-gray-600 
+                <!-- <div class="flex flex-row w-full sm:divide-x divide-y sm:divide-y-0 divide-gray-200 dark:divide-gray-600 
                     rounded-xl border border-gray-100 dark:border-zinc-600 dark:bg-zinc-800 shadow
-                    sm:overflow-visible overflow-x-auto no-scrollbar divide-x sm:divide-x divide-gray-200 dark:divide-gray-600">
+                    sm:overflow-visible overflow-x-auto no-scrollbar divide-x sm:divide-x divide-gray-200 dark:divide-gray-600"> -->
+
+                <div class="flex flex-row w-full divide-y sm:divide-y-0 sm:divide-x divide-gray-200 dark:divide-gray-600
+                 rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-600 dark:bg-zinc-800 shadow divide-x overflow-x-auto no-scrollbar">
                     <!-- スコア -->
-                    <div class="flex-1 min-w-[175px] flex-shrink-0 p-4 text-center flex-shrink-0">
+                    <div class="flex-1 min-w-[145px] flex-shrink-0 p-4 text-center flex-shrink-0">
                         <p class="text-2xl font-extrabold text-blue-500 tracking-wide">
                             {{ group.score }}
                         </p>
@@ -69,7 +72,7 @@
 
                     <!-- メンバー -->
                     <button @click="$emit('Member-dialog')"
-                        class="flex-1 min-w-[175px] flex-shrink-0 p-4 text-center flex-shrink-0 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
+                        class="flex-1 min-w-[145px] flex-shrink-0 p-4 text-center flex-shrink-0 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
                         <p class="text-2xl font-extrabold text-purple-500 tracking-wide">
                             {{ group.members?.length || 0 }} 人
                         </p>
@@ -78,21 +81,21 @@
 
                     <!-- ドッキング -->
                     <button @click="$emit('DockingtoStudio-dialog')"
-                        class="flex-1 min-w-[175px] flex-shrink-0 p-4 text-center flex-shrink-0 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
+                        class="flex-1 min-w-[145px] flex-shrink-0 p-4 text-center flex-shrink-0 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
                         <p class="text-lg text-green-400 font-semibold">ドッキング</p>
                         <p class="text-sm dark:text-white-400 mt-1">結びつける</p>
                     </button>
 
                     <!-- ゴール追加 -->
                     <button @click="$emit('Goal-dialog')"
-                        class="flex-1 min-w-[175px] flex-shrink-0 p-4 text-center flex-shrink-0 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
+                        class="flex-1 min-w-[145px] flex-shrink-0 p-4 text-center flex-shrink-0 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
                         <p class="text-lg text-red-400 font-semibold">＋ゴールの追加</p>
                         <p class="text-sm dark:text-white-400 mt-1">ゴールの作成</p>
                     </button>
 
                     <!-- 投票箱 -->
                     <button @click="$emit('Goalvote-dialog')"
-                        class="flex-1 min-w-[175px] flex-shrink-0 p-4 text-center flex-shrink-0 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
+                        class="flex-1 min-w-[145px] flex-shrink-0 p-4 text-center flex-shrink-0 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
                         <p class="text-lg text-yellow-400 font-semibold">投票箱を作成</p>
                         <p class="text-sm dark:text-white-400 mt-1">投票の作成</p>
                     </button>
