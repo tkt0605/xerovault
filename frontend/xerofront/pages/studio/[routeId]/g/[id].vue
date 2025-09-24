@@ -120,7 +120,7 @@
             <div class="max-w-4xl mx-auto space-y-0">
 
                 <!-- チャットカード -->
-                <section class="bg-white dark:bg-zinc-800 shadow-2xl">
+                <section class="bg-white dark:bg-zinc-800">
                     <div class="flex flex-col h-[700px] overflow-hidden min-h-0">
                         <header class="fied z-100 bg-gradient-to-br from-purple-900 via-zinc-800 to-zinc-900
                        rounded-t-xl border-b border-zinc-700 p-2">

@@ -31,16 +31,15 @@
                 </div>
                 <div class="flex items-center justify-between gap-6">
                     <div
-                        class="flex flex-col sm:flex-row items-center sm:items-start gap-4 bg-white dark:bg-gradient-to-r from-zinc-700 to-zinc-800 p-4 rounded-xl shadow-lg border  dark:border-zinc-600">
+                        class="flex flex-col sm:flex-row items-center sm:items-start gap-2 bg-white dark:bg-gradient-to-r from-zinc-700 to-zinc-800 p-2 rounded-xl shadow-lg border  dark:border-zinc-600">
                         <img :src="group.owner?.avater"
-                            class="w-20 h-20 sm:w-14 sm:h-14 rounded-full border-2 border-blue-500 object-cover"
+                            class="size-14   sm:size-12 rounded-full border-2 border-blue-500 object-cover"
                             alt="オーナーのアバター" />
                         <div class="text-center sm:text-left">
                             <p class="hidden sm:block dark:text-white text-base sm:text-lg font-bold break-all">
                                 {{ group.owner?.email || 'オーナー名未設定' }}
                             </p>
-                            <span
-                                class="inline-block mt-2 text-xs text-purple-200 bg-purple-700/60 px-2 py-0.5 rounded-full">
+                            <span class="inline-block mt-2 text-xs text-purple-200 bg-purple-700/60 px-2 rounded-full">
                                 👑 グループオーナー
                             </span>
                         </div>
@@ -57,37 +56,48 @@
                         </button>
                     </div>
                 </div>
-                <div
-                    class="flex flex-col sm:flex-row w-full divide-y sm:divide-y-0 sm:divide-x divide-gray-200 dark:divide-gray-600 rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-600 dark:bg-zinc-800 shadow ">
-                    <div class="flex-1 min-w-0 p-6 text-center">
-                        <p class="text-sm text-blue-400">スコア</p>
-                        <p class="text-3xl font-extrabold text-blue-500 mt-2 tracking-wide">
+                <div class="flex flex-row w-full sm:divide-x divide-y sm:divide-y-0 divide-gray-200 dark:divide-gray-600 
+                    rounded-xl border border-gray-100 dark:border-zinc-600 dark:bg-zinc-800 shadow
+                    sm:overflow-visible overflow-x-auto no-scrollbar divide-x sm:divide-x divide-gray-200 dark:divide-gray-600">
+                    <!-- スコア -->
+                    <div class="flex-1 min-w-[175px] flex-shrink-0 p-4 text-center flex-shrink-0">
+                        <p class="text-2xl font-extrabold text-blue-500 tracking-wide">
                             {{ group.score }}
                         </p>
+                        <p class="text-sm dark:text-white-400 mt-1">スコア</p>
                     </div>
+
+                    <!-- メンバー -->
                     <button @click="$emit('Member-dialog')"
-                        class="flex-1 min-w-0 p-6 text-center hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
-                        <p class="text-sm text-purple-400">メンバー数</p>
-                        <p class="text-2xl font-extrabold text-purple-500 mt-2 tracking-wide">
+                        class="flex-1 min-w-[175px] flex-shrink-0 p-4 text-center flex-shrink-0 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
+                        <p class="text-2xl font-extrabold text-purple-500 tracking-wide">
                             {{ group.members?.length || 0 }} 人
                         </p>
+                        <p class="text-sm dark:text-white-400 mt-1">メンバー数</p>
                     </button>
+
+                    <!-- ドッキング -->
                     <button @click="$emit('DockingtoStudio-dialog')"
-                        class="flex-1 min-w-0 p-6 text-center hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
+                        class="flex-1 min-w-[175px] flex-shrink-0 p-4 text-center flex-shrink-0 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
                         <p class="text-lg text-green-400 font-semibold">ドッキング</p>
-                        <p class="text-sm dark:text-white-400 mt-1">ライブラリを結びつける</p>
+                        <p class="text-sm dark:text-white-400 mt-1">結びつける</p>
                     </button>
+
+                    <!-- ゴール追加 -->
                     <button @click="$emit('Goal-dialog')"
-                        class="flex-1 min-w-0 p-6 text-center hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
+                        class="flex-1 min-w-[175px] flex-shrink-0 p-4 text-center flex-shrink-0 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
                         <p class="text-lg text-red-400 font-semibold">＋ゴールの追加</p>
-                        <p class="text-sm dark:text-white-400 mt-1">新規ゴールを作成</p>
+                        <p class="text-sm dark:text-white-400 mt-1">ゴールの作成</p>
                     </button>
+
+                    <!-- 投票箱 -->
                     <button @click="$emit('Goalvote-dialog')"
-                        class="flex-1 min-w-0 p-6 text-center hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
+                        class="flex-1 min-w-[175px] flex-shrink-0 p-4 text-center flex-shrink-0 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
                         <p class="text-lg text-yellow-400 font-semibold">投票箱を作成</p>
-                        <p class="text-sm dark:text-white-400 mt-1">ゴールの投票箱</p>
+                        <p class="text-sm dark:text-white-400 mt-1">投票の作成</p>
                     </button>
                 </div>
+
                 <div class="flex space-x-4  mb-4">
                     <button v-for="tab in tabs" :key="tab" @click="activeTab = tab" :class="[
                         'px-4 py-2',
@@ -98,52 +108,6 @@
                         {{ tab }}
                     </button>
                 </div>
-                <!-- <div v-if="activeTab === 'ゴール'">
-                    <div
-                        class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-                        <div v-for="goal in goals" :key="goal.id"
-                            class="p-4 transition-all duration-200 border-b border-zinc-700 flex flex-col gap-2 dark:bg-zinc-800  dark:hover:bg-zinc-700 text-white">
-                            <div @click="PushToNextpage(goal.id)">
-                                <div class="flex items-center gap-2">
-                                    <img :src="goal?.assignee?.avater"
-                                        class="w-10 h-10 rounded-full border-2 border-white object-cover shadow" />
-                                    <h3
-                                        class="text-lg sm:text-xl font-semibold tracking-wide break-all dark:text-white">
-                                        {{ goal.header || '見出し無し' }}
-                                    </h3>
-                                </div>                 
-                                <span v-if="goal.progress >= 100" class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
-                                    完了
-                                </span>
-                                <div class="mt-2">
-                                    <div class="h-2.5 w-full rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
-                                        <div
-                                            class="h-full rounded-full transition-all duration-300"
-                                            :class="progressBarClass(goal.progress)"
-                                            :style="{ width: Math.min(Math.max(goal.progress ?? 0, 0), 100) + '%' }"
-                                            role="progressbar"
-                                            :aria-valuenow="clamp(goal.progress)"
-                                            aria-valuemin="0"
-                                            aria-valuemax="100"
-                                        />
-                                    </div>
-                                    <div class="mt-1 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                                        <span>{{ clamp(goal.progress) }}%</span>
-                                        <span class="inline-flex items-center gap-1">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M7 11h10v2H7z" />
-                                            </svg>
-                                            <span class="sr-only">進捗バー</span>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="text-sm ml-12 text-zinc-400 mt-1">
-                                    {{ goal.deadline ? '締め切り: ' + formatDate(goal.deadline) : '📅 締め切りなし' }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
                 <div v-if="activeTab === 'ゴール'">
                     <!-- 空状態 -->
                     <div v-if="!goals?.length"
@@ -151,9 +115,6 @@
                         <p class="text-sm text-zinc-500 dark:text-zinc-400">まだゴールがありません。</p>
                         <p class="text-xs text-zinc-400 mt-1">右上の「＋」から作成しましょう。</p>
                     </div>
-
-                    <!-- リスト -->
-                    <!-- <div v-else class="rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-white/40 dark:bg-zinc-900/40 backdrop-blur"> -->
                     <div v-else>
                         <ul
                             class="divide-y divide-zinc-200 dark:divide-zinc-800 hover:bg-zinc-700 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
@@ -215,7 +176,8 @@
                                                         <path
                                                             d="M7 2h10a2 2 0 0 1 2 2v2H5V4a2 2 0 0 1 2-2zm12 6v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8h14z" />
                                                     </svg>
-                                                    {{ goal.deadline ? ('締め切り: ' + formatDate(goal.deadline)) : '📅締め切りなし' }}
+                                                    {{ goal.deadline ? ('締め切り: ' + formatDate(goal.deadline)) :
+                                                    '📅締め切りなし' }}
                                                 </span>
 
                                                 <span v-if="goal?.assignee?.name"
@@ -333,11 +295,11 @@ import { QrcodeSvg } from 'qrcode.vue';
 import { useRuntimeConfig } from "#app";
 import { eventBus } from '~/utils/eventBus';
 import Dialog from '~/components/MainDialog.vue';
-import { 
-    hasVote, 
-    getVote, 
-    setVote, 
-    loadVote 
+import {
+    hasVote,
+    getVote,
+    setVote,
+    loadVote
 } from '~/composables/useVoteHistory.js';
 const colorMode = useColorMode();
 const route = useRoute();
@@ -406,16 +368,17 @@ const PushToNextpage = async (id) => {
         console.error("アクセス失敗：", err);
     }
 };
-const isVoting = () => {
+const props = defineProps({
+    activeTab: { type: String, required: true },
+    goals: { type: Array, default: () => [] }, // [{ id, header, progress, deadline, assignee: { avater, name } }]
+    vote: { type: Object, required: true },
+});
+const isVoting = computed(() => {
     const userId = authStore.user?.id;
-    const goalId = props.vote.id;
-    const isVote = hasVote(userId, goalId);
-    if (isVote){
-        console.log("取得成功：", isVote);
-        return;
-    }
-    return isVote;
-}
+    const voteId = props.vote?.id;
+    if (!userId || !voteId) return false;
+    return hasVote(userId, voteId);
+})
 const JoinCreateForm = async () => {
     const config = useRuntimeConfig();
     const routeId = route.params.id;
@@ -469,11 +432,6 @@ const DeleteVote = async (voteId) => {
     }
 };
 
-
-const props = defineProps({
-    activeTab: { type: String, required: true },
-    goals: { type: Array, default: () => [] } // [{ id, header, progress, deadline, assignee: { avater, name } }]
-})
 // 0〜100 に丸める
 const clamp = (n) => {
     const v = typeof n === 'number' ? n : 0

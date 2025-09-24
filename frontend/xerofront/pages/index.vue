@@ -1,6 +1,6 @@
 <template>
   <!-- <main class="relative flex-1 overflow-y-auto bg-gradient-to-b from-black via-zinc-900 to-black text-white"> -->
-  <main class="text-black dark:text-white  md:ml-72 ml-0 relative flex-1 overflow-y-auto"> 
+  <main class="text-black dark:text-white  md:ml-72 ml-0 relative flex-1 overflow-y-auto">
     <!-- 粒子背景 -->
 
     <div class="relative z-10 max-w-6xl mx-auto px-6 py-16 flex flex-col items-center text-center">
@@ -35,14 +35,18 @@
           <span
             class="absolute inset-0 bg-white/20 scale-0 group-hover:scale-100 rounded-2xl transition-transform"></span>
         </button>
-        <div class="bg-zinc-800/60 rounded-xl p-6 shadow hover:shadow-lg transition transform hover:-translate-y-1">
+        <div
+          class="items-center justify-center p-8 rounded-2xl bg-gradient-to-r from-red-600 to-red-800 shadow-lg group transition transform hover:-translate-y-1">
           <p class="font-semibold text-2xl">{{ My_Goal_Counter }}</p>
           <p>ゴール</p>
+          <span
+            class="absolute inset-0 bg-white/20 scale-0 group-hover:scale-100 rounded-2xl transition-transform"></span>
         </div>
-        <div class="bg-zinc-800/60 rounded-xl p-6 shadow flex flex-col items-center relative overflow-hidden">
-          <div class="absolute bottom-0 left-0 w-full h-[67%] bg-green-500/50 animate-pulse"></div>
-          <p class="font-semibold text-2xl relative z-10">67%</p>
-          <p class="relative z-10">今月の達成率</p>
+        <div class="bg-zinc-800/60 rounded-xl p-8 shadow flex flex-col items-center relative overflow-hidden">
+          <div class="absolute bottom-0 left-0 w-full bg-green-500/50 animate-pulse transition-all duration-500"
+            :style="{ height: achievementRate + '%' }"></div>
+          <p class="font-semibold text-2xl ">{{ achievementRate }}%</p>
+          <p>今月の達成率</p>
         </div>
       </div>
 
@@ -54,7 +58,7 @@
             <li class="p-2 bg-zinc-700/50 rounded">まだスタジオがありません。</li>
           </ul>
           <ul class="space-y-2 text-left text-sm" v-for="my_studio in news_studios" :key="my_studio.id" v-else>
-            <li class="p-2 bg-zinc-700/50 rounded">{{ my_studio.name }}</li>
+            <li class="p-2 bg-zinc-700/50 rounded"># {{ my_studio.name }}</li>
           </ul>
         </div>
         <div class="bg-zinc-800 rounded-xl p-6 shadow-lg hover:-rotate-1 hover:shadow-2xl transition transform">
@@ -116,7 +120,7 @@ const my_studios = ref([]);
 const my_libraries = ref([]);
 const my_goals = ref([]);
 
-onMounted(async()=>{
+onMounted(async () => {
   try {
     await authStore.restoreSession();
     const userId = authStore?.user?.id;
@@ -141,18 +145,30 @@ function emitLibrary() {
 const news_studios = computed(() => {
   if (!Array.isArray(my_studios.value)) return [];
   return my_studios.value
-  .slice()
-  .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-  .slice(0, 3);
+    .slice()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 3);
 });
 const news_librarys = computed(() => {
   if (!Array.isArray(my_libraries.value)) return [];
   return my_libraries.value
-  .slice()
-  .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-  .slice(0, 3);
+    .slice()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 3);
 });
 const My_Studio_Counter = computed(() => my_studios.value.length);
 const My_Library_Countrer = computed(() => my_libraries.value.length);
 const My_Goal_Counter = computed(() => my_goals.value.length);
+
+const achievementRate = computed(() => {
+  if (!Array.isArray(my_goals.value) || my_goals.value.length === 0) return  0;
+  let completed = 0;
+  let total = 0;
+  my_goals.value.forEach(goal => {
+    completed += goal.progress === 100 ?? 0;
+    total += goal.progress ?? 0;
+  });
+  if (total ===0) return 0;
+  return Math.round((completed / my_goals.value.length) * 100);
+})
 </script>

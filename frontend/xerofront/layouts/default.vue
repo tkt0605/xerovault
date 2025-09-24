@@ -374,7 +374,7 @@
               キャンセル（Esc）
             </button>
             <div class="flex items-center gap-2">
-              <button v-if="isVoting(selectedVote?.goal?.id)"
+              <button v-if="isVoting"
                 class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-semibold
                  enabled:hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2"
                 type="button" @click="EditVote(selectedVote?.goal?.id)" :disabled="!choice || loading">
@@ -1096,15 +1096,12 @@ const loading = ref(false)
 const error = ref('')
 // 送信イベント（JSは配列で定義）
 const emit = defineEmits(['submit'])
-// const isVoting = (goalId) => {
-//   return hasVote(userId, goalId);
-// };ity
 const isVoting = computed(() => {
-  const goalId = props.goal?.id;
-  if (!userId || !goalId) return false;
-
-  return hasVote(userId, goalId);
+  const goalId = props.selectedVote?.goal?.id;
+  if (!userId.value || !goalId) return false;
+  return hasVote(userId.value, goalId);
 });
+
 const handleClose = () => {
   choice.value = ''
   note.value = ''
@@ -1152,6 +1149,7 @@ const doSubmit = async (routeId) => {
     setVote(userId, routeId, selected);
     console.log(`投票完了:`, data);
     openVotedialog.value = false;
+    window.location.reload();
     return data;
   } catch (e) {
     error.value = (e && e.message) || '送信に失敗しました。時間をおいて再度お試しください。'
