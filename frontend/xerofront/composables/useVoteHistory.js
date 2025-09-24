@@ -20,9 +20,9 @@ export function loadVote(userId) {
 }
 
 // 指定ゴールに対して投票済みか
-export function hasVote(userId, goalId) {
+export function hasVote(userId) {
   const history = loadVote(userId);
-  return !!history[goalId];
+  return !!history;
 }
 
 // 投票内容を取得（true/false/null）
