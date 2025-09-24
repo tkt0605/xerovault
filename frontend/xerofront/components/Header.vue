@@ -1,5 +1,5 @@
 <template>
-    <header class="bg-white dark:bg-black  px-6 py-4 s-50">
+    <header class="bg-white dark:bg-black  px-6 py-4 s-50 ">
         <!-- ヘッダー本体 -->
         <div class="flex items-center justify-between">
             <!-- 左側：メニューアイコンとロゴ -->
