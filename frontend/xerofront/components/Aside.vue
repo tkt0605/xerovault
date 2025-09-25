@@ -62,7 +62,7 @@
     isAsideOpen ? 'w-64' : 'w-14']">
     <div class="flex flex-col m-1 p-1">
       <button
-        class="w-10 h-10 flex items-center px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
+        class="w-10 h-10 flex  items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
         @click="$emit('search-dialog')">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg">
@@ -70,7 +70,20 @@
         </svg>
       </button>
       <button
-        class="w-10 h-10 flex items-center px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
+        class="w-10 h-10 flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
+        @click="goHome">
+        <!-- <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5" viewBox="0 0 16 16">
+          <path
+            d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293z" />
+          <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293z" />
+        </svg> -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5" viewBox="0 0 16 16">
+          <path
+            d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z" />
+        </svg>
+      </button>
+      <button
+        class="w-10 h-10 flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
         @click="$emit('Group-dialog')">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg">
@@ -78,12 +91,13 @@
         </svg>
       </button>
       <button
-        class="w-10 h-10 flex items-center px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
+        class="w-10 h-10 flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
         @click="$emit('Library-dialog')">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M12 4v16m8-8H4m3-6h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V8a2 2 0 012-2z" />
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5" viewBox="0 0 16 16">
+          <path
+            d="M5 0h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2 2 2 0 0 1-2 2H3a2 2 0 0 1-2-2h1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1H1a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v9a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1H3a2 2 0 0 1 2-2" />
+          <path
+            d="M1 6v-.5a.5.5 0 0 1 1 0V6h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V9h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 2.5v.5H.5a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1H2v-.5a.5.5 0 0 0-1 0" />
         </svg>
       </button>
     </div>
@@ -220,7 +234,9 @@ const emit = defineEmits([
   'update:isAsideOpen',
   'update:isSabAsideOpen'
 ]);
-
+const goHome = () => {
+  router.push('/');
+};
 const initialFocus = ref(null);
 const groupStore = useAuthGroups();
 const authStore = useAuthStore();

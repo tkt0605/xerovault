@@ -1,5 +1,5 @@
 <template>
-  <main class="text-black dark:text-white  md:ml-72 ml-0 relative flex-1 overflow-y-auto">
+  <main class="text-black dark:text-white  md:ml-70 ml-0 relative flex-1 overflow-y-auto">
     <section
       class="max-w-5xl mx-auto backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-8 md:p-10 space-y-10">
 
