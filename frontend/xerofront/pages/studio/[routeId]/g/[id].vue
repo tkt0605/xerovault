@@ -164,13 +164,12 @@
                                                 msg?.auther?.email || 'Unknown' }}</span>
                                             <span class="text-xs text-zinc-400">{{ formatDate(msg?.created_at) }}</span>
                                         </div>
-                                        <div
-                                            class="bg-zinc-700/70 text-white px-4 py-2 rounded-2xl shadow-sm whitespace-pre-line break-words">
+                                        <div class=" dark:text-white px-1 py-2 rounded-2xl shadow-sm whitespace-pre-line break-words">
                                             {{ msg?.text }}
                                         </div>
                                         <div class="flex items-center gap-2 mt-1">
                                             <button
-                                                class="p-2 rounded-full hover:bg-blue-500/20 text-zinc-400 hover:text-blue-400"
+                                                class="p-1 rounded-full hover:bg-blue-500/20 text-zinc-400 hover:text-blue-400"
                                                 title="リターン">
                                                 <svg xmlns="http://www.w3.org/2000/svg" height="20" width="20"
                                                     viewBox="0 0 24 24" fill="currentColor">
