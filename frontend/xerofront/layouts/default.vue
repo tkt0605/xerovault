@@ -1,16 +1,16 @@
 <template>
   <div class="flex flex-col h-screen bg-gray-50 dark:bg-zinc-800 text-gray-800 dark:text-white">
     <header class="sticky top-0 z-50 bg-white dark:bg-zinc-900 shadow">
-      <Header @toggle-sidebar="toggleSidebar" />
+      <Header @toggle-sidebar="toggleSidebar" v-model:isAsideOpen="isAsideOpen" v-model:isSabAsideOpen="isSabAsideOpen" />
     </header>
     <div class="flex flex-1 overflow-hidden">
       <aside class="hidden md:block">
         <Aside @search-dialog="openSearchDialog" @toggle-sidebar="toggleSidebar" @Token-dialog="TokenDialog()"
-          @Library-dialog="LibraryDailog()" @Group-dialog="GroupDailog" :isOpen="isSidebarOpen"
-          @close="isSidebarOpen = false" />
+          @Library-dialog="LibraryDailog()" @Group-dialog="GroupDailog" :isOpen="isSidebarOpen" 
+          @close="isSidebarOpen = false" v-model:isAsideOpen ="isAsideOpen" v-model:isSabAsideOpen="isSabAsideOpen"/>
       </aside>
       <main class="flex-1 overflow-y-auto">
-        <NuxtPage @Member-dialog="ShowMember()" @QR-dialog="QRdialog()" @Goal-dialog="CreateGoal()"
+        <NuxtPage @toggle-sidebar="toggleSidebar" @Member-dialog="ShowMember()" @QR-dialog="QRdialog()" @Goal-dialog="CreateGoal()"
           @DockingtoStudio-dialog="DockingLibrary()" @Goalvote-dialog="GoalVoting()" @Vote-dialog="Votedialog(voteId)"
           @Folder-dialog="openFolder(libraryId)" @Library-dialog="LibraryDailog()" @Group-dialog="GroupDailog()"/>
       </main>
@@ -516,7 +516,7 @@ import { useAuthGroups } from '~/store/group';
 import { useGoalStore } from '~/store/goal';
 import { useAuthLibrary } from '~/store/library';
 import { useAuthVote } from '~/store/vote';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, provide } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { QrcodeCanvas } from 'qrcode.vue';
 import { useRuntimeConfig } from '#imports';
@@ -528,6 +528,10 @@ import {
   setVote,
   loadVote
 } from '~/composables/useVoteHistory.js';
+import { Disclosure } from '@headlessui/vue';
+
+const isAsideOpen = ref(false);
+const isSabAsideOpen = ref(false);
 const userId = computed(() =>authStore.user?.id);
 const openTokenDailog = ref(false);
 const openGroupDailog = ref(false);
