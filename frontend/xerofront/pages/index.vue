@@ -65,7 +65,7 @@
   </main>
 </template> -->
 <template>
-  <main class="text-black dark:text-white bg-gray-50 dark:bg-zinc-900 md:ml-72 ml-0 relative flex-1 overflow-y-auto">
+  <main class="text-black dark:text-white bg-gray-50 dark:bg-zinc-800 md:ml-70 ml-0 relative flex-1 overflow-y-auto">
     <div class="relative z-10 max-w-6xl mx-auto px-6 py-16 flex flex-col items-center text-center">
       <div class="relative">
         <img :src="currentUser?.avater"
@@ -93,7 +93,7 @@
         </button>
 
         <!-- Library Button -->
-        <button @click="$emit('Group-dialog')"
+        <button @click="$emit('Library-dialog')"
           class="text-white dark:text-white items-center justify-center p-8 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-400 shadow-lg group transition transform hover:-translate-y-1">
           <p class="font-semibold text-2xl">{{ My_Library_Countrer }}</p>
           <p>＋ライブラリ</p>
@@ -129,7 +129,9 @@
             <li class="p-2 bg-gray-100 dark:bg-zinc-700/50 rounded">まだスタジオがありません。</li>
           </ul>
           <ul class="space-y-2 text-left text-sm" v-for="my_studio in news_studios" :key="my_studio.id" v-else>
-            <li class="p-2 bg-gray-100 dark:bg-zinc-700/50 rounded"># {{ my_studio.name }}</li>
+            <NuxtLink :to="`/studio/${my_studio.id}`">
+              <li class="p-2 bg-gray-100 dark:bg-zinc-700/50 rounded"># {{ my_studio.name }}</li>
+            </NuxtLink>
           </ul>
         </div>
 

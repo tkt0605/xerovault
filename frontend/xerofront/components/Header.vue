@@ -1,10 +1,10 @@
 <template>
-    <header class="bg-white dark:bg-black  px-6 py-4 s-50 ">
+    <header class="bg-white dark:bg-black  px-1 py-4 s-50 ">
         <!-- ヘッダー本体 -->
         <div class="flex items-center justify-between">
             <!-- 左側：メニューアイコンとロゴ -->
             <div class="flex items-center gap-4">
-                <button class="md:hidden" @click="$emit('toggle-sidebar')">
+                <button @click="emit('update:isAsideOpen', !props.isAsideOpen)" class="hover:bg-gray-100 dark:hover:bg-zinc-700 p-2 rounded-md transition">
                     <!-- ハンバーガーアイコン -->
                     <svg class="w-6 h-6 text-gray-700 dark:text-white" fill="none" stroke="currentColor"
                         stroke-width="2" viewBox="0 0 24 24">
@@ -12,7 +12,9 @@
                     </svg>
                 </button>
                 <button @click="goHome" class="group">
-                    <div class="text-2xl font-extrabold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-500 dark:from-purple-300 dark:to-blue-400 group-hover:from-indigo-400 group-hover:to-blue-600 transition-all duration-300 px-4 py-2">
+                    <div class="text-2xl font-extrabold tracking-wide bg-clip-text text-transparent 
+                        bg-gradient-to-r from-purple-400 to-indigo-500 dark:from-purple-300 dark:to-blue-400
+                        group-hover:from-indigo-400 group-hover:to-blue-600 transition-all duration-300 py-2">
                         iStudio
                     </div>
                 </button>
@@ -75,12 +77,19 @@ import "~/assets/css/header.css";
 import { useAuthStore } from "~/store/auth";
 import { useAuthGroups } from "~/store/group";
 import { useAuthLibrary } from "~/store/library";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, inject } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import Signup from "~/pages/auth/signup.vue";
 import Dialog from "~/components/MainDialog.vue";
 import QrcodeVue from 'qrcode.vue';
 
+const props = defineProps({
+    isAsideOpen: {
+        type: Boolean,
+        default: false
+    }
+});
+const emit = defineEmits(['update:isAsideOpen']);
 const authStore = useAuthStore();
 const groupStore = useAuthGroups();
 const libraryStore = useAuthLibrary();
@@ -166,5 +175,8 @@ function copyUrl(url) {
 }
 const goHome = () => {
     router.push('/');
+};
+const toggleSidebar = () => {
+    isAsideOpen.value = !isAsideOpen.value;
 };
 </script>

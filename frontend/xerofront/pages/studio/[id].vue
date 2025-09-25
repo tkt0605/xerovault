@@ -1,5 +1,5 @@
 <template>
-    <main class="text-black dark:text-white  md:ml-72 ml-0 relative flex-1 overflow-y-auto"
+    <main class="text-black dark:text-white  md:ml-70 ml-0 relative flex-1 overflow-y-auto"
         :class="{ 'bg-white': !$colorMode?.value || $colorMode?.value === 'light', 'bg-black': $colorMode?.value === 'dark' }"
         :style="{
             backgroundImage: $colorMode?.value === 'dark'
