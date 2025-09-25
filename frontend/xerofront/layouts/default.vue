@@ -630,6 +630,9 @@ onMounted(async () => {
     throw error;
   }
 });
+const goHome = () => {
+  router.push('/');
+};
 onBeforeUnmount(() => {
   eventBus.off('Vote-dialog', handleVotedialog);
   eventBus.off('Folder-dialog', openFolder);

@@ -115,7 +115,7 @@
     </main>
 </template> -->
 <template>
-    <main class="flex-1 overflow-y-auto md:ml-72 ml-0 text-white">
+    <main class="flex-1 overflow-y-auto md:ml-70 ml-0 text-white">
         <div class="py-2 px-6">
             <div class="max-w-4xl mx-auto space-y-0">
 
