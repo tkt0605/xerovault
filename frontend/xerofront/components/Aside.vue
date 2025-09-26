@@ -1,10 +1,10 @@
 <template>
   <!-- <aside class="hidden md:block md:fixed md:top-20 md:left-0 md:z-40 md:w-72 md:h-[calc(100vh-4rem)] md:overflow-y-auto
          bg-white dark:bg-black border-r dark:border-zinc-700 px-4 py-2 flex flex-col gap-6" -->
-  <aside class="hidden sm:flex flex-col h-screen" :class="[
-    'bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-700 transition-all duration-300 ease-in-out',
-    isAsideOpen ? 'w-64' : 'w-14']" v-if="isAsideOpen">
-    <div class="flex flex-col mb-4">
+  <aside class="hidden sm:flex flex-col h-screen p-2" :class="[
+    'bg-white dark:bg-zinc-900 border-r P-4 border-gray-200 dark:border-zinc-700 transition-all duration-300 ease-in-out',
+    !isSabAsideOpen ? 'w-64' : 'w-14']" v-if="!isSabAsideOpen">
+    <div class="flex flex-col mb-4 gap-2">
       <button
         class="w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
         @click="$emit('search-dialog')">
@@ -12,7 +12,15 @@
           xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-        探す
+        <span>探す</span>
+      </button>
+      <button @click="goHome"
+        class="w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5" viewBox="0 0 16 16">
+          <path
+            d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z" />
+        </svg>
+        <span>ホーム</span>
       </button>
       <button
         class="w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
@@ -21,17 +29,18 @@
           xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
         </svg>
-        新しいスタジオ
+        <span>新しいスタジオ</span>
       </button>
       <button
         class="w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
         @click="$emit('Library-dialog')">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M12 4v16m8-8H4m3-6h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V8a2 2 0 012-2z" />
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5" viewBox="0 0 16 16">
+          <path
+            d="M5 0h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2 2 2 0 0 1-2 2H3a2 2 0 0 1-2-2h1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1H1a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v9a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1H3a2 2 0 0 1 2-2" />
+          <path
+            d="M1 6v-.5a.5.5 0 0 1 1 0V6h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V9h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 2.5v.5H.5a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1H2v-.5a.5.5 0 0 0-1 0" />
         </svg>
-        ライブラリ新規作成
+        <span>新しいライブラリ</span>
       </button>
     </div>
 
@@ -57,37 +66,36 @@
       </div>
     </div>
   </aside>
-  <aside v-else class="hidden sm:flex flex-col h-screen" :class="[
-    'bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-700 transition-all duration-300 ease-in-out',
-    isAsideOpen ? 'w-64' : 'w-14']">
-    <div class="flex flex-col m-1 p-1">
+  <aside class="hidden sm:flex flex-col h-screen py-2.5 px-2" :class="[
+    'bg-white dark:bg-zinc-900 border-r P-4 border-gray-200 dark:border-zinc-700 transition-all duration-300 ease-in-out',
+    isSabAsideOpen,'w-14']" v-else>
+    <div class="flex flex-col mb-4 gap-3">
       <button
-        class="w-10 h-10 flex  items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
-        @click="$emit('search-dialog')" title="検索">
+        class="w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
+        @click="$emit('search-dialog')">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </button>
-      <button
-        class="w-10 h-10 flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
-        @click="goHome" title="ホーム">
+      <button @click="goHome"
+        class="w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition">
         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5" viewBox="0 0 16 16">
           <path
             d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z" />
         </svg>
       </button>
       <button
-        class="w-10 h-10 flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
-        @click="$emit('Group-dialog')" title="スタジオ新規作成">
+        class="w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
+        @click="$emit('Group-dialog')">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
         </svg>
       </button>
       <button
-        class="w-10 h-10 flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
-        @click="$emit('Library-dialog')" title="ライブラリ新規作成">
+        class="w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
+        @click="$emit('Library-dialog')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5" viewBox="0 0 16 16">
           <path
             d="M5 0h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2 2 2 0 0 1-2 2H3a2 2 0 0 1-2-2h1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1H1a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v9a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1H3a2 2 0 0 1 2-2" />
@@ -98,7 +106,7 @@
     </div>
   </aside>
   <TransitionRoot :show="props.isAsideOpen" as="template" appear>
-    <Dialog as="div" class="relative z-50 sm:hidden" @close="emit('update:isAsideOpen', false)"
+    <Dialog as="div" class="relative z-50 sm:hidden" @close="emit('update:isAsideOpen', !props.isAsideOpen)"
       :open="props.isAsideOpen" :initialFocus="initialFocus">
       <TransitionChild as="div" enter="transition-opacity duration-200" enter-from="opacity-0" enter-to="opacity-100"
         leave="transition-opacity duration-150" leave-from="opacity-100" leave-to="opacity-0">
@@ -113,20 +121,20 @@
             <DialogPanel class="w-72 h-full bg-white dark:bg-black shadow-xl p-4 overflow-y-auto"
               :initialFocus="initialFocus">
               <div class="flex justify-between mb-4">
-                <button @click="goHome" class="group">
+                <button ref="initialFocus" @click="goHome" class="group">
                   <div class="text-2xl font-extrabold tracking-wide bg-clip-text text-transparent 
                         bg-gradient-to-r from-purple-400 to-indigo-500 dark:from-purple-300 dark:to-blue-400
                         group-hover:from-indigo-400 group-hover:to-blue-600 transition-all duration-300 py-2 ml-3">
                     iStudio
                   </div>
                 </button>
-                <button @click="emit('update:isAsideOpen', false)" class="text-zinc-800 dark:text-white">
+                <button  @click="emit('update:isAsideOpen', !props.isAsideOpen)" class="text-zinc-800 dark:text-white">
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-              <div class="flex flex-col mb-4">
+              <div class="flex flex-col mb-4 gap-2">
                 <button
                   class="w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
                   @click="$emit('search-dialog')">
@@ -136,6 +144,14 @@
                       d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   探す
+                </button>
+                <button @click="goHome"
+                  class="w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5" viewBox="0 0 16 16">
+                    <path
+                      d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z" />
+                  </svg>
+                  <span>ホーム</span>
                 </button>
                 <button
                   class="w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
@@ -161,7 +177,7 @@
               <div>
                 <h2 class="text-xs text-gray-500 dark:text-gray-400 tracking-widest mb-2">スタジオ一覧</h2>
                 <div v-for="group in groupList" :key="group.id" class="flex flex-col gap-2">
-                  <NuxtLink :to="`/studio/${group.id}`" @click="emit('update:isAsideOpen', false)">
+                  <NuxtLink :to="`/studio/${group.id}`" @click="emit('update:isAsideOpen', !props.isAsideOpen)">
                     <div class="px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition">
                       # {{ group.name }}
                     </div>
@@ -171,7 +187,7 @@
               <div class="mt-6">
                 <h2 class="text-xs text-gray-500 dark:text-gray-400 tracking-widest mb-2">マイ・ライブラリ</h2>
                 <div v-for="mylib in libraryList" :key="mylib.id" class="flex flex-col gap-2">
-                  <NuxtLink :to="`/library/${mylib.id}`" @click="emit('update:isAsideOpen', false)">
+                  <NuxtLink :to="`/library/${mylib.id}`" @click="emit('update:isAsideOpen', !props.isAsideOpen)">
                     <div class="px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition">
                       {{ mylib.name }}
                     </div>
@@ -184,28 +200,16 @@
       </div>
     </Dialog>
   </TransitionRoot>
-  <!-- <TransitionRoot>
-    <Dialog>
-      <TransitionChild>
-
-      </TransitionChild>
-      <div>
-        <div>
-          <TransitionChild>
-            <DialogPanel></DialogPanel>
-          </TransitionChild>
-        </div>
-      </div>
-    </Dialog>
-  </TransitionRoot> -->
 </template>
 <script setup>
 import { useAuthStore } from '~/store/auth';
 import { useAuthGroups } from '~/store/group';
 import { useAuthLibrary } from '~/store/library';
 import { ref, onMounted, inject } from 'vue';
-import { Disclosure } from '@headlessui/vue';
+import { useRoute, useRouter } from 'vue-router';
 import { Dialog, DialogPanel, TransitionRoot, TransitionChild } from '@headlessui/vue';
+const route = useRoute();
+const router = useRouter();
 const props = defineProps({
   isOpen: {
     type: Boolean,
@@ -231,8 +235,20 @@ const emit = defineEmits([
   'update:isSabAsideOpen'
 ]);
 const goHome = () => {
-  router.push('/');
+  const target_sm = props.isAsideOpen;
+  if (target_sm === true){
+    emit('update:isAsideOpen', !props.isAsideOpen);
+  }else{
+    emit('update:isSabAsideOpen', !props.isSabAsideOpen);
+  }
+  return router.push('/');
 };
+const clickAsideClose = () => {
+  const target_sm = props.isAsideOpen;
+  if (target_sm === false){
+    return emit('update:isAsideOpen', !props.isAsideOpen);
+  }
+}
 const initialFocus = ref(null);
 const groupStore = useAuthGroups();
 const authStore = useAuthStore();
