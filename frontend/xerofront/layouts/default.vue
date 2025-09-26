@@ -7,7 +7,7 @@
       <aside class="hidden md:block">
         <Aside @search-dialog="openSearchDialog" @toggle-sidebar="toggleSidebar" @Token-dialog="TokenDialog()"
           @Library-dialog="LibraryDailog()" @Group-dialog="GroupDailog" :isOpen="isSidebarOpen" 
-          @close="isSidebarOpen = false" v-model:isAsideOpen ="isAsideOpen" v-model:isSabAsideOpen="isSabAsideOpen"/>
+          @close="isSidebarOpen = false" :isAsideOpen ="isAsideOpen" :isSabAsideOpen="isSabAsideOpen"/>
       </aside>
       <main class="flex-1 overflow-y-auto">
         <NuxtPage @toggle-sidebar="toggleSidebar" @Member-dialog="ShowMember()" @QR-dialog="QRdialog()" @Goal-dialog="CreateGoal()"
@@ -528,7 +528,6 @@ import {
   setVote,
   loadVote
 } from '~/composables/useVoteHistory.js';
-import { Disclosure } from '@headlessui/vue';
 
 const isAsideOpen = ref(false);
 const isSabAsideOpen = ref(false);

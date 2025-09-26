@@ -4,7 +4,8 @@
         <div class="flex items-center justify-between">
             <!-- 左側：メニューアイコンとロゴ -->
             <div class="flex items-center gap-4">
-                <button @click="emit('update:isAsideOpen', !props.isAsideOpen)" class="hover:bg-gray-100 dark:hover:bg-zinc-700 p-2 rounded-md transition">
+                <button @click="clickAsideOpen" id="menu-toggle-button"
+                    class="hover:bg-gray-100 dark:hover:bg-zinc-700 p-2 rounded-md transition">
                     <!-- ハンバーガーアイコン -->
                     <svg class="w-6 h-6 text-gray-700 dark:text-white" fill="none" stroke="currentColor"
                         stroke-width="2" viewBox="0 0 24 24">
@@ -83,13 +84,6 @@ import Signup from "~/pages/auth/signup.vue";
 import Dialog from "~/components/MainDialog.vue";
 import QrcodeVue from 'qrcode.vue';
 
-const props = defineProps({
-    isAsideOpen: {
-        type: Boolean,
-        default: false
-    }
-});
-const emit = defineEmits(['update:isAsideOpen']);
 const authStore = useAuthStore();
 const groupStore = useAuthGroups();
 const libraryStore = useAuthLibrary();
@@ -103,7 +97,32 @@ const currentUser = computed(() => authStore.currentUser);
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const isOpenToken = ref(false);
 const isSidebarOpen = ref(false);
-// const isOpenToken = ref(false)
+const props = defineProps({
+    isAsideOpen: {
+        type: Boolean,
+        default: false
+    },
+    isSabAsideOpen: {
+        type: Boolean,
+        default: false
+    }
+});
+const emit = defineEmits(['update:isAsideOpen', 'update:isSabAsideOpen']);
+const clickAsideOpen = () => {
+    document.getElementById('menu-toggle-button')?.blur();
+    const target_sm = props.isAsideOpen;
+    const target_pc = props.isSabAsideOpen;
+    console.log("SM", target_sm);
+    console.log("PC", target_pc);
+    // const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const isMobile = window.innerWidth;
+    if(isMobile < 766 ) {
+        emit('update:isSabAsideOpen', !props.isSabAsideOpen)
+        return emit('update:isAsideOpen', !props.isAsideOpen);
+    }else {
+        return emit('update:isSabAsideOpen', !props.isSabAsideOpen);
+    }
+};
 
 onMounted(async () => {
     try {
@@ -113,13 +132,14 @@ onMounted(async () => {
             try {
                 user.value = await authStore.getUserInfo();
                 console.log('ユーザー情報取得：', user.value);
-                // await groupStore.fetchGroup();
-                // await libraryStore.FetchLibrary();
             } catch (error) {
                 console.error('ユーザー情報の取得失敗:', error);
                 throw error;
             }
         }
+        nextTick(() => {
+            document.getElementById('menu-toggle-button').focus();
+        });
     } catch (error) {
         console.error('初期データのロードに失敗しました。', error);
     }
@@ -131,6 +151,9 @@ const openUserInfo = (userEmail) => {
 };
 const closeUserInfo = () => {
     isopenInfo.value = false;
+    nextTick(() => {
+        document.getElementById('menu-toggle-button')?.focus();
+    });
 };
 const signin = () => {
     router.push('/auth/login');
