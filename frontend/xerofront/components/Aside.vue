@@ -68,7 +68,7 @@
   </aside>
   <aside class="hidden sm:flex flex-col h-screen py-2.5 px-2" :class="[
     'bg-white dark:bg-zinc-900 border-r P-4 border-gray-200 dark:border-zinc-700 transition-all duration-300 ease-in-out',
-    isSabAsideOpen,'w-14']" v-else>
+    isSabAsideOpen, 'w-14']" v-else>
     <div class="flex flex-col mb-4 gap-3">
       <button
         class="w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition"
@@ -106,8 +106,8 @@
     </div>
   </aside>
   <TransitionRoot :show="props.isAsideOpen" as="template" appear>
-    <Dialog as="div" class="relative z-50 sm:hidden" @close="emit('update:isAsideOpen', !props.isAsideOpen)"
-      :open="props.isAsideOpen" :initialFocus="initialFocus">
+    <Dialog as="div" class="relative z-50 sm:hidden" @close="clickAsideOpen" :open="props.isAsideOpen"
+    >
       <TransitionChild as="div" enter="transition-opacity duration-200" enter-from="opacity-0" enter-to="opacity-100"
         leave="transition-opacity duration-150" leave-from="opacity-100" leave-to="opacity-0">
         <div class="fixed inset-0 bg-black/30" />
@@ -118,17 +118,17 @@
           <TransitionChild as="div" enter="transition ease-in-out duration-300 transform" enter-from="-translate-x-full"
             enter-to="translate-x-0" leave="transition ease-in-out duration-200 transform" leave-from="translate-x-0"
             leave-to="-translate-x-full">
-            <DialogPanel class="w-72 h-full bg-white dark:bg-black shadow-xl p-4 overflow-y-auto"
-              :initialFocus="initialFocus">
+            <DialogPanel ref="initialFocus"
+              class="w-72 h-full bg-white dark:bg-black shadow-xl p-4 overflow-y-auto">
               <div class="flex justify-between mb-4">
-                <button ref="initialFocus" @click="goHome" class="group">
+                <button @click="goHome" class="group">
                   <div class="text-2xl font-extrabold tracking-wide bg-clip-text text-transparent 
                         bg-gradient-to-r from-purple-400 to-indigo-500 dark:from-purple-300 dark:to-blue-400
                         group-hover:from-indigo-400 group-hover:to-blue-600 transition-all duration-300 py-2 ml-3">
                     iStudio
                   </div>
                 </button>
-                <button  @click="emit('update:isAsideOpen', !props.isAsideOpen)" class="text-zinc-800 dark:text-white">
+                <button @click="clickAsideOpen" class="text-zinc-800 dark:text-white">
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -177,7 +177,7 @@
               <div>
                 <h2 class="text-xs text-gray-500 dark:text-gray-400 tracking-widest mb-2">スタジオ一覧</h2>
                 <div v-for="group in groupList" :key="group.id" class="flex flex-col gap-2">
-                  <NuxtLink :to="`/studio/${group.id}`" @click="emit('update:isAsideOpen', !props.isAsideOpen)">
+                  <NuxtLink :to="`/studio/${group.id}`" @click="clickAsideOpen">
                     <div class="px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition">
                       # {{ group.name }}
                     </div>
@@ -187,7 +187,7 @@
               <div class="mt-6">
                 <h2 class="text-xs text-gray-500 dark:text-gray-400 tracking-widest mb-2">マイ・ライブラリ</h2>
                 <div v-for="mylib in libraryList" :key="mylib.id" class="flex flex-col gap-2">
-                  <NuxtLink :to="`/library/${mylib.id}`" @click="emit('update:isAsideOpen', !props.isAsideOpen)">
+                  <NuxtLink :to="`/library/${mylib.id}`" @click="clickAsideOpen">
                     <div class="px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition">
                       {{ mylib.name }}
                     </div>
@@ -210,6 +210,12 @@ import { useRoute, useRouter } from 'vue-router';
 import { Dialog, DialogPanel, TransitionRoot, TransitionChild } from '@headlessui/vue';
 const route = useRoute();
 const router = useRouter();
+const initialFocus = ref(null);
+const groupStore = useAuthGroups();
+const authStore = useAuthStore();
+const libraryStore = useAuthLibrary();
+const groupList = ref([]);
+const libraries = ref([]);
 const props = defineProps({
   isOpen: {
     type: Boolean,
@@ -234,37 +240,57 @@ const emit = defineEmits([
   'update:isAsideOpen',
   'update:isSabAsideOpen'
 ]);
-const goHome = () => {
-  const target_sm = props.isAsideOpen;
-  if (target_sm === true){
-    emit('update:isAsideOpen', !props.isAsideOpen);
-  }else{
-    emit('update:isSabAsideOpen', !props.isSabAsideOpen);
-  }
-  return router.push('/');
-};
-const clickAsideClose = () => {
-  const target_sm = props.isAsideOpen;
-  if (target_sm === false){
-    return emit('update:isAsideOpen', !props.isAsideOpen);
-  }
-}
-const initialFocus = ref(null);
-const groupStore = useAuthGroups();
-const authStore = useAuthStore();
-const libraryStore = useAuthLibrary();
-const groupList = ref([]);
-const libraries = ref([]);
+const localAsideOpen = ref(props.isAsideOpen);
+const localSabAsideOpen = ref(props.isSabAsideOpen);
+watch(() => props.isAsideOpen, (newVal) => {
+  localAsideOpen.value = newVal;
+});
+watch(() => props.isSabAsideOpen, (newVal) => {
+  localSabAsideOpen.value = newVal;
+});
 onMounted(async () => {
   try {
     groupList.value = await groupStore.fetchGroup();
     console.log('グループ一覧:', groupList.value);
     libraries.value = await libraryStore.FetchLibrary();
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    console.log(isMobile);
+    console.log(localAsideOpen);
+    setTimeout(() => {
+      initialFocus.value?.focus()
+    }, 50);
   } catch (error) {
 
   }
 });
-
+const goHome = () => {
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
+  if (isMobile) {
+    localAsideOpen.value = !localAsideOpen.value;
+    emit('update:isAsideOpen', localAsideOpen.value);
+    console.log("スマートフォン・Aside表示アクション", localAsideOpen.value);
+    console.log('SP:', localAsideOpen.value);
+    return router.push('/');
+  } else {
+    localSabAsideOpen.value = !localSabAsideOpen.value;
+    emit('update:isSabAsideOpen', localSabAsideOpen.value);
+    console.log("スマートフォン・Aside表示アクション", localSabAsideOpen.value);
+    console.log('SP:', localSabAsideOpen.value);
+    return router.push('/');
+  }
+};
+const clickAsideOpen = () => {
+  console.log('閉じるbuttonをクリック');
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
+  if (isMobile) {
+    localAsideOpen.value = !localAsideOpen.value;
+    console.log('Asideボード非表示アクション：', localAsideOpen.value);
+    emit('update:isAsideOpen', localAsideOpen.value);
+    console.log("スマートフォン・Aside表示アクション", localAsideOpen.value);
+    console.log('SP:', localAsideOpen.value);
+    console.log('スマートフォン・Aside・動作完了');
+  }
+};
 const groups = computed(() => {
   if (!groupList.value || !Array.isArray(groupList.value.members) || !authStore.currentUser)
     return false;

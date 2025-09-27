@@ -5,7 +5,7 @@
             <!-- 左側：メニューアイコンとロゴ -->
             <div class="flex items-center gap-4">
                 <button @click="clickAsideOpen" id="menu-toggle-button"
-                    class="hover:bg-gray-100 dark:hover:bg-zinc-700 p-2 rounded-md transition">
+                    class="hover:bg-gray-100 dark:hover:bg-zinc-700 p-2 rounded-md transition focus:outline-none focus:ring-0  focus-visible:outline-none">
                     <!-- ハンバーガーアイコン -->
                     <svg class="w-6 h-6 text-gray-700 dark:text-white" fill="none" stroke="currentColor"
                         stroke-width="2" viewBox="0 0 24 24">
@@ -97,6 +97,7 @@ const currentUser = computed(() => authStore.currentUser);
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const isOpenToken = ref(false);
 const isSidebarOpen = ref(false);
+const initialFocus = ref(null);
 const props = defineProps({
     isAsideOpen: {
         type: Boolean,
@@ -108,19 +109,34 @@ const props = defineProps({
     }
 });
 const emit = defineEmits(['update:isAsideOpen', 'update:isSabAsideOpen']);
+const localAsideOpen = ref(props.isAsideOpen);
+const localSabAsideOpen = ref(props.isSabAsideOpen);
+watch(() => props.isAsideOpen, (newVal) => {
+    localAsideOpen.value = newVal;
+});
+watch(() => props.isSabAsideOpen, (newVal) => {
+    localSabAsideOpen.value = newVal;
+})
 const clickAsideOpen = () => {
-    document.getElementById('menu-toggle-button')?.blur();
-    const target_sm = props.isAsideOpen;
-    const target_pc = props.isSabAsideOpen;
-    console.log("SM", target_sm);
-    console.log("PC", target_pc);
-    // const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    const isMobile = window.innerWidth;
-    if(isMobile < 766 ) {
-        emit('update:isSabAsideOpen', !props.isSabAsideOpen)
-        return emit('update:isAsideOpen', !props.isAsideOpen);
-    }else {
-        return emit('update:isSabAsideOpen', !props.isSabAsideOpen);
+    // document.getElementById('menu-toggle-button')?.blur();
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    console.log("画角の状況：", isMobile);
+    console.log('デフォルト・PC:', localSabAsideOpen.value)
+    console.log('デフォルト・SP:', localAsideOpen.value)
+    if (isMobile) {
+        localAsideOpen.value = !localAsideOpen.value;
+        emit('update:isAsideOpen', localAsideOpen.value);
+        console.log("スマートフォン・Aside表示アクション", localAsideOpen.value);
+        console.log('PC:', localSabAsideOpen.value)
+        console.log('SP:', localAsideOpen.value)
+        console.log('スマートフォン・Aside・動作完了');
+    } else {
+        localSabAsideOpen.value = !localSabAsideOpen.value;
+        emit('update:isSabAsideOpen', localSabAsideOpen.value);
+        console.log("PC・Aside表示アクション", localSabAsideOpen.value);
+        console.log('PC:', localSabAsideOpen.value)
+        console.log('SP:', localAsideOpen.value)
+        console.log('PC・Aside・動作完了');
     }
 };
 
@@ -137,9 +153,14 @@ onMounted(async () => {
                 throw error;
             }
         }
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        console.log(isMobile)
         nextTick(() => {
             document.getElementById('menu-toggle-button').focus();
         });
+        setTimeout(() => {
+            initialFocus.value?.focus();
+        }, 50)
     } catch (error) {
         console.error('初期データのロードに失敗しました。', error);
     }
@@ -198,8 +219,5 @@ function copyUrl(url) {
 }
 const goHome = () => {
     router.push('/');
-};
-const toggleSidebar = () => {
-    isAsideOpen.value = !isAsideOpen.value;
 };
 </script>
