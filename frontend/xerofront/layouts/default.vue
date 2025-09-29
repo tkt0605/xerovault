@@ -1,13 +1,13 @@
 <template>
   <div class="flex flex-col h-screen bg-gray-50 dark:bg-zinc-800 text-gray-800 dark:text-white">
     <header class="sticky top-0 z-50 bg-white dark:bg-zinc-900 shadow">
-      <Header @toggle-sidebar="toggleSidebar" v-model:isAsideOpen="isAsideOpen" v-model:isSabAsideOpen="isSabAsideOpen" />
+      <Header @toggle-sidebar="toggleSidebar" v-model:isAsideOpen="asideOpen" v-model:isSabAsideOpen="sabAsideOpen" />
     </header>
     <div class="flex flex-1 overflow-hidden">
       <aside class="hidden md:block">
         <Aside @search-dialog="openSearchDialog" @toggle-sidebar="toggleSidebar" @Token-dialog="TokenDialog()"
           @Library-dialog="LibraryDailog()" @Group-dialog="GroupDailog" :isOpen="isSidebarOpen" 
-          @close="isSidebarOpen = false" :isAsideOpen ="isAsideOpen" :isSabAsideOpen="isSabAsideOpen"/>
+          @close="isSidebarOpen = false" :isAsideOpen ="asideOpen" :isSabAsideOpen="sabAsideOpen"/>
       </aside>
       <main class="flex-1 overflow-y-auto">
         <NuxtPage @toggle-sidebar="toggleSidebar" @Member-dialog="ShowMember()" @QR-dialog="QRdialog()" @Goal-dialog="CreateGoal()"
@@ -282,7 +282,7 @@
             class="px-4 py-2 bg-gray-300 text-black dark:bg-gray-600 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
             キャンセル
           </button>
-          <button @click="Voting()" class="px-2 py-2 rounded bg-green-600 hover:bg-green-700 font-medium transition">
+          <button @click="Voting()" class="px-2 py-2 rounded bg-yellow-600 hover:bg-green-700 font-medium transition">
             作成する
           </button>
         </template>
@@ -529,8 +529,8 @@ import {
   loadVote
 } from '~/composables/useVoteHistory.js';
 
-const isAsideOpen = ref(false);
-const isSabAsideOpen = ref(false);
+const asideOpen = ref(false);
+const sabAsideOpen = ref(false);
 const userId = computed(() =>authStore.user?.id);
 const openTokenDailog = ref(false);
 const openGroupDailog = ref(false);

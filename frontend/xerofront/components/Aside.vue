@@ -105,9 +105,8 @@
       </button>
     </div>
   </aside>
-  <TransitionRoot :show="props.isAsideOpen" as="template" appear>
-    <Dialog as="div" class="relative z-50 sm:hidden" @close="clickAsideOpen" :open="props.isAsideOpen"
-    >
+  <TransitionRoot :show="isAsideStuation" as="template" appear>
+    <Dialog as="div" class="relative z-50 sm:hidden" :open="isAsideStuation">
       <TransitionChild as="div" enter="transition-opacity duration-200" enter-from="opacity-0" enter-to="opacity-100"
         leave="transition-opacity duration-150" leave-from="opacity-100" leave-to="opacity-0">
         <div class="fixed inset-0 bg-black/30" />
@@ -118,8 +117,7 @@
           <TransitionChild as="div" enter="transition ease-in-out duration-300 transform" enter-from="-translate-x-full"
             enter-to="translate-x-0" leave="transition ease-in-out duration-200 transform" leave-from="translate-x-0"
             leave-to="-translate-x-full">
-            <DialogPanel ref="initialFocus"
-              class="w-72 h-full bg-white dark:bg-black shadow-xl p-4 overflow-y-auto">
+            <DialogPanel ref="initialFocus" class="w-72 h-full bg-white dark:bg-black shadow-xl p-4 overflow-y-auto">
               <div class="flex justify-between mb-4">
                 <button @click="goHome" class="group">
                   <div class="text-2xl font-extrabold tracking-wide bg-clip-text text-transparent 
@@ -128,7 +126,8 @@
                     iStudio
                   </div>
                 </button>
-                <button @click="clickAsideOpen" class="text-zinc-800 dark:text-white">
+                <button @click="clickAsideClose"
+                  class="hover:bg-gray-100 dark:hover:bg-zinc-700 p-2 rounded-md transition focus:outline-none focus:ring-0  focus-visible:outline-none text-zinc-800 dark:text-white">
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -177,7 +176,7 @@
               <div>
                 <h2 class="text-xs text-gray-500 dark:text-gray-400 tracking-widest mb-2">スタジオ一覧</h2>
                 <div v-for="group in groupList" :key="group.id" class="flex flex-col gap-2">
-                  <NuxtLink :to="`/studio/${group.id}`" @click="clickAsideOpen">
+                  <NuxtLink :to="`/studio/${group.id}`" @click="clickAsideClose">
                     <div class="px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition">
                       # {{ group.name }}
                     </div>
@@ -187,7 +186,7 @@
               <div class="mt-6">
                 <h2 class="text-xs text-gray-500 dark:text-gray-400 tracking-widest mb-2">マイ・ライブラリ</h2>
                 <div v-for="mylib in libraryList" :key="mylib.id" class="flex flex-col gap-2">
-                  <NuxtLink :to="`/library/${mylib.id}`" @click="clickAsideOpen">
+                  <NuxtLink :to="`/library/${mylib.id}`" @click="clickAsideClose">
                     <div class="px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer transition">
                       {{ mylib.name }}
                     </div>
@@ -208,6 +207,7 @@ import { useAuthLibrary } from '~/store/library';
 import { ref, onMounted, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Dialog, DialogPanel, TransitionRoot, TransitionChild } from '@headlessui/vue';
+// const { clickAsideopen, isSabAsideOpen } = useAsideProtal();
 const route = useRoute();
 const router = useRouter();
 const initialFocus = ref(null);
@@ -230,6 +230,18 @@ const props = defineProps({
     default: false
   }
 });
+const isAsideStuation = defineModel(
+  'isAsideOpen',
+  {
+    type: Boolean,
+  }
+);
+const isSabAsideStuation = defineModel(
+  'isSabAsideOpen',
+  {
+    type: Boolean
+  }
+);
 const emit = defineEmits([
   'searchDialog',
   'toggleSidebar',
@@ -240,14 +252,6 @@ const emit = defineEmits([
   'update:isAsideOpen',
   'update:isSabAsideOpen'
 ]);
-const localAsideOpen = ref(props.isAsideOpen);
-const localSabAsideOpen = ref(props.isSabAsideOpen);
-watch(() => props.isAsideOpen, (newVal) => {
-  localAsideOpen.value = newVal;
-});
-watch(() => props.isSabAsideOpen, (newVal) => {
-  localSabAsideOpen.value = newVal;
-});
 onMounted(async () => {
   try {
     groupList.value = await groupStore.fetchGroup();
@@ -256,9 +260,7 @@ onMounted(async () => {
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
     console.log(isMobile);
     console.log(localAsideOpen);
-    setTimeout(() => {
-      initialFocus.value?.focus()
-    }, 50);
+
   } catch (error) {
 
   }
@@ -266,35 +268,31 @@ onMounted(async () => {
 const goHome = () => {
   const isMobile = window.matchMedia('(max-width: 768px)').matches;
   if (isMobile) {
-    localAsideOpen.value = !localAsideOpen.value;
-    emit('update:isAsideOpen', localAsideOpen.value);
-    console.log("スマートフォン・Aside表示アクション", localAsideOpen.value);
-    console.log('SP:', localAsideOpen.value);
+    isAsideStuation.value = !isAsideStuation.value;
+    console.log('状況・PC:', isSabAsideStuation.value);
+    console.log('状況・SP:', isAsideStuation.value);
     return router.push('/');
   } else {
-    localSabAsideOpen.value = !localSabAsideOpen.value;
-    emit('update:isSabAsideOpen', localSabAsideOpen.value);
-    console.log("スマートフォン・Aside表示アクション", localSabAsideOpen.value);
-    console.log('SP:', localSabAsideOpen.value);
+    isSabAsideStuation.value = !isSabAsideStuation.value;
+    console.log('状況・PC:', isSabAsideStuation.value);
+    console.log('状況・SP:', isAsideStuation.value);
     return router.push('/');
   }
 };
-const clickAsideOpen = () => {
-  console.log('閉じるbuttonをクリック');
+const clickAsideClose = () => {
   const isMobile = window.matchMedia('(max-width: 768px)').matches;
-  if (isMobile) {
-    localAsideOpen.value = !localAsideOpen.value;
-    console.log('Asideボード非表示アクション：', localAsideOpen.value);
-    emit('update:isAsideOpen', localAsideOpen.value);
-    console.log("スマートフォン・Aside表示アクション", localAsideOpen.value);
-    console.log('SP:', localAsideOpen.value);
-    console.log('スマートフォン・Aside・動作完了');
+  if (isMobile){
+    console.log('取得情報:', props.isAsideOpen);
+    isAsideStuation.value = !props.isAsideOpen;
+
+  }else{
+    isSabAsideStuation.value = false;
   }
+  console.log('スマホ・状況：', isAsideStuation.value);
 };
 const groups = computed(() => {
   if (!groupList.value || !Array.isArray(groupList.value.members) || !authStore.currentUser)
     return false;
-  // return groupList.value.members.some(member => member.email === authStore.user.email);
 });
 const libraryList = computed(() =>
   libraries.value.filter((item) => item.owner === authStore.user.email)
