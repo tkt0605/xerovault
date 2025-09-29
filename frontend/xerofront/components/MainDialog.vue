@@ -63,7 +63,7 @@ defineEmits(['close']);
           :class="[
             sizeClass,
             fullscreenOnMobile ? 'rounded-t-2xl md:rounded-2xl' : 'rounded-t-xl md:rounded-2xl',
-            fullscreenOnMobile ? 'h-[92vh] md:h-[70vh]' : ''
+            fullscreenOnMobile ? 'h-[82vh] md:h-auto' : ''
           ]"
           :data-entering="entering"
         >
