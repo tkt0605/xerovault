@@ -105,8 +105,8 @@
       </button>
     </div>
   </aside>
-  <TransitionRoot :show="isAsideStuation" as="template" appear>
-    <Dialog as="div" class="relative z-50 sm:hidden" :open="isAsideStuation">
+  <TransitionRoot :show="asideStore.isAsideOpen" as="template" appear>
+    <Dialog as="div" class="relative z-50 sm:hidden" :open="asideStore.isAsideOpen">
       <TransitionChild as="div" enter="transition-opacity duration-200" enter-from="opacity-0" enter-to="opacity-100"
         leave="transition-opacity duration-150" leave-from="opacity-100" leave-to="opacity-0">
         <div class="fixed inset-0 bg-black/30" />
@@ -207,7 +207,8 @@ import { useAuthLibrary } from '~/store/library';
 import { ref, onMounted, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Dialog, DialogPanel, TransitionRoot, TransitionChild } from '@headlessui/vue';
-// const { clickAsideopen, isSabAsideOpen } = useAsideProtal();
+import { useAsideOpen } from '~/store/useAsideStore';
+const asideStore = useAsideOpen();
 const route = useRoute();
 const router = useRouter();
 const initialFocus = ref(null);
@@ -281,12 +282,14 @@ const goHome = () => {
 };
 const clickAsideClose = () => {
   const isMobile = window.matchMedia('(max-width: 768px)').matches;
-  if (isMobile){
-    console.log('取得情報:', props.isAsideOpen);
-    isAsideStuation.value = !props.isAsideOpen;
-
+  const is_stuation = asideStore.isAsideOpen;
+  console.log('Close前・現在の状況：', is_stuation);
+  if (isMobile && is_stuation){
+    console.log('取得情報:', isAsideStuation.value);
+    isAsideStuation.value = asideStore.closeAside();
   }else{
-    isSabAsideStuation.value = false;
+    asideStore.isSabAsideOpen = false;
+    isSabAsideStuation.value = asideStore.isSabAsideOpen;
   }
   console.log('スマホ・状況：', isAsideStuation.value);
 };

@@ -88,8 +88,8 @@ import { useRouter, useRoute } from "vue-router";
 import Signup from "~/pages/auth/signup.vue";
 import Dialog from "~/components/MainDialog.vue";
 import QrcodeVue from 'qrcode.vue';
-// import { useAsideProtal } from "#imports";
-// const { isAsideOpen, clickAsideOpen } = useAsideProtal();
+import { useAsideOpen } from "~/store/useAsideStore";
+const asideStore = useAsideOpen();
 const isMobile = window.matchMedia('(max-width: 768px)').matches;
 const authStore = useAuthStore();
 const groupStore = useAuthGroups();
@@ -130,13 +130,14 @@ const isSabAsideStuation = defineModel(
 );
 const clickAsideOpen = () => {
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    if (isMobile) {
-        console.log('スマートフォン・モード');
-        isAsideStuation.value = !isAsideStuation.value;
-        console.log('スマートフォン・モード状況・PC:', isSabAsideStuation.value);
-        console.log('スマートフォン・モード状況・SP:', isAsideStuation.value);
-    } else {
-        console.log('エラー')
+    const is_stuation = asideStore.isAsideOpen;
+    console.log('Open前・現在の状況：', is_stuation);
+    if(isMobile && !is_stuation){
+        console.log('スマートフォン・モード：');
+        const results = asideStore.openAside();
+        isAsideStuation.value = results;
+    }else{
+        console.log('エラー');
     }
 };
 const clickSabAsideOpen = () => {
