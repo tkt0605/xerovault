@@ -3,10 +3,16 @@
         <!-- ヘッダー本体 -->
         <div class="flex items-center justify-between">
             <!-- 左側：メニューアイコンとロゴ -->
-            <div class="flex items-center gap-4">
-                <button @click="clickAsideOpen" id="menu-toggle-button"
+            <div class="flex items-center gap-2">
+                <button v-if="isMobile" @click="clickAsideOpen" id="menu-toggle-button"
                     class="hover:bg-gray-100 dark:hover:bg-zinc-700 p-2 rounded-md transition focus:outline-none focus:ring-0  focus-visible:outline-none">
-                    <!-- ハンバーガーアイコン -->
+                    <svg class="w-6 h-6 text-gray-700 dark:text-white" fill="none" stroke="currentColor"
+                        stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+                <button v-else @click="clickSabAsideOpen" id="menu-toggle-button"
+                    class="hover:bg-gray-100 dark:hover:bg-zinc-700 p-2 rounded-md transition focus:outline-none focus:ring-0  focus-visible:outline-none">
                     <svg class="w-6 h-6 text-gray-700 dark:text-white" fill="none" stroke="currentColor"
                         stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -19,7 +25,6 @@
                         iStudio
                     </div>
                 </button>
-
             </div>
 
             <!-- 右側：認証状態で分岐 -->
@@ -83,7 +88,9 @@ import { useRouter, useRoute } from "vue-router";
 import Signup from "~/pages/auth/signup.vue";
 import Dialog from "~/components/MainDialog.vue";
 import QrcodeVue from 'qrcode.vue';
-
+// import { useAsideProtal } from "#imports";
+// const { isAsideOpen, clickAsideOpen } = useAsideProtal();
+const isMobile = window.matchMedia('(max-width: 768px)').matches;
 const authStore = useAuthStore();
 const groupStore = useAuthGroups();
 const libraryStore = useAuthLibrary();
@@ -109,37 +116,35 @@ const props = defineProps({
     }
 });
 const emit = defineEmits(['update:isAsideOpen', 'update:isSabAsideOpen']);
-const localAsideOpen = ref(props.isAsideOpen);
-const localSabAsideOpen = ref(props.isSabAsideOpen);
-watch(() => props.isAsideOpen, (newVal) => {
-    localAsideOpen.value = newVal;
-});
-watch(() => props.isSabAsideOpen, (newVal) => {
-    localSabAsideOpen.value = newVal;
-})
+const isAsideStuation = defineModel(
+    'isAsideOpen',
+    {
+        type: Boolean,
+    }
+);
+const isSabAsideStuation = defineModel(
+    'isSabAsideOpen',
+    {
+        type: Boolean,
+    }
+);
 const clickAsideOpen = () => {
-    // document.getElementById('menu-toggle-button')?.blur();
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    console.log("画角の状況：", isMobile);
-    console.log('デフォルト・PC:', localSabAsideOpen.value)
-    console.log('デフォルト・SP:', localAsideOpen.value)
     if (isMobile) {
-        localAsideOpen.value = !localAsideOpen.value;
-        emit('update:isAsideOpen', localAsideOpen.value);
-        console.log("スマートフォン・Aside表示アクション", localAsideOpen.value);
-        console.log('PC:', localSabAsideOpen.value)
-        console.log('SP:', localAsideOpen.value)
-        console.log('スマートフォン・Aside・動作完了');
+        console.log('スマートフォン・モード');
+        isAsideStuation.value = !isAsideStuation.value;
+        console.log('スマートフォン・モード状況・PC:', isSabAsideStuation.value);
+        console.log('スマートフォン・モード状況・SP:', isAsideStuation.value);
     } else {
-        localSabAsideOpen.value = !localSabAsideOpen.value;
-        emit('update:isSabAsideOpen', localSabAsideOpen.value);
-        console.log("PC・Aside表示アクション", localSabAsideOpen.value);
-        console.log('PC:', localSabAsideOpen.value)
-        console.log('SP:', localAsideOpen.value)
-        console.log('PC・Aside・動作完了');
+        console.log('エラー')
     }
 };
-
+const clickSabAsideOpen = () => {
+    console.log('PC・モード');
+    isSabAsideStuation.value = !isSabAsideStuation.value;
+    console.log('PC・モード・状況・PC:', isSabAsideStuation.value);
+    console.log('PC・モード・状況・SP:', isAsideStuation.value);
+};
 onMounted(async () => {
     try {
         await authStore.restoreSession();
@@ -158,9 +163,6 @@ onMounted(async () => {
         nextTick(() => {
             document.getElementById('menu-toggle-button').focus();
         });
-        setTimeout(() => {
-            initialFocus.value?.focus();
-        }, 50)
     } catch (error) {
         console.error('初期データのロードに失敗しました。', error);
     }
