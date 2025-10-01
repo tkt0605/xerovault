@@ -1,3 +1,5 @@
+import { SplitVendorChunkCache } from "vite";
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   // devtools: { enabled: true },
@@ -42,15 +44,15 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     public: {
-      // apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api/'
-      apiBase: 'http://localhost:8000/api/'
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api/'
+      // apiBase: 'http://localhost:8000/api/'
     }
   },
   i18n: {
     experimental: {
       bundle: {
-        // optimizeTranslationDirective: false
-        optimizeTranslationDirective: true
+        optimizeTranslationDirective: false
+        // optimizeTranslationDirective: true
       }
     }
   },
@@ -86,7 +88,18 @@ export default defineNuxtConfig({
   },
   vite: {
     optimizeDeps: {
-      disabled: true
+      noDiscovery: true
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          assetFileNames : (chunkInfo) => {
+            const name = chunkInfo.name ?? 'assets';
+            return `assets/${name}-[hash][extname]`;
+          }
+        }
+      }
     }
-  }
+  },
+
 });
