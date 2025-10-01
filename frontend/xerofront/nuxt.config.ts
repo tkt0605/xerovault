@@ -90,16 +90,16 @@ export default defineNuxtConfig({
     optimizeDeps: {
       noDiscovery: true
     },
-    // build: {
-    //   rollupOptions: {
-    //     output: {
-    //       assetFileNames : (chunkInfo) => {
-    //         const name = chunkInfo.name ?? 'assets';
-    //         return `assets/${name}-[hash][extname]`;
-    //       }
-    //     }
-    //   }
-    // }
+    build: {
+      rollupOptions: {
+        output: {
+          assetFileNames: (chunkInfo) => {
+            const name = typeof chunkInfo?.name === 'string' ? chunkInfo.name : 'asset';
+            return `assets/${name}-[hash][extname]`;
+          }
+        }
+      }
+    }
   },
 
 });
