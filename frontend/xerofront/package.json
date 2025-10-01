@@ -34,7 +34,7 @@
   "overrides": {
     "vite": "5.1.4"
   },
-  "r  esolutions": {
+  "resolutions": {
     "@vitejs/plugin-vue": "5.0.10"
   }
 }

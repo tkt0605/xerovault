@@ -98,7 +98,7 @@ class GenerateGroup(models.Model):
     name = models.CharField(max_length=255, unique=True)
     owner = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_group', default=None)
     members = models.ManyToManyField(AUTH_USER_MODEL, related_name='joined_name', blank=True)
-    goals = models.ManyToManyField("Goal", blank=True)
+    # goals = models.ManyToManyField("Goal", blank=True)
     tag = models.CharField(max_length=256, blank=True, default=None)
     joined_token = models.CharField(max_length=36, unique=True, null=True, blank=True, help_text="UUID形式の招待トークン")
     is_public = models.BooleanField(default=False)
@@ -115,16 +115,16 @@ class GenerateGroup(models.Model):
         return self.name
     def update_score(self):
         members_points = self.members.count()
-        vague_goals_points = self.goals.filter(is_concrete=False, is_completed=False).count() * VAGUE_GOAL_WEIGHT
-        concreate_goals_points = self.goals.filter(is_concrete=True, is_completed=False).count()*CONCRETE_GOAL_WEIGHT
-        completed_goals_points = self.goals.filter(is_completed = True).count()*COMPLETED_GOAL_WEIGHT
-
-        calculated_score = BASE_SCORE + members_points + vague_goals_points + concreate_goals_points + completed_goals_points
+        completed_goals_points = self.goals.filter(is_completed = True).count()*10
+        print(f"[DeBUG]メンバー数: {members_points}, 達成ゴール: {self.goals.filter(is_completed = True).count()}")
+        calculated_score = BASE_SCORE + members_points + completed_goals_points
         new_score = min(calculated_score, MAX_SCORE)
         if self.score != new_score:
             self.score = new_score
             self.save(update_fields=['score'])
             print(f"グループ '{self.name}' のスコアが {self.score} に更新されました。")
+        else:
+            print(f"[DEBUG] スコア変更なし: {self.score} → {new_score}")
     class Meta:
         indexes = [
             GinIndex(fields=["name"], name="idx_group_name_trgm", opclasses=["gin_trgm_ops"]),
@@ -132,7 +132,7 @@ class GenerateGroup(models.Model):
         ]
 class Goal(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='目標')
+    group = models.ForeignKey(GenerateGroup, on_delete=models.CASCADE, related_name='goals')
     header = models.CharField('目標タイトル', max_length=255, help_text='この目標のタイトル', default=None, blank=True, null=True)
     description = models.TextField("目標内容")
     created_at = models.DateTimeField("作成日", auto_now_add=True)
@@ -148,10 +148,6 @@ class Goal(models.Model):
     )
     is_concrete = models.BooleanField('具体化済み', default=False, help_text="締め切りか担当者が設定されると自動でTrueになります")
     is_completed = models.BooleanField('達成済み', default=False)
-    # progress = models.PositiveIntegerField(
-    #     default=0,
-    #     help_text='進捗率（0〜100）'
-    # )
     @property
     def progress(self):
         return self.vote_progress()
@@ -165,13 +161,22 @@ class Goal(models.Model):
             self.is_concrete = True
         else:
             self.is_concrete = False
-        return super().save(*args, **kwargs)
+
+        # 変更前の状態を取得（新規作成時はNone）
+        was_completed = False
+        try:        
+            if self.pk:
+                old_goal = Goal.objects.get(pk=self.pk)
+                was_completed = old_goal.is_completed
+        except Goal.DoesNotExist:
+            pass
+        # 通常の保存処理    
+        super().save(*args, **kwargs)
+
+        # is_completed が False → True に変わった場合のみスコア更新
+        if not was_completed and self.is_completed:
+            self.group.update_score()
     def vote_progress(self):
-        # total_members = self.group.members.count()
-        # if total_members == 0:
-        #     return 0
-        # yes_vote = self.votes.filter(is_yes=True).count()
-        # return int(yes_vote / total_members * 100)
         total_members = self.group.members.count()
         if total_members == 0:
             return 0
