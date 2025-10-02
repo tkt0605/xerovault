@@ -29,6 +29,7 @@ jobs:
         run: |
           cd frontend/xerofront
           npm install
+          npm run build
 
       - name: Generate static site
         run: |
