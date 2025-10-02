@@ -94,7 +94,7 @@ export default defineNuxtConfig({
     build: {
       rollupOptions: {
         output: {
-           assetFileNames: 'assets/[name]-[hash][extname]'
+          //  assetFileNames: 'assets/[name]-[hash][extname]'
         }
       }
     }
