@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 # ========= 環境変数 =========
-export RUN_SUPERUSER=0
-export RUN_MIGRATIONS=0
-export RUN_MODE="sleep"  # ← sleep にしたい場合は "sleep" にする
+export RUN_SUPERUSER=1
+export RUN_MIGRATIONS=1
+export RUN_MODE="app"  # ← sleep にしたい場合は "sleep" にする
 
 echo "🧪 環境変数チェック:"
 echo "  RUN_SUPERUSER=$RUN_SUPERUSER"
