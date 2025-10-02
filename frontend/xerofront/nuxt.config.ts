@@ -1,5 +1,3 @@
-import { SplitVendorChunkCache } from "vite";
-
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   // devtools: { enabled: true },
@@ -44,7 +42,7 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api/'
+      apiBase: 'https://xerovault-api-v2.azurewebsites.net/api/'
       // apiBase: 'http://localhost:8000/api/'
     }
   },
@@ -69,8 +67,11 @@ export default defineNuxtConfig({
     classSuffix: '',       // クラス名に `-dark` などのサフィックスをつけない
   },
   nitro: {
-    output: {
-      dir: 'dist'
+    // output: {
+    //   dir: 'dist'
+    // },
+    output:{
+      publicDir: 'dist/public'
     },
     routeRules: {
       '/**': {
@@ -93,10 +94,7 @@ export default defineNuxtConfig({
     build: {
       rollupOptions: {
         output: {
-          assetFileNames: (chunkInfo) => {
-            const name = typeof chunkInfo?.name === 'string' ? chunkInfo.name : 'asset';
-            return `assets/${name}-[hash][extname]`;
-          }
+           assetFileNames: 'assets/[name]-[hash][extname]'
         }
       }
     }
