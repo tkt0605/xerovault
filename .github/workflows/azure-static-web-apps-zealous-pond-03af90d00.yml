@@ -44,6 +44,5 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ZEALOUS_POND_03AF90D00 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "frontend/xerofront/dist"
-          outputs_location: "public"
+          app_location: "frontend/xerofront/dist/public"
           skip_app_build: true
