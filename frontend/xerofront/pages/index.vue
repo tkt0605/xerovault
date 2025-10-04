@@ -1,69 +1,3 @@
-<!-- <template>
-  <main class="text-black dark:text-white  md:ml-72 ml-0 relative flex-1 overflow-y-auto">
-    <div class="relative z-10 max-w-6xl mx-auto px-6 py-16 flex flex-col items-center text-center">
-      <div class="relative">
-        <img :src="currentUser?.avater"
-          class="w-28 h-28 rounded-full border-4 border-indigo-400 shadow-2xl object-cover" alt="オーナーのアバター" />
-        <div class="absolute inset-0 rounded-full border-2 border-indigo-500 animate-spin-slow"></div>
-      </div>
-      <h1 class="mt-6 text-3xl font-extrabold tracking-tight">
-        {{ currentUser?.email || 'オーナー名未設定' }}
-      </h1>
-      <span class="mt-2 text-xs text-purple-200 bg-purple-700/80 px-3 py-1 rounded-full shadow">
-        ログイン・ユーザー
-      </span>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-10 w-full text-sm">
-        <button @click="$emit('Group-dialog')"
-          class=" items-center justify-center p-8 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-500 shadow-lg group transition transform hover:-translate-y-1">
-          <p class="font-semibold text-2xl">{{ My_Studio_Counter }}</p>
-          <p>＋スタジオ</p>
-          <span
-            class="absolute inset-0 bg-white/20 scale-0 group-hover:scale-100 rounded-2xl transition-transform"></span>
-        </button>
-        <button @click="$emit('Group-dialog')"
-          class="items-center justify-center p-8 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-400 shadow-lg group transition transform hover:-translate-y-1">
-          <p class="font-semibold text-2xl">{{ My_Library_Countrer }}</p>
-          <p>＋ライブラリ</p>
-          <span
-            class="absolute inset-0 bg-white/20 scale-0 group-hover:scale-100 rounded-2xl transition-transform"></span>
-        </button>
-        <div
-          class="items-center justify-center p-8 rounded-2xl bg-gradient-to-r from-red-600 to-red-800 shadow-lg group transition transform hover:-translate-y-1">
-          <p class="font-semibold text-2xl">{{ My_Goal_Counter }}</p>
-          <p>ゴール</p>
-          <span
-            class="absolute inset-0 bg-white/20 scale-0 group-hover:scale-100 rounded-2xl transition-transform"></span>
-        </div>
-        <div class="bg-zinc-800/60 rounded-xl p-8 shadow flex flex-col items-center relative overflow-hidden">
-          <div class="absolute bottom-0 left-0 w-full bg-green-500/50 animate-pulse transition-all duration-500"
-            :style="{ height: achievementRate + '%' }"></div>
-          <p class="font-semibold text-2xl ">{{ achievementRate }}%</p>
-          <p>今月の達成率</p>
-        </div>
-      </div>
-      <div class="mt-12 w-full grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-zinc-800 rounded-xl p-6 shadow-lg hover:rotate-1 hover:shadow-2xl transition transform">
-          <h3 class="text-lg font-bold text-blue-400 mb-3">🧩 最近のスタジオ</h3>
-          <ul class="space-y-2 text-left text-sm" v-if="my_studios.length === 0">
-            <li class="p-2 bg-zinc-700/50 rounded">まだスタジオがありません。</li>
-          </ul>
-          <ul class="space-y-2 text-left text-sm" v-for="my_studio in news_studios" :key="my_studio.id" v-else>
-            <li class="p-2 bg-zinc-700/50 rounded"># {{ my_studio.name }}</li>
-          </ul>
-        </div>
-        <div class="bg-zinc-800 rounded-xl p-6 shadow-lg hover:-rotate-1 hover:shadow-2xl transition transform">
-          <h3 class="text-lg font-bold text-green-400 mb-3">📚 最近のライブラリ</h3>
-          <ul class="space-y-2 text-left text-sm" v-if="my_libraries.length === 0">
-            <li class="p-2 bg-zinc-700/50 rounded">まだライブラリがありません。</li>
-          </ul>
-          <ul class="space-y-2 text-left text-sm" v-for="my_library in news_librarys" :key="my_library.id" v-else>
-            <li class="p-2 bg-zinc-700/50 rounded">{{ my_library.name }}</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </main>
-</template> -->
 <template>
   <main class="text-black dark:text-white bg-gray-50 dark:bg-zinc-800 md:ml-70 ml-0 relative flex-1 overflow-y-auto">
     <div class="relative z-10 max-w-6xl mx-auto px-6 py-16 flex flex-col items-center text-center">
@@ -74,7 +8,7 @@
       </div>
 
       <!-- User Info -->
-      <h1 class="mt-6 text-3xl font-extrabold tracking-tight">
+      <h1  class="mt-6 text-3xl font-extrabold tracking-tight">
         {{ currentUser?.email || 'オーナー名未設定' }}
       </h1>
       <span class="mt-2 text-xs text-purple-800 dark:text-purple-200 bg-purple-100 dark:bg-purple-700/80 px-3 py-1 rounded-full shadow">
@@ -195,11 +129,14 @@ const goalStore = useGoalStore();
 const my_studios = ref([]);
 const my_libraries = ref([]);
 const my_goals = ref([]);
-
+const userId = authStore?.user?.id;
 onMounted(async () => {
   try {
     await authStore.restoreSession();
-    const userId = authStore?.user?.id;
+    const user = authStore?.user;
+    if (!user){
+      console.log('user:', user);
+    }
     my_studios.value = await groupStore.fetchGroup();
     my_libraries.value = await libraryStore.fetchMylibrary();
     my_goals.value = await goalStore.MyGoals();

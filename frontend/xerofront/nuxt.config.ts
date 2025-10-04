@@ -1,10 +1,9 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
-  // devtools: { enabled: true },
-  devtools: { enabled: false },
-  // ssr: true,
+  /// ssr: true,
   ssr: false,
-  target: 'static',
+  devtools: { enabled: true },
+  // devtools: { enabled: false },
   app: {
     head: {
       title: 'iStudio',
@@ -36,7 +35,7 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api/'
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://xerovault-api-v2.azurewebsites.net/api/'
     }
   },
   i18n: {
@@ -63,7 +62,11 @@ export default defineNuxtConfig({
     output: {
       dir: 'dist'
     },
-    
+    prerender: {
+      failOnError: false,
+      crawlLinks: true,
+      routes: ['/']
+    },
     routeRules: {
       '/**': {
         headers: {
@@ -79,15 +82,12 @@ export default defineNuxtConfig({
     fallback: true
   },
   vite: {
-    optimizeDeps: {
-      noDiscovery: true
-    },
     build: {
       rollupOptions: {
         output: {
-           assetFileNames: 'assets/[name]-[hash][extname]'
+          assetFileNames: 'assets/[name]-[hash][extname]'
         }
       }
     }
-  },
+  }
 });
