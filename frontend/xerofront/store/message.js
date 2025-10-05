@@ -19,6 +19,7 @@ export const useAuthMessage = defineStore('message', {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${authStore.accessToken}`
                     },
+                    credentials: 'include',
                     body: JSON.stringify({
                         group: group,
                         goal: goal,
@@ -55,7 +56,8 @@ export const useAuthMessage = defineStore('message', {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${authStore.accessToken}`
-                    }
+                    },
+                    credentials: 'include'
                 });
                 if (!response.ok){
                     const errorData = await response.json();
@@ -78,6 +80,7 @@ export const useAuthMessage = defineStore('message', {
                         'Content-Type': 'application',
                         'Authorization': `Bearer ${authStore.accessToken}`
                     },
+                    credentials: 'include'
                 });
                 if (!response.ok){
                     const errorData = await response.json();
