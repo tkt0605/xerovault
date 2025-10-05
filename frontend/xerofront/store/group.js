@@ -28,7 +28,6 @@ export const useAuthGroups = defineStore('group', {
                         "Content-Type": 'application/json',
                         "Authorization": `Bearer ${authStore.accessToken}`
                     },
-                    credentials: 'include',
                     body: JSON.stringify({
                         name: name.trim(),
                         is_public: is_public,
@@ -69,7 +68,6 @@ export const useAuthGroups = defineStore('group', {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
                     },
-                    credentials: 'include'
                 });
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -119,7 +117,6 @@ export const useAuthGroups = defineStore('group', {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
                     },
-                    credentials: 'include'
                 });
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -169,7 +166,6 @@ export const useAuthGroups = defineStore('group', {
                         "Content-Type": 'application/json',
                         "Authorization": `Bearer ${authStore.accessToken}`
                     },
-                    credentials: 'include',
                     body: JSON.stringify({
                         email,
                     })
@@ -197,7 +193,6 @@ export const useAuthGroups = defineStore('group', {
                         "Content-Type": 'application/json',
                         'Authorization': `Bearer ${authStore.accessToken}`
                     },
-                    credentials: 'include'
                 });
                 if (!response.ok){
                     const errorData = await response.json();
@@ -222,7 +217,6 @@ export const useAuthGroups = defineStore('group', {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
                     },
-                    credentials: 'include'
                     // body: JSON.stringify({
                     //     email: EmailUrlEncode,
                     // })

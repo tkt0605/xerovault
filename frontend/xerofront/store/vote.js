@@ -18,7 +18,6 @@ export const useAuthVote = defineStore('vote', {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
                     },
-                    credentials: 'include',
                     body: JSON.stringify({
                         group: groupId,
                         goal: goalId,
@@ -46,8 +45,7 @@ export const useAuthVote = defineStore('vote', {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
-                    },
-                    credentials: 'include'
+                    }
                 });
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -73,8 +71,7 @@ export const useAuthVote = defineStore('vote', {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
-                    },
-                    credentials: 'include'
+                    }
                 });
                 if (!response.ok) {
                     const errData = await response.json();
@@ -97,8 +94,7 @@ export const useAuthVote = defineStore('vote', {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
-                    },
-                    credentials: 'include'
+                    }
                 });
                 if (!response.ok) {
                     const errData = await response.json();
@@ -122,7 +118,6 @@ export const useAuthVote = defineStore('vote', {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
                     },
-                    credentials: 'include',
                     body: JSON.stringify({
                         is_yes: is_yes
                     })
@@ -148,8 +143,7 @@ export const useAuthVote = defineStore('vote', {
                     headers: {
                         // "Content-Type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
-                    },
-                    credentials: 'include'
+                    }
                 });
                 if (!response.ok){
                     const errData = await response.json();

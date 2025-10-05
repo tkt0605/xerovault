@@ -42,7 +42,6 @@ export const useAuthStore = defineStore("auth", {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    credentials: 'include',
                     body: JSON.stringify({ refresh: refreshTokens })
                 });
                 if (!response.ok) {
@@ -114,7 +113,6 @@ export const useAuthStore = defineStore("auth", {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    credentials: 'include',
                     body: JSON.stringify({
                         email: email.trim(),
                         password: password.trim(),
@@ -151,7 +149,6 @@ export const useAuthStore = defineStore("auth", {
                     headers: {
                         "Content-Type": 'application/json'
                     },
-                    credentials: 'include',
                     body: JSON.stringify({
                         email: email.trim(),
                         password: password.trim(),
@@ -181,7 +178,6 @@ export const useAuthStore = defineStore("auth", {
                     headers: {
                         "Content-Type": 'application/json',
                     },
-                    credentials: 'include',
                     body: JSON.stringify({ refresh: refreshTokens }),
                 });
                 if (!response.ok) {
@@ -204,7 +200,6 @@ export const useAuthStore = defineStore("auth", {
                         "Content-Type": 'application/json',
                         'Authorization': `Bearer ${this.accessToken}`
                     },
-                    credentials: 'include'
                 });
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -237,7 +232,6 @@ export const useAuthStore = defineStore("auth", {
                         "Content-Type": 'application/json',
                         'Authorization': `Bearer ${this.accessToken}`
                     },
-                    credentials: 'include'
                 });
                 if (!response.ok) {
                     const errorData = await response.json();

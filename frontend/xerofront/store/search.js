@@ -25,8 +25,7 @@ export const useSearchStore = defineStore('search', {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
-                    },
-                    credentials: 'include'
+                    }
                 });
                 if (!response.ok){
                     const errorData = await response.json();
