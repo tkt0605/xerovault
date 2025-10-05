@@ -402,24 +402,23 @@ CORS_ALLOWED_HEADERS = [
     "accept",
     "accept-endcoding",
     "user-agent",
+    "cookie"
 ]
 CORS_ALLOWED_ORIGINS = env_list(
     "CORS_ALLOWED_ORIGINS",
     default=[
-        "https://xerovault-api-v2.azurewebsites.net",
-        "https://zealous-pond-03af90d00.2.azurestaticapps.net",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "https://zealous-pond-03af90d00.2.azurestaticapps.net"
     ]
 )
 
 CSRF_TRUSTED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS",
     default=[
-        "https://xerovault-api-v2.azurewebsites.net",
-        "https://zealous-pond-03af90d00.2.azurestaticapps.net",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "https://zealous-pond-03af90d00.2.azurestaticapps.net"
     ]
 )
 
@@ -432,7 +431,3 @@ SECURE_HSTS_SECONDS=31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS=env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=False)
 SECURE_HSTS_PRELOAD=env_bool('SECURE_HSTS_PRELOAD', default=False)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-
-
-
