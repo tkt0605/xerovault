@@ -83,4 +83,4 @@ RUN chmod +x scripts/docker-cmd.sh
 # ========= ポート公開 =========
 EXPOSE 8000 2222
 # ========= コンテナ起動コマンド =========
-CMD ["/backend/scripts/docker-cmd.sh"]
+CMD ["bash", "/backend/scripts/docker-cmd.sh"]

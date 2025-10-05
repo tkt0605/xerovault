@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ex
 # ========= 環境変数 =========
 export RUN_SUPERUSER=1
 export RUN_MIGRATIONS=1
