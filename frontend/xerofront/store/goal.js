@@ -20,6 +20,7 @@ export const useGoalStore = defineStore('goal',  {
                         "Content-type": 'application/json',
                         "Authorization": `Bearer ${authStore.accessToken}`
                     },
+                    credentials: 'include',
                     body: JSON.stringify({
                         group: group,
                         header: header,
@@ -48,7 +49,8 @@ export const useGoalStore = defineStore('goal',  {
                     headers: {
                         "Content-Type": 'application/json',
                         'Authorization': `Bearer ${authStore.accessToken}`
-                    }
+                    },
+                    credentials: 'include'
                 });
                 if (!response.ok){
                     const errorData = await response.json();
@@ -71,7 +73,8 @@ export const useGoalStore = defineStore('goal',  {
                     headers: {
                         "Content-type": 'application/json',
                         'Authorization': `Bearer ${authStore.accessToken}`
-                    }
+                    },
+                    credentials: 'include'
                 });
                 if (!response.ok){
                     const errorData = await response.json();
@@ -94,7 +97,8 @@ export const useGoalStore = defineStore('goal',  {
                     headers: {
                         "Content-type": 'application/json',
                         'Authorization': `Bearer ${authStore.accessToken}`
-                    }
+                    },
+                    credentials: 'include'
                 });
                 if (!response.ok){
                     const errorData = await response.text();
@@ -118,7 +122,8 @@ export const useGoalStore = defineStore('goal',  {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
-                    }
+                    },
+                    credentials: 'include'
                 });
                 if (!response.ok){
                     const errorText = await response.text();
@@ -141,7 +146,8 @@ export const useGoalStore = defineStore('goal',  {
                     header: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
-                    }
+                    },
+                    credentials: 'include'
                 });
                 if (!response.ok){
                     const errorData = await response.json();
@@ -165,6 +171,7 @@ export const useGoalStore = defineStore('goal',  {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
                     },
+                    credentials: 'include',
                     body: JSON.stringify({
                         is_yes: is_yes
                     })
