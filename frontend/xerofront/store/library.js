@@ -17,7 +17,6 @@ export const useAuthLibrary = defineStore('library', {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
                     },
-                    credentials: 'include',
                     body: JSON.stringify({
                         name: name.trim(),
                         tag: tag.trim(),
@@ -53,7 +52,6 @@ export const useAuthLibrary = defineStore('library', {
                         "Content-type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
                     },
-                    credentials: 'include'
                 });
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -95,7 +93,6 @@ export const useAuthLibrary = defineStore('library', {
                         "Content-type": "application/json",
                         "Authorization": `Bearer ${authStore.accessToken}`
                     },
-                    credentials: 'include'
                 });
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -137,7 +134,6 @@ export const useAuthLibrary = defineStore('library', {
                         'Content-type': 'application/json',
                         'Authorization': `Bearer ${authStore.accessToken}`
                     },
-                    credentials: 'include'
                 });
                 if (!response.ok) {
                     const errorLog = await response.text();
@@ -167,7 +163,6 @@ export const useAuthLibrary = defineStore('library', {
                         "Content-Type": "multipart/form-data",
                         "Authorization": `Bearer ${authStore.accessToken}`
                     },
-                    credentials: 'include',
                     body: formData
                 });
                 if (!response.ok) {
