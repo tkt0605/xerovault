@@ -402,7 +402,7 @@ CORS_ALLOWED_HEADERS = [
     "accept",
     "accept-endcoding",
     "user-agent",
-    # "cookie"
+    # "origin"
 ]
 CORS_ALLOWED_ORIGINS = env_list(
     "CORS_ALLOWED_ORIGINS",
@@ -423,7 +423,7 @@ CSRF_TRUSTED_ORIGINS = env_list(
 )
 
 
-# CORS_ALLOW_CREDENTIALS = True  # Cookie を使う場合
+CORS_ALLOW_CREDENTIALS = False  # Cookie を使う場合
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", default=False)
