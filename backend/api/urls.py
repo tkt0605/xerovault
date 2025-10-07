@@ -20,6 +20,8 @@ from api.views import (
     # InviteAppoverViewSet,
     InviteCreateView
 )
+from django.http import JsonResponse
+def healthz(_): return JsonResponse({"ok": True, "version": "2025-10-08"})
 router = routers.DefaultRouter()
 router.register(r'users', CustomUserViewSet, basename='user')
 router.register(r'groups', GenerateGroupviewSet, basename='group')
@@ -42,5 +44,6 @@ urlpatterns = [
     path('invite/create/', InviteCreateView.as_view(), name='invite-create'),
     path('', include(router.urls))
 ]
+urlpatterns += [path("healthz", healthz)]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)
