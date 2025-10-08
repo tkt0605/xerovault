@@ -94,14 +94,14 @@ class GenerateGroupSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = GenerateGroup
-        fields = ['id', 'name','tag' , 'owner', 'members', 'goals', 'score', 'generate_credits', 'joined_token', 'is_public', "created_at",'updated_at']
+        fields = ['id', 'name','tag' , 'owner', 'members','score', 'generate_credits', 'joined_token', 'is_public', "created_at",'updated_at']
         read_only_fields = ['id', 'joined_token', 'created_at','updated_at']
 class GenerateGroupReadSerializer(serializers.ModelSerializer):
     owner = CustomUserSerializer(read_only=True)
     members=CustomUserSerializer(read_only=True, many=True)
     class Meta:
         model = GenerateGroup
-        fields = ['id', 'name','tag' , 'owner', 'members', 'goals', 'score', 'generate_credits', 'joined_token', 'is_public', "created_at",'updated_at']
+        fields = ['id', 'name','tag' , 'owner', 'members','score', 'generate_credits', 'joined_token', 'is_public', "created_at",'updated_at']
 
 
 # class GeneratePublicTokenSerializer(serializers.ModelSerializer):
