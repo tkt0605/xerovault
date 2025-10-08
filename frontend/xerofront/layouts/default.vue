@@ -590,7 +590,6 @@ const openGoalDialog = ref(false);
 const openQRdailog = ref(false);
 const isDockingdailog = ref(false);
 const invterURL = ref('');
-const routeId = route.params.id;
 const goals = ref([]);
 const my_libraries = ref([]);
 const isJoinToStudioUrl = ref(false);
@@ -608,6 +607,11 @@ const libraryId = ref('');
 const my_files = ref([]);
 onMounted(async () => {
   try {
+    const routeId = route.params.id;
+    if (!routeId) {
+      console.error('ルートIDが見つかりません。');
+      return;
+    }
     library.value = await libraryStore.FetchDockingLibrary(routeId);
     groupList.value = await groupStore.fetchGroup();
     libraries.value = await libraryStore.FetchLibrary();

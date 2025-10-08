@@ -72,28 +72,28 @@
                         <p class="text-2xl font-extrabold text-purple-500 tracking-wide">
                             {{ group.members?.length || 0 }} 人
                         </p>
-                        <p class="text-sm text-black dark:text-white-400 mt-1">メンバー数</p>
+                        <p class="text-sm dark:text-white-400 mt-1">メンバー数</p>
                     </button>
 
                     <!-- ドッキング -->
                     <button @click="$emit('DockingtoStudio-dialog')"
                         class="flex-1 min-w-[145px] flex-shrink-0 p-4 text-center flex-shrink-0 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
                         <p class="text-lg text-green-400 font-semibold">ドッキング</p>
-                        <p class="text-sm text-black dark:text-white-400 mt-1">結びつける</p>
+                        <p class="text-sm dark:text-white-400 mt-1">結びつける</p>
                     </button>
 
                     <!-- ゴール追加 -->
                     <button @click="$emit('Goal-dialog')"
                         class="flex-1 min-w-[145px] flex-shrink-0 p-4 text-center flex-shrink-0 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
                         <p class="text-lg text-red-500 font-semibold">＋ゴールの追加</p>
-                        <p class="text-sm text-black dark:text-white-400 mt-1">ゴールの作成</p>
+                        <p class="text-sm dark:text-white-400 mt-1">ゴールの作成</p>
                     </button>
 
                     <!-- 投票箱 -->
                     <button @click="$emit('Goalvote-dialog')"
                         class="flex-1 min-w-[145px] flex-shrink-0 p-4 text-center flex-shrink-0 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-white">
                         <p class="text-lg text-yellow-500 font-semibold">投票箱を作成</p>
-                        <p class="text-sm text-black dark:text-white-400 mt-1">投票の作成</p>
+                        <p class="text-sm dark:text-white-400 mt-1">投票の作成</p>
                     </button>
                 </div>
 
@@ -319,7 +319,6 @@ const openGoalDialog = ref(false);
 const isSidebarOpen = ref(false);
 const isShowMember = ref(false);
 const isJoined = ref(false);
-const routeId = route.params.id;
 const toggleSidebar = () => {
     isSidebarOpen.value = !isSidebarOpen.value
 };
