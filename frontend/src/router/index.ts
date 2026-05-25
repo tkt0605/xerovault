@@ -1,0 +1,27 @@
+import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    { path: '/auth/login', component: () => import('@/pages/auth/Login.vue'), meta: { public: true } },
+    { path: '/auth/signup', component: () => import('@/pages/auth/Signup.vue'), meta: { public: true } },
+    { path: '/', component: () => import('@/pages/Home.vue') },
+    { path: '/studio/:id', component: () => import('@/pages/studio/StudioDetail.vue') },
+    { path: '/studio/:id/join', component: () => import('@/pages/studio/JoinStudio.vue'), meta: { public: true } },
+    { path: '/studio/:id/goal/:goalId', component: () => import('@/pages/studio/GoalDetail.vue') },
+    { path: '/ranking', component: () => import('@/pages/Ranking.vue'), meta: { public: true } },
+  ],
+})
+
+router.beforeEach(async (to) => {
+  if (to.meta.public) return true
+  const auth = useAuthStore()
+  if (!auth.isAuthenticated) {
+    await auth.restoreSession()
+    if (!auth.isAuthenticated) return '/auth/login'
+  }
+  return true
+})
+
+export default router

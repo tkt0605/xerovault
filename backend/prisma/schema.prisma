@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  avatar    String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownedGroups    Group[]    @relation("GroupOwner")
+  memberOfGroups Group[]    @relation("GroupMembers")
+  assignedGoals  Goal[]     @relation("GoalAssignee")
+  goalVotes      GoalVote[]
+  votes          Vote[]
+  messages       Message[]
+}
+
+model Group {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  tag       String?
+  isPublic  Boolean  @default(false)
+  joinToken String?  @unique
+  score     Int      @default(100)
+  credits   Int      @default(100)
+  streak    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner   User   @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId String
+  members User[] @relation("GroupMembers")
+  goals   Goal[]
+
+  @@index([score(sort: Desc)])
+}
+
+model Goal {
+  id          String    @id @default(uuid())
+  header      String?
+  description String
+  deadline    DateTime?
+  isConcrete  Boolean   @default(false)
+  isCompleted Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId    String
+  assignee   User?    @relation("GoalAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  assigneeId String?
+
+  goalVotes GoalVote[]
+  messages  Message[]
+
+  @@index([groupId])
+}
+
+// 投票箱（ゴールごとに1メンバー1つ）
+model GoalVote {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  goal    Goal   @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  goalId  String
+  voter   User   @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  voterId String
+
+  vote Vote?
+
+  @@unique([goalId, voterId])
+  @@index([goalId])
+}
+
+// 実際の投票（YES/NO）
+model Vote {
+  id        String   @id @default(uuid())
+  isYes     Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  goalVote   GoalVote @relation(fields: [goalVoteId], references: [id], onDelete: Cascade)
+  goalVoteId String   @unique
+  voter      User     @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  voterId    String
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  text      String
+  createdAt DateTime @default(now())
+
+  goal     Goal   @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  goalId   String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String
+
+  @@index([goalId])
+}
