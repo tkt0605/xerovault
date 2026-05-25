@@ -1,0 +1,83 @@
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+
+interface UserInfo {
+  id: string
+  email: string
+  avatar: string | null
+}
+
+export const useAuthStore = defineStore('auth', () => {
+  const accessToken = ref<string | null>(null)
+  const user = ref<UserInfo | null>(null)
+
+  const isAuthenticated = computed(() => !!accessToken.value)
+
+  async function login(email: string, password: string): Promise<void> {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password }),
+    })
+    if (!res.ok) {
+      const err = await res.json()
+      throw new Error(err.error ?? 'ログインに失敗しました')
+    }
+    const data = await res.json()
+    accessToken.value = data.access
+    user.value = data.user
+  }
+
+  async function signup(email: string, password: string): Promise<void> {
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password }),
+    })
+    if (!res.ok) {
+      const err = await res.json()
+      throw new Error(err.error ?? '登録に失敗しました')
+    }
+    const data = await res.json()
+    accessToken.value = data.access
+    user.value = data.user
+  }
+
+  async function logout(): Promise<void> {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    accessToken.value = null
+    user.value = null
+  }
+
+  // リフレッシュトークン（Cookie）でアクセストークンを更新
+  async function refresh(): Promise<boolean> {
+    try {
+      const res = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        credentials: 'include',
+      })
+      if (!res.ok) { accessToken.value = null; user.value = null; return false }
+      const data = await res.json()
+      accessToken.value = data.access
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  // ページロード時にセッション復元
+  async function restoreSession(): Promise<void> {
+    const ok = await refresh()
+    if (ok) {
+      const res = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${accessToken.value}` },
+        credentials: 'include',
+      })
+      if (res.ok) user.value = await res.json()
+    }
+  }
+
+  return { accessToken, user, isAuthenticated, login, signup, logout, refresh, restoreSession }
+})
