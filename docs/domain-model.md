@@ -34,7 +34,6 @@ erDiagram
         boolean isPublic
         string joinToken
         int score
-        int credits
         int streak
     }
 
@@ -72,7 +71,7 @@ erDiagram
 | モデル | 役割 |
 | --- | --- |
 | `User` | アカウント。`name`は表示名(任意)、未設定時はメールアドレスをフォールバック表示 |
-| `Group` | 目標を共有するチーム。`score`/`streak`/`credits`を保持。`credits`は現状未実装(常に初期値100のまま更新されない) |
+| `Group` | 目標を共有するチーム。`score`/`streak`を保持 |
 | `Goal` | Group内の目標。`deadline`と`assigneeId`の両方があると「具体的な目標」(`isConcrete`)として扱われ、スコア計算で優遇される |
 | `GoalVote` | 「投票席」。Goal×Userの組で1つだけ存在し(`@@unique([goalId, voterId])`)、投票取り消し時もこのレコード自体は残る |
 | `Vote` | 実際のYES/NO値。`GoalVote`に対して1:1。投票取り消しはこのレコードのみ削除される |
@@ -86,5 +85,4 @@ erDiagram
 
 ## 未解決の設計課題
 
-- `Group.credits` は宣言されているが更新箇所が存在しない(デッドフィールド)
 - `GoalVote`/`Vote`の分離は投票取り消しの意味論(席は残すが値は消す)のために存在するが、統合すべきかは未検討(レベル2で見送り済み)

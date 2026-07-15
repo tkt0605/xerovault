@@ -25,7 +25,6 @@ export interface Group {
   isPublic: boolean
   score: number
   streak: number
-  credits: number
   joinToken: string | null
   createdAt: string
   updatedAt: string

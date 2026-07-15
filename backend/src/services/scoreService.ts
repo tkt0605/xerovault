@@ -124,6 +124,18 @@ export async function updateGroupScore(groupId: string): Promise<void> {
   })
 }
 
+// 全グループのスコア/ストリークを再計算する(投票操作を待たずに missed 状態を反映するための定期スイープ用)
+export async function runScoreSweep(): Promise<void> {
+  const groups = await prisma.group.findMany({ select: { id: true } })
+  for (const group of groups) {
+    try {
+      await updateGroupScore(group.id)
+    } catch (err) {
+      console.error(`runScoreSweep: failed to update group ${group.id}`, err)
+    }
+  }
+}
+
 export async function calcVoteProgress(goalId: string): Promise<number> {
   const goal = await prisma.goal.findUnique({
     where: { id: goalId },
