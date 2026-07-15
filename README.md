@@ -1,30 +1,33 @@
 # Xero Vault
 
-Xero Vault is a sample project consisting of a **Django** backend and a **Nuxt** frontend.  The services are orchestrated using Docker Compose along with a Postgres database and an Nginx reverse proxy.
+グループ(Studio)を作り、メンバーで目標(Goal)を設定し、達成をYES/NO投票で承認し合うことでスコア・クレジット・継続ストリークを競うゴール管理アプリ。
 
-## Directory Overview
+## 構成
 
-- `backend/` – Django project containing the API and admin site.
-- `frontend/` – Nuxt application. The main source lives in `frontend/xerofront`.
-- `nginx/` – Nginx configuration that proxies requests to the frontend and backend containers.
-- `postgres/` – Initialization scripts for the Postgres container.
-- `docker-compose.yml` – Compose file used to run the development environment.
+- `backend/` – Express + TypeScript API。Prisma ORM + PostgreSQL。
+- `frontend/` – Vue 3 + Vite SPA。Pinia でステート管理、Tailwind CSS でスタイリング。
+- `docker-compose.yml` – Postgres・backend・frontend をまとめて起動する開発環境。
 
-## Running the Stack
+## セットアップ
 
-1. Ensure Docker and Docker Compose are installed.
-2. From the repository root run:
+1. `.env.example` を `.env` にコピーし、値を埋める。
+2. 以下を実行してスタックを起動する。
 
    ```bash
-   docker-compose up --build
+   docker compose up --build
    ```
 
-   This command builds the images (if necessary) and starts the containers.
+   backend コンテナ起動時に `prisma migrate deploy` が自動実行される。
 
-## Accessing Services
+## アクセス
 
-- **Frontend**: [http://localhost:3000](http://localhost:3000) – Nuxt development server.
-- **Backend API**: [http://localhost:8000](http://localhost:8000) – Django server.
-- **Nginx Proxy**: [http://localhost:8080](http://localhost:8080) – Nginx forwards `/api/` and `/admin/` to the backend and serves the frontend at the root path.
+- **Frontend**: [http://localhost:5173](http://localhost:5173) – Vite dev server
+- **Backend API**: [http://localhost:8000](http://localhost:8000) – Express server
 
-Use the Nginx endpoint for an integrated experience or access the individual services directly on their respective ports.
+## 主要ドメイン
+
+- **User** – アカウント。複数の Group に所属できる。
+- **Group (Studio)** – 目標を共有するチーム。スコア・クレジット・ストリークを保持。
+- **Goal** – Group 内で設定する目標。担当者(assignee)を割り当てられる。
+- **GoalVote / Vote** – Goal の達成可否をメンバーが YES/NO で投票し承認する仕組み。
+- **Message** – Goal に紐づくコメント。
