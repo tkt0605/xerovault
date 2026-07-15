@@ -9,7 +9,7 @@ const router = Router()
 router.use(requireAuth)
 
 // GET /api/groups — 参加中のグループ一覧
-router.get('/', async (req, res, next) => {
+router.get('/groups', async (req, res, next) => {
   try {
     const userId = req.user!.id
     const groups = await prisma.group.findMany({
@@ -28,7 +28,7 @@ router.get('/', async (req, res, next) => {
 })
 
 // POST /api/groups — グループ作成
-router.post('/', async (req, res, next) => {
+router.post('/groups', async (req, res, next) => {
   try {
     const { name, tag, isPublic } = createGroupSchema.parse(req.body)
 
@@ -53,7 +53,7 @@ router.post('/', async (req, res, next) => {
 })
 
 // GET /api/groups/:id — グループ詳細
-router.get('/:id', async (req, res, next) => {
+router.get('/groups/:id', async (req, res, next) => {
   try {
     const userId = req.user!.id
     const group = await prisma.group.findUnique({
@@ -81,7 +81,7 @@ router.get('/:id', async (req, res, next) => {
 })
 
 // POST /api/groups/:id/invite — 招待リンク生成（オーナーのみ）
-router.post('/:id/invite', async (req, res, next) => {
+router.post('/groups/:id/invite', async (req, res, next) => {
   try {
     const userId = req.user!.id
     const { expireIn } = createInviteSchema.parse(req.body)
@@ -108,7 +108,7 @@ router.post('/:id/invite', async (req, res, next) => {
 })
 
 // POST /api/groups/:id/join — 招待リンクで参加
-router.post('/:id/join', async (req, res, next) => {
+router.post('/groups/:id/join', async (req, res, next) => {
   try {
     const userId = req.user!.id
     const { data } = joinGroupSchema.parse(req.body)
@@ -151,7 +151,7 @@ router.post('/:id/join', async (req, res, next) => {
 })
 
 // DELETE /api/groups/:id/members/:userId — メンバー除名（オーナーのみ）
-router.delete('/:id/members/:memberId', async (req, res, next) => {
+router.delete('/groups/:id/members/:memberId', async (req, res, next) => {
   try {
     const userId = req.user!.id
     const group = await prisma.group.findUnique({ where: { id: req.params.id } })
