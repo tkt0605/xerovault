@@ -1,14 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import type { Message } from '@xerovault/shared'
 import { api } from '@/api/client'
 
-export interface Message {
-  id: string
-  text: string
-  createdAt: string
-  goalId: string
-  author: { id: string; email: string; name: string | null; avatar: string | null }
-}
+export type { Message }
 
 export const useMessageStore = defineStore('message', () => {
   const messages = ref<Message[]>([])

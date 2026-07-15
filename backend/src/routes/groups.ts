@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import { z } from 'zod'
 import { randomUUID } from 'crypto'
+import { createGroupSchema, createInviteSchema, joinGroupSchema } from '@xerovault/shared'
 import { prisma } from '../db'
 import { requireAuth } from '../middleware/auth'
 import { encryptInvite, decryptInvite } from '../utils/crypto'
@@ -30,13 +30,7 @@ router.get('/', async (req, res, next) => {
 // POST /api/groups — グループ作成
 router.post('/', async (req, res, next) => {
   try {
-    const { name, tag, isPublic } = z
-      .object({
-        name: z.string().min(1).max(50),
-        tag: z.string().max(30).optional(),
-        isPublic: z.boolean().default(false),
-      })
-      .parse(req.body)
+    const { name, tag, isPublic } = createGroupSchema.parse(req.body)
 
     const userId = req.user!.id
     const group = await prisma.group.create({
@@ -90,9 +84,7 @@ router.get('/:id', async (req, res, next) => {
 router.post('/:id/invite', async (req, res, next) => {
   try {
     const userId = req.user!.id
-    const { expireIn = 3600 } = z
-      .object({ expireIn: z.number().min(300).max(86400).default(3600) })
-      .parse(req.body)
+    const { expireIn } = createInviteSchema.parse(req.body)
 
     const group = await prisma.group.findUnique({ where: { id: req.params.id } })
     if (!group) {
@@ -119,7 +111,7 @@ router.post('/:id/invite', async (req, res, next) => {
 router.post('/:id/join', async (req, res, next) => {
   try {
     const userId = req.user!.id
-    const { data } = z.object({ data: z.string() }).parse(req.body)
+    const { data } = joinGroupSchema.parse(req.body)
 
     const payload = decryptInvite(data) as { token: string; exp: number; groupId: string } | null
     if (!payload) {

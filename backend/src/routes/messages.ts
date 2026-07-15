@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { z } from 'zod'
+import { sendMessageSchema } from '@xerovault/shared'
 import { prisma } from '../db'
 import { requireAuth } from '../middleware/auth'
 
@@ -41,7 +41,7 @@ router.get('/goals/:id/messages', async (req, res, next) => {
 router.post('/goals/:id/messages', async (req, res, next) => {
   try {
     const userId = req.user!.id
-    const { text } = z.object({ text: z.string().min(1).max(2000) }).parse(req.body)
+    const { text } = sendMessageSchema.parse(req.body)
 
     const goal = await prisma.goal.findUnique({
       where: { id: req.params.id },

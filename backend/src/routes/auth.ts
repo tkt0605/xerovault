@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
-import { z } from 'zod'
+import { signupSchema, loginSchema } from '@xerovault/shared'
 import { prisma } from '../db'
 import { signAccess, signRefresh, verifyToken } from '../utils/jwt'
 import { requireAuth } from '../middleware/auth'
@@ -22,13 +22,7 @@ function avatarUrl(email: string): string {
 // POST /api/auth/signup
 router.post('/signup', async (req, res, next) => {
   try {
-    const { email, password, name } = z
-      .object({
-        email: z.string().email(),
-        password: z.string().min(8),
-        name: z.string().min(1).max(50).optional(),
-      })
-      .parse(req.body)
+    const { email, password, name } = signupSchema.parse(req.body)
 
     const exists = await prisma.user.findUnique({ where: { email } })
     if (exists) {
@@ -55,12 +49,7 @@ router.post('/signup', async (req, res, next) => {
 // POST /api/auth/login
 router.post('/login', async (req, res, next) => {
   try {
-    const { email, password } = z
-      .object({
-        email: z.string().email(),
-        password: z.string().min(1),
-      })
-      .parse(req.body)
+    const { email, password } = loginSchema.parse(req.body)
 
     const user = await prisma.user.findUnique({ where: { email } })
     if (!user || !(await bcrypt.compare(password, user.password))) {

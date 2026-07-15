@@ -34,7 +34,7 @@
         </div>
         <div class="flex items-center gap-4 text-xs text-zinc-500">
           <span>{{ g.members.length }}人</span>
-          <span>{{ g._count.goals }}ゴール</span>
+          <span>{{ g._count?.goals ?? 0 }}ゴール</span>
           <span v-if="g.tag">#{{ g.tag }}</span>
         </div>
       </div>

@@ -1,22 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import type { Group, CreateGroupInput } from '@xerovault/shared'
 import { api } from '@/api/client'
 
-export interface Group {
-  id: string
-  name: string
-  tag: string | null
-  isPublic: boolean
-  score: number
-  streak: number
-  credits: number
-  joinToken: string | null
-  createdAt: string
-  updatedAt: string
-  owner: { id: string; email: string; name: string | null; avatar: string | null }
-  members: { id: string; email: string; name: string | null; avatar: string | null }[]
-  _count: { goals: number }
-}
+export type { Group }
 
 export const useGroupStore = defineStore('group', () => {
   const groups = ref<Group[]>([])
@@ -32,11 +19,7 @@ export const useGroupStore = defineStore('group', () => {
     return g
   }
 
-  async function createGroup(data: {
-    name: string
-    tag?: string
-    isPublic?: boolean
-  }): Promise<Group> {
+  async function createGroup(data: CreateGroupInput): Promise<Group> {
     const g = await api.post<Group>('/groups', data)
     groups.value.unshift(g)
     return g

@@ -44,19 +44,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import type { RankingGroup } from '@xerovault/shared'
 import { api } from '@/api/client'
 
-interface RankGroup {
-  id: string
-  name: string
-  tag: string | null
-  score: number
-  streak: number
-  _count: { members: number; goals: number }
-}
-
-const groups = ref<RankGroup[]>([])
+const groups = ref<RankingGroup[]>([])
 onMounted(async () => {
-  groups.value = await api.get<RankGroup[]>('/rankings')
+  groups.value = await api.get<RankingGroup[]>('/rankings')
 })
 </script>

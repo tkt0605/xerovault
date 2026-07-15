@@ -19,31 +19,39 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: xero-backend
+    working_dir: /app/backend
     env_file: .env
     ports:
       - '8000:8000'
     volumes:
-      - ./backend:/app
+      - .:/app
       - /app/node_modules
+      - /app/backend/node_modules
+      - /app/frontend/node_modules
+      - /app/packages/shared/node_modules
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "npx prisma migrate deploy && npm run dev"
+    command: sh -c "npx prisma migrate deploy && pnpm run dev"
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
     container_name: xero-frontend
+    working_dir: /app/frontend
     env_file: .env
     ports:
       - '5173:5173'
     volumes:
-      - ./frontend:/app
+      - .:/app
       - /app/node_modules
+      - /app/backend/node_modules
+      - /app/frontend/node_modules
+      - /app/packages/shared/node_modules
     depends_on:
       - backend
 

@@ -1,18 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import type { VoteStatus, CastVoteResponse, CancelVoteResponse } from '@xerovault/shared'
 import { api } from '@/api/client'
 
-export interface VoteStatus {
-  goalId: string
-  isCompleted: boolean
-  progress: number
-  totalMembers: number
-  myVote: boolean | null
-  votes: {
-    voter: { id: string; email: string; name: string | null; avatar: string | null }
-    isYes: boolean | null
-  }[]
-}
+export type { VoteStatus }
 
 export const useVoteStore = defineStore('vote', () => {
   const status = ref<VoteStatus | null>(null)
@@ -28,12 +19,7 @@ export const useVoteStore = defineStore('vote', () => {
     goalId: string,
     isYes: boolean
   ): Promise<{ progress: number; justCompleted: boolean }> {
-    const res = await api.post<{
-      ok: boolean
-      isYes: boolean
-      progress: number
-      justCompleted: boolean
-    }>(`/goals/${goalId}/votes`, { isYes })
+    const res = await api.post<CastVoteResponse>(`/goals/${goalId}/votes`, { isYes })
     if (status.value) {
       status.value.progress = res.progress
       status.value.myVote = isYes
@@ -44,7 +30,7 @@ export const useVoteStore = defineStore('vote', () => {
   }
 
   async function cancelVote(goalId: string): Promise<void> {
-    const res = await api.delete<{ ok: boolean; progress: number }>(`/goals/${goalId}/votes`)
+    const res = await api.delete<CancelVoteResponse>(`/goals/${goalId}/votes`)
     if (status.value) {
       status.value.progress = res.progress
       status.value.myVote = null

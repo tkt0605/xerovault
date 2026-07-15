@@ -1,5 +1,5 @@
 import { Router, Response } from 'express'
-import { z } from 'zod'
+import { createGoalSchema, updateGoalSchema } from '@xerovault/shared'
 import { prisma } from '../db'
 import { requireAuth } from '../middleware/auth'
 import { calcVoteProgress } from '../services/scoreService'
@@ -54,14 +54,7 @@ router.post('/groups/:groupId/goals', async (req, res, next) => {
     const userId = req.user!.id
     if (!(await assertMember(req.params.groupId, userId, res))) return
 
-    const { header, description, deadline, assigneeId } = z
-      .object({
-        header: z.string().max(100).optional(),
-        description: z.string().min(1),
-        deadline: z.string().datetime().optional().nullable(),
-        assigneeId: z.string().uuid().optional().nullable(),
-      })
-      .parse(req.body)
+    const { header, description, deadline, assigneeId } = createGoalSchema.parse(req.body)
 
     const isConcrete = !!(deadline || assigneeId)
     const goal = await prisma.goal.create({
@@ -121,14 +114,7 @@ router.patch('/goals/:id', async (req, res, next) => {
     }
     if (!(await assertMember(goal.groupId, userId, res))) return
 
-    const data = z
-      .object({
-        header: z.string().max(100).optional(),
-        description: z.string().min(1).optional(),
-        deadline: z.string().datetime().optional().nullable(),
-        assigneeId: z.string().uuid().optional().nullable(),
-      })
-      .parse(req.body)
+    const data = updateGoalSchema.parse(req.body)
 
     const isConcrete = !!(data.deadline || data.assigneeId || goal.deadline || goal.assigneeId)
     const updated = await prisma.goal.update({

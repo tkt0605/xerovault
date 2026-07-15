@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { z } from 'zod'
+import { castVoteSchema } from '@xerovault/shared'
 import { prisma } from '../db'
 import { requireAuth } from '../middleware/auth'
 import { calcVoteProgress, updateGroupScore, incrementStreak } from '../services/scoreService'
@@ -60,7 +60,7 @@ router.get('/goals/:id/votes', async (req, res, next) => {
 router.post('/goals/:id/votes', async (req, res, next) => {
   try {
     const userId = req.user!.id
-    const { isYes } = z.object({ isYes: z.boolean() }).parse(req.body)
+    const { isYes } = castVoteSchema.parse(req.body)
 
     const goal = await prisma.goal.findUnique({
       where: { id: req.params.id },

@@ -1,0 +1,13 @@
+packages:
+  - backend
+  - frontend
+  - packages/*
+nodeLinker: hoisted
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  esbuild: true
+  prisma: true
+  vue-demi: true
+minimumReleaseAgeExclude:
+  - '@vitejs/plugin-vue@6.0.8'

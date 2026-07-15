@@ -1,16 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-
-interface UserInfo {
-  id: string
-  email: string
-  name: string | null
-  avatar: string | null
-}
+import type { UserSummary, AuthResponse } from '@xerovault/shared'
 
 export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref<string | null>(null)
-  const user = ref<UserInfo | null>(null)
+  const user = ref<UserSummary | null>(null)
 
   const isAuthenticated = computed(() => !!accessToken.value)
 
@@ -25,7 +19,7 @@ export const useAuthStore = defineStore('auth', () => {
       const err = await res.json()
       throw new Error(err.error ?? 'ログインに失敗しました')
     }
-    const data = await res.json()
+    const data: AuthResponse = await res.json()
     accessToken.value = data.access
     user.value = data.user
   }
@@ -41,7 +35,7 @@ export const useAuthStore = defineStore('auth', () => {
       const err = await res.json()
       throw new Error(err.error ?? '登録に失敗しました')
     }
-    const data = await res.json()
+    const data: AuthResponse = await res.json()
     accessToken.value = data.access
     user.value = data.user
   }
@@ -64,7 +58,7 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = null
         return false
       }
-      const data = await res.json()
+      const data: { access: string } = await res.json()
       accessToken.value = data.access
       return true
     } catch {
@@ -80,7 +74,7 @@ export const useAuthStore = defineStore('auth', () => {
         headers: { Authorization: `Bearer ${accessToken.value}` },
         credentials: 'include',
       })
-      if (res.ok) user.value = await res.json()
+      if (res.ok) user.value = (await res.json()) as UserSummary
     }
   }
 
