@@ -1,22 +1,20 @@
 <template>
   <header
-    class="sticky top-0 z-10 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-6 py-3 flex items-center justify-between"
+    class="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-paper-raised px-6 py-3"
   >
-    <RouterLink to="/" class="font-bold text-lg tracking-tight text-zinc-900 dark:text-white">
+    <RouterLink to="/" class="font-serif text-lg font-medium tracking-tight text-ink">
       Xerovault
     </RouterLink>
-    <div class="flex items-center gap-3">
-      <RouterLink
-        to="/ranking"
-        class="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition"
-      >
+    <div class="flex items-center gap-4">
+      <RouterLink to="/ranking" class="text-sm text-ink-soft transition-colors hover:text-ink">
         ランキング
       </RouterLink>
       <button
         v-if="auth.isAuthenticated"
-        class="text-sm text-zinc-500 hover:text-red-500 transition"
+        class="flex items-center gap-1.5 text-sm text-ink-soft transition-colors hover:text-bad"
         @click="handleLogout"
       >
+        <Icon name="logout" :size="14" />
         ログアウト
       </button>
     </div>
@@ -26,6 +24,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import Icon from '@/components/ui/Icon.vue'
 
 const auth = useAuthStore()
 const router = useRouter()

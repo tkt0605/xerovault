@@ -3,25 +3,21 @@
     <Transition name="achievement">
       <div
         v-if="show"
-        class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+        class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-ink/30"
       >
         <div
-          class="bg-white dark:bg-zinc-900 rounded-3xl p-8 text-center shadow-2xl border-2 border-green-400 pointer-events-auto max-w-sm w-full mx-4"
+          class="pointer-events-auto mx-4 w-full max-w-sm rounded-surface border border-line bg-paper-raised p-8 text-center shadow-modal"
         >
-          <div class="text-6xl mb-4 animate-bounce">🏆</div>
-          <h2 class="text-2xl font-extrabold text-green-500 mb-2">ゴール達成！</h2>
-          <p class="text-zinc-600 dark:text-zinc-400 text-sm mb-1">全員が納得した</p>
-          <p class="font-bold text-lg text-zinc-900 dark:text-white mb-4">「{{ goalHeader }}」</p>
-          <div class="flex items-center justify-center gap-2 text-brand-500 font-bold text-xl mb-6">
-            <span>+{{ pointsEarned }}pt</span>
-            <span class="text-zinc-400 text-base font-normal">スコア獲得</span>
-          </div>
-          <button
-            class="px-8 py-2 rounded-full bg-green-500 text-white font-medium hover:bg-green-600 transition"
-            @click="$emit('close')"
+          <div
+            class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-good-soft"
           >
-            閉じる
-          </button>
+            <Icon name="check" :size="26" class="text-good" />
+          </div>
+          <h2 class="mb-1 font-serif text-xl font-medium text-ink">ゴール達成</h2>
+          <p class="mb-1 text-sm text-ink-soft">全員が納得しました</p>
+          <p class="mb-4 text-lg font-semibold text-ink">「{{ goalHeader }}」</p>
+          <div class="mb-6 font-serif text-2xl text-accent">+{{ pointsEarned }}pt</div>
+          <BaseButton @click="$emit('close')">閉じる</BaseButton>
         </div>
       </div>
     </Transition>
@@ -29,25 +25,27 @@
 </template>
 
 <script setup lang="ts">
+import Icon from '@/components/ui/Icon.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+
 defineProps<{ show: boolean; goalHeader: string; pointsEarned: number }>()
 defineEmits<{ close: [] }>()
 </script>
 
 <style scoped>
 .achievement-enter-active {
-  animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .achievement-leave-active {
-  animation: pop 0.2s ease-in reverse;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
-@keyframes pop {
-  from {
-    opacity: 0;
-    transform: scale(0.5);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.achievement-enter-from,
+.achievement-leave-to {
+  opacity: 0;
+  transform: scale(0.96);
 }
 </style>

@@ -1,35 +1,29 @@
 <template>
   <div class="w-full max-w-sm">
-    <h1 class="text-2xl font-bold text-center mb-8">ログイン</h1>
+    <h1 class="mb-8 text-center font-serif text-2xl font-medium text-ink">ログイン</h1>
     <form class="space-y-4" @submit.prevent="handleLogin">
-      <input
+      <BaseInput
         v-model="email"
         type="email"
         placeholder="メールアドレス"
         required
         autocomplete="email"
-        class="w-full px-4 py-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
       />
-      <input
+      <BaseInput
         v-model="password"
         type="password"
         placeholder="パスワード"
         required
         autocomplete="current-password"
-        class="w-full px-4 py-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
       />
-      <p v-if="error" class="text-sm text-red-500">{{ error }}</p>
-      <button
-        type="submit"
-        :disabled="loading"
-        class="w-full py-3 rounded-xl bg-brand-500 text-white font-medium hover:bg-brand-600 disabled:opacity-50 transition"
-      >
+      <p v-if="error" class="text-sm text-bad">{{ error }}</p>
+      <BaseButton type="submit" :disabled="loading" class="w-full justify-center py-3">
         {{ loading ? 'ログイン中...' : 'ログイン' }}
-      </button>
+      </BaseButton>
     </form>
-    <p class="text-center mt-4 text-sm text-zinc-500">
+    <p class="mt-4 text-center text-sm text-ink-soft">
       アカウントをお持ちでない方は
-      <RouterLink to="/auth/signup" class="text-brand-500 hover:underline">新規登録</RouterLink>
+      <RouterLink to="/auth/signup" class="text-accent hover:underline">新規登録</RouterLink>
     </p>
   </div>
 </template>
@@ -38,6 +32,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import BaseInput from '@/components/ui/BaseInput.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 
 const auth = useAuthStore()
 const router = useRouter()

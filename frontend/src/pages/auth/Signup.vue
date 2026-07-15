@@ -1,43 +1,30 @@
 <template>
   <div class="w-full max-w-sm">
-    <h1 class="text-2xl font-bold text-center mb-8">アカウント作成</h1>
+    <h1 class="mb-8 text-center font-serif text-2xl font-medium text-ink">アカウント作成</h1>
     <form class="space-y-4" @submit.prevent="handleSignup">
-      <input
-        v-model="name"
-        type="text"
-        placeholder="名前"
-        maxlength="50"
-        autocomplete="name"
-        class="w-full px-4 py-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
-      />
-      <input
+      <BaseInput v-model="name" type="text" placeholder="名前" maxlength="50" autocomplete="name" />
+      <BaseInput
         v-model="email"
         type="email"
         placeholder="メールアドレス"
         required
         autocomplete="email"
-        class="w-full px-4 py-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
       />
-      <input
+      <BaseInput
         v-model="password"
         type="password"
         placeholder="パスワード（8文字以上）"
         required
         minlength="8"
-        class="w-full px-4 py-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
       />
-      <p v-if="error" class="text-sm text-red-500">{{ error }}</p>
-      <button
-        type="submit"
-        :disabled="loading"
-        class="w-full py-3 rounded-xl bg-brand-500 text-white font-medium hover:bg-brand-600 disabled:opacity-50 transition"
-      >
+      <p v-if="error" class="text-sm text-bad">{{ error }}</p>
+      <BaseButton type="submit" :disabled="loading" class="w-full justify-center py-3">
         {{ loading ? '登録中...' : '登録する' }}
-      </button>
+      </BaseButton>
     </form>
-    <p class="text-center mt-4 text-sm text-zinc-500">
+    <p class="mt-4 text-center text-sm text-ink-soft">
       既にアカウントをお持ちの方は
-      <RouterLink to="/auth/login" class="text-brand-500 hover:underline">ログイン</RouterLink>
+      <RouterLink to="/auth/login" class="text-accent hover:underline">ログイン</RouterLink>
     </p>
   </div>
 </template>
@@ -46,6 +33,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import BaseInput from '@/components/ui/BaseInput.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 
 const auth = useAuthStore()
 const router = useRouter()

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+  <div class="min-h-screen bg-paper font-sans text-ink">
     <component :is="layout">
       <RouterView />
     </component>

@@ -1,149 +1,119 @@
 <template>
-  <div class="flex flex-col h-[calc(100vh-57px)]">
-    <div v-if="!goal" class="flex-1 flex items-center justify-center text-zinc-400">
+  <div class="flex h-[calc(100vh-57px)] flex-col">
+    <div v-if="!goal" class="flex flex-1 items-center justify-center text-ink-faint">
       読み込み中...
     </div>
     <template v-else>
       <!-- ヘッダー -->
-      <header
-        class="shrink-0 bg-gradient-to-r from-zinc-900 to-zinc-800 text-white px-6 py-4 flex items-center gap-4"
-      >
+      <header class="flex shrink-0 items-center gap-4 bg-ink px-6 py-4 text-paper">
         <button
-          class="text-zinc-400 hover:text-white transition"
+          class="flex items-center gap-1 text-ink-faint transition-colors hover:text-paper"
           @click="router.push(`/group/${goal.group?.id}`)"
         >
-          ← {{ goal.group?.name ?? 'グループへ' }}
+          <Icon name="chevron-left" :size="16" />
+          {{ goal.group?.name ?? 'グループへ' }}
         </button>
-        <div class="flex-1 min-w-0">
-          <h1 class="font-bold truncate">{{ goal.header || goal.description }}</h1>
-          <p v-if="goal.deadline" class="text-xs text-zinc-400">
+        <div class="min-w-0 flex-1">
+          <h1 class="truncate font-serif font-medium">{{ goal.header || goal.description }}</h1>
+          <p v-if="goal.deadline" class="text-xs text-ink-faint">
             締切: {{ formatDate(goal.deadline) }}
           </p>
         </div>
-        <span
-          v-if="goal.status === 'completed'"
-          class="shrink-0 text-xs px-3 py-1 rounded-full bg-green-500 text-white font-medium"
-          >達成済み</span
-        >
-        <span
-          v-else-if="goal.status === 'missed'"
-          class="shrink-0 text-xs px-3 py-1 rounded-full bg-red-500 text-white font-medium"
-          >期限切れ</span
-        >
+        <Badge v-if="goal.status === 'completed'" variant="good">達成済み</Badge>
+        <Badge v-else-if="goal.status === 'missed'" variant="bad">期限切れ</Badge>
       </header>
 
       <!-- 投票パネル -->
-      <div
-        class="shrink-0 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 py-4"
-      >
+      <div class="shrink-0 border-b border-line bg-paper-raised px-6 py-4">
         <div class="flex items-center gap-4">
           <div class="flex-1">
-            <div class="flex items-center justify-between text-sm mb-1">
-              <span class="text-zinc-600 dark:text-zinc-400">達成投票</span>
+            <div class="mb-1 flex items-center justify-between text-sm">
+              <span class="text-ink-soft">達成投票</span>
               <span
-                class="font-bold"
-                :class="
-                  (voteStore.status?.progress ?? 0 >= 90)
-                    ? 'text-green-500'
-                    : 'text-zinc-900 dark:text-white'
-                "
+                class="font-semibold"
+                :class="(voteStore.status?.progress ?? 0) >= 90 ? 'text-good' : 'text-ink'"
               >
                 {{ voteStore.status?.progress ?? 0 }}%
               </span>
             </div>
-            <div class="h-3 rounded-full bg-zinc-100 dark:bg-zinc-700 overflow-hidden">
+            <div class="h-2.5 overflow-hidden rounded-full bg-paper-sunken">
               <div
                 class="h-full rounded-full transition-all duration-700"
                 :class="progressBarClass"
                 :style="{ width: `${voteStore.status?.progress ?? 0}%` }"
               />
             </div>
-            <p class="text-xs text-zinc-400 mt-1">
+            <p class="mt-1 text-xs text-ink-faint">
               {{ voteStore.status?.totalMembers ?? 0 }}人中 {{ yesCount }}人が賛成
             </p>
           </div>
-          <div v-if="goal.status === 'pending'" class="flex gap-2 shrink-0">
-            <button
-              :class="
-                voteStore.status?.myVote === true
-                  ? 'bg-green-500 text-white'
-                  : 'border border-green-500 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20'
-              "
-              class="px-4 py-2 rounded-xl text-sm font-medium transition"
+          <div v-if="goal.status === 'pending'" class="flex shrink-0 gap-2">
+            <BaseButton
+              variant="good"
+              :active="voteStore.status?.myVote === true"
               @click="vote(true)"
             >
-              YES 👍
-            </button>
-            <button
-              :class="
-                voteStore.status?.myVote === false
-                  ? 'bg-red-500 text-white'
-                  : 'border border-red-400 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
-              "
-              class="px-4 py-2 rounded-xl text-sm font-medium transition"
+              <Icon name="check" :size="14" />YES
+            </BaseButton>
+            <BaseButton
+              variant="bad"
+              :active="voteStore.status?.myVote === false"
               @click="vote(false)"
             >
-              NO 👎
-            </button>
+              <Icon name="x" :size="14" />NO
+            </BaseButton>
           </div>
         </div>
 
         <!-- 投票メンバー一覧 -->
-        <div class="flex gap-2 mt-3 flex-wrap">
+        <div class="mt-3 flex flex-wrap gap-3">
           <div
             v-for="v in voteStore.status?.votes"
             :key="v.voter.id"
-            class="flex items-center gap-1"
+            class="flex items-center gap-1.5"
           >
-            <img :src="v.voter.avatar ?? defaultAvatar" class="w-6 h-6 rounded-full object-cover" />
-            <span class="text-sm">{{
-              v.isYes === true ? '✅' : v.isYes === false ? '❌' : '⏳'
-            }}</span>
+            <Avatar :name="v.voter.name ?? v.voter.email" :size="22" />
+            <Icon
+              :name="v.isYes === true ? 'check' : v.isYes === false ? 'x' : 'pending'"
+              :size="13"
+              :class="
+                v.isYes === true ? 'text-good' : v.isYes === false ? 'text-bad' : 'text-ink-faint'
+              "
+            />
           </div>
         </div>
       </div>
 
       <!-- メッセージ -->
-      <div ref="scrollArea" class="flex-1 overflow-y-auto p-4 space-y-3">
+      <div ref="scrollArea" class="flex-1 space-y-3 overflow-y-auto p-4">
         <div v-for="msg in messageStore.messages" :key="msg.id" class="flex items-start gap-3">
-          <img
-            :src="msg.author.avatar ?? defaultAvatar"
-            class="w-9 h-9 rounded-full object-cover shrink-0"
-          />
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 mb-0.5">
-              <span class="text-sm font-semibold text-zinc-900 dark:text-white">{{
+          <Avatar :name="msg.author.name ?? msg.author.email" :size="36" />
+          <div class="min-w-0 flex-1">
+            <div class="mb-0.5 flex items-center gap-2">
+              <span class="text-sm font-semibold text-ink">{{
                 msg.author.name ?? msg.author.email
               }}</span>
-              <span class="text-xs text-zinc-400">{{ formatDate(msg.createdAt) }}</span>
+              <span class="text-xs text-ink-faint">{{ formatDate(msg.createdAt) }}</span>
             </div>
-            <p class="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words">
-              {{ msg.text }}
-            </p>
+            <p class="whitespace-pre-wrap break-words text-sm text-ink-soft">{{ msg.text }}</p>
           </div>
         </div>
       </div>
 
       <!-- 入力欄 -->
-      <div
-        class="shrink-0 border-t border-zinc-200 dark:border-zinc-800 p-3 bg-white dark:bg-zinc-900"
-      >
+      <div class="shrink-0 border-t border-line bg-paper-raised p-3">
         <form class="flex gap-2" @submit.prevent="handleSend">
           <textarea
             ref="textareaRef"
             v-model="newMessage"
             placeholder="メッセージを入力..."
             rows="1"
-            class="flex-1 px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none text-sm"
+            class="flex-1 resize-none rounded-control border border-line bg-paper-raised px-4 py-2 text-sm text-ink placeholder:text-ink-faint transition-colors focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent-soft"
             @keydown.enter.exact.prevent="handleSend"
           />
-          <button
-            type="submit"
-            :disabled="!newMessage.trim()"
-            class="px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-medium disabled:opacity-40 hover:bg-brand-600 transition"
-          >
-            送信
-          </button>
+          <BaseButton type="submit" :disabled="!newMessage.trim()">
+            <Icon name="send" :size="14" />送信
+          </BaseButton>
         </form>
       </div>
     </template>
@@ -167,6 +137,10 @@ import { useVoteStore } from '@/stores/vote'
 import { useMessageStore } from '@/stores/message'
 import { useGoalEvents } from '@/composables/useGoalEvents'
 import AchievementModal from '@/components/vote/AchievementModal.vue'
+import Avatar from '@/components/ui/Avatar.vue'
+import Icon from '@/components/ui/Icon.vue'
+import Badge from '@/components/ui/Badge.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -185,15 +159,14 @@ const newMessage = ref('')
 const scrollArea = ref<HTMLElement | null>(null)
 const showAchievement = ref(false)
 const earnedPoints = ref(25)
-const defaultAvatar = `https://api.dicebear.com/9.x/identicon/svg?seed=default`
 
 const yesCount = computed(() => voteStore.status?.votes.filter((v) => v.isYes === true).length ?? 0)
 
 const progressBarClass = computed(() => {
   const p = voteStore.status?.progress ?? 0
-  if (p >= 90) return 'bg-green-500'
-  if (p >= 50) return 'bg-yellow-500'
-  return 'bg-red-400'
+  if (p >= 90) return 'bg-good'
+  if (p >= 50) return 'bg-accent'
+  return 'bg-bad'
 })
 
 onMounted(async () => {

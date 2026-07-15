@@ -1,50 +1,36 @@
 <template>
   <button
-    class="w-full text-left group bg-white dark:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-700 p-4 hover:shadow-md transition-all"
+    class="w-full rounded-surface border border-line bg-paper-raised p-4 text-left transition-shadow hover:shadow-card"
     @click="$emit('click')"
   >
     <div class="flex items-start gap-3">
-      <img
-        :src="goal.assignee?.avatar ?? defaultAvatar"
-        class="w-10 h-10 rounded-full object-cover ring-2 ring-white dark:ring-zinc-700 shrink-0"
-      />
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2 mb-1">
-          <h3 class="font-semibold text-zinc-900 dark:text-white truncate">
-            {{ goal.header || '見出しなし' }}
-          </h3>
-          <span
-            v-if="goal.status === 'completed'"
-            class="shrink-0 text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 font-medium"
-          >
+      <Avatar :name="goal.assignee?.name ?? goal.assignee?.email ?? '?'" :size="40" />
+      <div class="min-w-0 flex-1">
+        <div class="mb-2 flex items-center gap-2">
+          <h3 class="truncate font-semibold text-ink">{{ goal.header || '見出しなし' }}</h3>
+          <Badge v-if="goal.status === 'completed'" variant="good">
+            <Icon name="check" :size="11" />
             達成
-          </span>
-          <span
-            v-else-if="goal.status === 'missed'"
-            class="shrink-0 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 font-medium"
-          >
+          </Badge>
+          <Badge v-else-if="goal.status === 'missed'" variant="bad">
+            <Icon name="alert" :size="11" />
             期限切れ
-          </span>
-          <span
-            v-else-if="goal.isConcrete"
-            class="shrink-0 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
-          >
-            具体的
-          </span>
+          </Badge>
+          <Badge v-else-if="goal.isConcrete" variant="info">具体的</Badge>
         </div>
 
         <!-- 進捗バー -->
-        <div class="h-2 rounded-full bg-zinc-100 dark:bg-zinc-700 overflow-hidden mb-2">
+        <div class="mb-2 h-[5px] overflow-hidden rounded-full bg-paper-sunken">
           <div
             class="h-full rounded-full transition-all duration-500"
             :class="progressClass"
             :style="{ width: `${goal.progress}%` }"
           />
         </div>
-        <div class="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+        <div class="flex items-center justify-between text-xs text-ink-faint">
           <span>投票 {{ goal.progress }}%</span>
           <span v-if="goal.deadline">締切 {{ formatDate(goal.deadline) }}</span>
-          <span v-else class="text-zinc-400">締切なし</span>
+          <span v-else>締切なし</span>
         </div>
       </div>
     </div>
@@ -54,16 +40,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Goal } from '@/stores/goal'
+import Avatar from '@/components/ui/Avatar.vue'
+import Badge from '@/components/ui/Badge.vue'
+import Icon from '@/components/ui/Icon.vue'
 
 const props = defineProps<{ goal: Goal }>()
 defineEmits<{ click: [] }>()
 
-const defaultAvatar = `https://api.dicebear.com/9.x/identicon/svg?seed=default`
-
 const progressClass = computed(() => {
-  if (props.goal.progress >= 90) return 'bg-green-500'
-  if (props.goal.progress >= 50) return 'bg-yellow-500'
-  return 'bg-red-400'
+  if (props.goal.progress >= 90) return 'bg-good'
+  if (props.goal.progress >= 50) return 'bg-accent'
+  return 'bg-bad'
 })
 
 function formatDate(d: string) {

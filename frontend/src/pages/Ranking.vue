@@ -1,43 +1,46 @@
 <template>
-  <div class="p-6 max-w-2xl mx-auto">
-    <h1 class="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">スコアランキング</h1>
-    <p class="text-sm text-zinc-500 mb-6">公開中の全グループの合意スコアランキングです</p>
+  <div class="mx-auto max-w-2xl p-6">
+    <h1 class="mb-2 font-serif text-2xl font-medium text-ink">スコアランキング</h1>
+    <p class="mb-6 text-sm text-ink-soft">公開中の全グループの合意スコアランキングです</p>
 
-    <div class="space-y-3">
-      <div
+    <div class="space-y-2">
+      <BaseCard
         v-for="(g, i) in groups"
         :key="g.id"
-        class="flex items-center gap-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4"
+        :padded="false"
+        class="flex items-center gap-4 p-4"
       >
         <div
-          class="w-8 text-center font-extrabold"
+          class="w-8 text-center font-serif text-lg font-medium"
           :class="
             i === 0
-              ? 'text-yellow-500'
+              ? 'text-accent'
               : i === 1
-                ? 'text-zinc-400'
+                ? 'text-ink-soft'
                 : i === 2
-                  ? 'text-orange-400'
-                  : 'text-zinc-300'
+                  ? 'text-ink-faint'
+                  : 'text-ink-faint'
           "
         >
           {{ i + 1 }}
         </div>
-        <div class="flex-1 min-w-0">
+        <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
-            <p class="font-bold text-zinc-900 dark:text-white truncate">{{ g.name }}</p>
-            <span v-if="g.streak >= 3" class="text-xs text-orange-500">🔥{{ g.streak }}</span>
+            <p class="truncate font-semibold text-ink">{{ g.name }}</p>
+            <span v-if="g.streak >= 3" class="flex items-center gap-0.5 text-xs text-accent-strong">
+              <Icon name="flame" :size="11" />{{ g.streak }}
+            </span>
           </div>
-          <p class="text-xs text-zinc-400">
+          <p class="text-xs text-ink-faint">
             {{ g._count.members }}人 · {{ g._count.goals }}ゴール<span v-if="g.tag">
               · #{{ g.tag }}</span
             >
           </p>
         </div>
-        <p class="text-xl font-extrabold text-brand-500 shrink-0">
-          {{ g.score }}<span class="text-xs font-normal text-zinc-400 ml-0.5">pt</span>
+        <p class="shrink-0 font-serif text-xl font-medium text-accent">
+          {{ g.score }}<span class="ml-0.5 font-sans text-xs font-normal text-ink-faint">pt</span>
         </p>
-      </div>
+      </BaseCard>
     </div>
   </div>
 </template>
@@ -46,6 +49,8 @@
 import { ref, onMounted } from 'vue'
 import type { RankingGroup } from '@xerovault/shared'
 import { api } from '@/api/client'
+import Icon from '@/components/ui/Icon.vue'
+import BaseCard from '@/components/ui/BaseCard.vue'
 
 const groups = ref<RankingGroup[]>([])
 onMounted(async () => {

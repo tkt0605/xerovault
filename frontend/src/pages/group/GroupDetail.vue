@@ -1,62 +1,65 @@
 <template>
-  <div class="p-6 max-w-3xl mx-auto">
-    <div v-if="!group" class="text-center py-16 text-zinc-400">読み込み中...</div>
+  <div class="mx-auto max-w-3xl p-6">
+    <div v-if="!group" class="py-16 text-center text-ink-faint">読み込み中...</div>
     <template v-else>
       <!-- ヘッダー -->
       <div class="mb-6">
         <div class="flex items-start justify-between gap-4">
           <div>
-            <h1 class="text-2xl font-bold text-zinc-900 dark:text-white">{{ group.name }}</h1>
-            <p v-if="group.tag" class="text-sm text-zinc-500 mt-0.5">#{{ group.tag }}</p>
+            <h1 class="font-serif text-2xl font-medium text-ink">{{ group.name }}</h1>
+            <p v-if="group.tag" class="mt-0.5 text-sm text-ink-soft">#{{ group.tag }}</p>
           </div>
-          <div class="text-right shrink-0">
-            <p class="text-3xl font-extrabold text-brand-500">{{ group.score }}</p>
-            <p class="text-xs text-zinc-400">スコア</p>
-            <p v-if="group.streak >= 3" class="text-xs text-orange-500 font-medium mt-0.5">
-              🔥{{ group.streak }}連続達成
+          <div class="shrink-0 text-right">
+            <p class="font-serif text-3xl font-medium text-accent">{{ group.score }}</p>
+            <p class="text-xs text-ink-faint">スコア</p>
+            <p
+              v-if="group.streak >= 3"
+              class="mt-0.5 flex items-center justify-end gap-1 text-xs font-semibold text-accent-strong"
+            >
+              <Icon name="flame" :size="12" />{{ group.streak }}連続達成
             </p>
           </div>
         </div>
-        <div class="flex items-center gap-3 mt-4 flex-wrap">
+        <div class="mt-4 flex flex-wrap items-center gap-3">
           <div class="flex -space-x-2">
-            <img
+            <Avatar
               v-for="m in group.members.slice(0, 5)"
               :key="m.id"
-              :src="m.avatar ?? defaultAvatar"
-              class="w-8 h-8 rounded-full ring-2 ring-white dark:ring-zinc-900 object-cover"
+              :name="m.name ?? m.email"
+              :size="32"
+              class="ring-2 ring-paper-raised"
             />
           </div>
-          <span class="text-sm text-zinc-500">{{ group.members.length }}人のメンバー</span>
-          <button
-            class="ml-auto text-sm px-4 py-1.5 rounded-full border border-brand-500 text-brand-500 hover:bg-brand-500 hover:text-white transition"
-            @click="handleInvite"
-          >
+          <span class="text-sm text-ink-soft">{{ group.members.length }}人のメンバー</span>
+          <BaseButton variant="outline" size="sm" class="ml-auto" @click="handleInvite">
             招待リンク作成
-          </button>
+          </BaseButton>
         </div>
         <div
           v-if="inviteUrl"
-          class="mt-3 p-3 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-xs break-all text-zinc-600 dark:text-zinc-300"
+          class="mt-3 flex items-center gap-2 rounded-control bg-paper-sunken p-3 text-xs text-ink-soft"
         >
-          {{ inviteUrl }}
-          <button class="ml-2 text-brand-500 hover:underline" @click="copyInvite">コピー</button>
+          <span class="min-w-0 flex-1 break-all">{{ inviteUrl }}</span>
+          <button
+            class="flex shrink-0 items-center gap-1 text-accent hover:underline"
+            @click="copyInvite"
+          >
+            <Icon name="copy" :size="12" />コピー
+          </button>
         </div>
       </div>
 
       <!-- ゴール一覧 -->
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="font-semibold text-zinc-900 dark:text-white">ゴール一覧</h2>
-        <button
-          class="text-sm px-4 py-1.5 rounded-full bg-brand-500 text-white hover:bg-brand-600 transition"
-          @click="showAddGoal = true"
-        >
-          ＋ ゴール追加
-        </button>
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="font-semibold text-ink">ゴール一覧</h2>
+        <BaseButton size="sm" @click="showAddGoal = true">
+          <Icon name="plus" :size="13" />ゴール追加
+        </BaseButton>
       </div>
 
-      <div v-if="!goalStore.goals.length" class="text-center py-12 text-zinc-400">
-        <p class="text-3xl mb-3">🎯</p>
-        <p class="font-medium">ゴールがまだありません</p>
+      <div v-if="!goalStore.goals.length" class="py-12 text-center text-ink-faint">
+        <Icon name="target" :size="28" class="mx-auto mb-3" />
+        <p class="font-medium text-ink-soft">ゴールがまだありません</p>
       </div>
       <div v-else class="space-y-3">
         <GoalCard
@@ -70,49 +73,33 @@
 
     <!-- ゴール追加ダイアログ -->
     <Teleport to="body">
-      <div
-        v-if="showAddGoal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      >
-        <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-          <h2 class="text-lg font-bold mb-4">ゴールを追加</h2>
+      <div v-if="showAddGoal" class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40">
+        <BaseCard class="w-full max-w-md shadow-modal">
+          <h2 class="mb-4 font-serif text-lg font-medium text-ink">ゴールを追加</h2>
           <form class="space-y-3" @submit.prevent="handleAddGoal">
-            <input
-              v-model="goalForm.header"
-              type="text"
-              placeholder="タイトル（任意）"
-              class="w-full px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
-            />
-            <textarea
+            <BaseInput v-model="goalForm.header" placeholder="タイトル（任意）" />
+            <BaseTextarea
               v-model="goalForm.description"
               placeholder="ゴールの内容 *"
               required
               rows="3"
-              class="w-full px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
             />
-            <input
-              v-model="goalForm.deadline"
-              type="datetime-local"
-              class="w-full px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
-            />
+            <BaseInput v-model="goalForm.deadline" type="datetime-local" />
             <div class="flex gap-2 pt-2">
-              <button
+              <BaseButton
                 type="button"
-                class="flex-1 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 text-sm transition hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                variant="ghost"
+                class="flex-1 justify-center"
                 @click="showAddGoal = false"
               >
                 キャンセル
-              </button>
-              <button
-                type="submit"
-                :disabled="addingGoal"
-                class="flex-1 py-2 rounded-xl bg-brand-500 text-white text-sm font-medium transition hover:bg-brand-600 disabled:opacity-50"
-              >
+              </BaseButton>
+              <BaseButton type="submit" :disabled="addingGoal" class="flex-1 justify-center">
                 {{ addingGoal ? '追加中...' : '追加' }}
-              </button>
+              </BaseButton>
             </div>
           </form>
-        </div>
+        </BaseCard>
       </div>
     </Teleport>
   </div>
@@ -124,6 +111,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { useGroupStore } from '@/stores/group'
 import { useGoalStore } from '@/stores/goal'
 import GoalCard from '@/components/goal/GoalCard.vue'
+import Avatar from '@/components/ui/Avatar.vue'
+import Icon from '@/components/ui/Icon.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import BaseCard from '@/components/ui/BaseCard.vue'
+import BaseInput from '@/components/ui/BaseInput.vue'
+import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -134,7 +127,6 @@ const inviteUrl = ref('')
 const showAddGoal = ref(false)
 const addingGoal = ref(false)
 const goalForm = ref({ header: '', description: '', deadline: '' })
-const defaultAvatar = `https://api.dicebear.com/9.x/identicon/svg?seed=default`
 
 onMounted(async () => {
   const id = route.params.id as string

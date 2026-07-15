@@ -1,43 +1,46 @@
 <template>
-  <div class="p-6 max-w-2xl mx-auto">
+  <div class="mx-auto max-w-2xl p-6">
     <div class="mb-6">
-      <h1 class="text-2xl font-bold text-zinc-900 dark:text-white">ホーム</h1>
-      <p class="text-sm text-zinc-500 mt-1">参加中のグループからゴールを選んで進めましょう</p>
+      <h1 class="font-serif text-2xl font-medium text-ink">ホーム</h1>
+      <p class="mt-1 text-sm text-ink-soft">参加中のグループからゴールを選んで進めましょう</p>
     </div>
 
-    <div v-if="!groupStore.groups.length" class="text-center py-16 text-zinc-400">
-      <p class="text-4xl mb-4">🚀</p>
-      <p class="font-medium">グループがまだありません</p>
-      <p class="text-sm mt-1">左のサイドバーから作成してください</p>
+    <div v-if="!groupStore.groups.length" class="py-16 text-center text-ink-faint">
+      <Icon name="users" :size="32" class="mx-auto mb-4" />
+      <p class="font-medium text-ink-soft">グループがまだありません</p>
+      <p class="mt-1 text-sm">左のサイドバーから作成してください</p>
     </div>
 
-    <div v-else class="space-y-4">
-      <div
+    <div v-else class="space-y-3">
+      <BaseCard
         v-for="g in groupStore.groups"
         :key="g.id"
-        class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 hover:shadow-md transition cursor-pointer"
+        hoverable
+        class="cursor-pointer"
         @click="router.push(`/group/${g.id}`)"
       >
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="font-bold text-zinc-900 dark:text-white">{{ g.name }}</h2>
-          <div class="flex items-center gap-2">
+        <div class="mb-3 flex items-center justify-between">
+          <h2 class="font-semibold text-ink">{{ g.name }}</h2>
+          <div class="flex items-center gap-3">
             <span
               v-if="g.streak >= 3"
-              class="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 font-medium"
+              class="flex items-center gap-1 text-xs font-semibold text-accent-strong"
             >
-              🔥 {{ g.streak }}連続
+              <Icon name="flame" :size="12" />
+              {{ g.streak }}連続
             </span>
-            <span class="text-lg font-extrabold text-brand-500"
-              >{{ g.score }}<span class="text-xs font-normal text-zinc-400 ml-0.5">pt</span></span
+            <span class="font-serif text-lg font-medium text-accent"
+              >{{ g.score
+              }}<span class="ml-0.5 font-sans text-xs font-normal text-ink-faint">pt</span></span
             >
           </div>
         </div>
-        <div class="flex items-center gap-4 text-xs text-zinc-500">
+        <div class="flex items-center gap-4 text-xs text-ink-faint">
           <span>{{ g.members.length }}人</span>
           <span>{{ g._count?.goals ?? 0 }}ゴール</span>
           <span v-if="g.tag">#{{ g.tag }}</span>
         </div>
-      </div>
+      </BaseCard>
     </div>
   </div>
 </template>
@@ -45,6 +48,8 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useGroupStore } from '@/stores/group'
+import Icon from '@/components/ui/Icon.vue'
+import BaseCard from '@/components/ui/BaseCard.vue'
 
 const router = useRouter()
 const groupStore = useGroupStore()

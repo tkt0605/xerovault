@@ -1,23 +1,24 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-zinc-900 rounded-2xl p-8 max-w-sm w-full shadow-lg text-center">
-      <p v-if="loading" class="text-zinc-500">参加処理中...</p>
+  <div class="flex min-h-screen items-center justify-center bg-paper p-4">
+    <BaseCard class="w-full max-w-sm p-8 text-center shadow-raised">
+      <p v-if="loading" class="text-ink-soft">参加処理中...</p>
       <template v-else-if="error">
-        <p class="text-red-500 font-medium mb-4">{{ error }}</p>
-        <RouterLink to="/" class="text-brand-500 hover:underline text-sm">ホームへ戻る</RouterLink>
+        <p class="mb-4 font-medium text-bad">{{ error }}</p>
+        <RouterLink to="/" class="text-sm text-accent hover:underline">ホームへ戻る</RouterLink>
       </template>
       <template v-else-if="joined">
-        <p class="text-2xl mb-3">🎉</p>
-        <p class="font-bold text-lg mb-1">参加しました！</p>
-        <p class="text-zinc-500 text-sm mb-6">{{ groupName }}</p>
-        <RouterLink
-          :to="`/group/${route.params.id}`"
-          class="px-6 py-2 rounded-full bg-brand-500 text-white text-sm hover:bg-brand-600 transition"
+        <div
+          class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-good-soft"
         >
-          グループを開く
+          <Icon name="check" :size="22" class="text-good" />
+        </div>
+        <p class="mb-1 text-lg font-semibold text-ink">参加しました</p>
+        <p class="mb-6 text-sm text-ink-soft">{{ groupName }}</p>
+        <RouterLink :to="`/group/${route.params.id}`">
+          <BaseButton>グループを開く</BaseButton>
         </RouterLink>
       </template>
-    </div>
+    </BaseCard>
   </div>
 </template>
 
@@ -27,6 +28,9 @@ import { useRoute } from 'vue-router'
 import { useGroupStore } from '@/stores/group'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import Icon from '@/components/ui/Icon.vue'
+import BaseCard from '@/components/ui/BaseCard.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 
 const route = useRoute()
 const router = useRouter()

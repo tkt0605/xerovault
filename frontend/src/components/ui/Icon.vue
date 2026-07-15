@@ -1,0 +1,51 @@
+<template>
+  <svg
+    viewBox="0 0 24 24"
+    :width="size"
+    :height="size"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="shrink-0"
+    v-html="paths[name]"
+  />
+</template>
+
+<script setup lang="ts">
+withDefaults(defineProps<{ name: IconName; size?: number }>(), { size: 16 })
+
+export type IconName =
+  | 'check'
+  | 'x'
+  | 'alert'
+  | 'flame'
+  | 'plus'
+  | 'chevron-left'
+  | 'send'
+  | 'pending'
+  | 'target'
+  | 'users'
+  | 'logout'
+  | 'copy'
+
+const paths: Record<IconName, string> = {
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  alert: '<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16h.01"/>',
+  flame:
+    '<path d="M12 2c1 4-3 5-3 9a3 3 0 0 0 6 0c0-2-1-3-1-5 2 1 3 3 3 6a5 5 0 0 1-10 0c0-5 4-6 5-10Z"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  'chevron-left': '<path d="m15 18-6-6 6-6"/>',
+  send: '<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/>',
+  pending: '<circle cx="12" cy="12" r="9"/>',
+  target:
+    '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/>',
+  users:
+    '<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  logout:
+    '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
+  copy: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+}
+</script>

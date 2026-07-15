@@ -1,3 +1,65 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --ink: #1b211f;
+  --ink-soft: #5b655f;
+  --ink-faint: #8a928c;
+  --paper: #eef0ee;
+  --paper-raised: #ffffff;
+  --paper-sunken: #e4e7e2;
+  --line: #d8ddd8;
+  --line-soft: #e5e8e4;
+  --accent: #a6803d;
+  --accent-strong: #8f6d2c;
+  --accent-soft: #f1e7d2;
+  --good: #3d7a5c;
+  --good-soft: #e1eee6;
+  --bad: #a6432f;
+  --bad-soft: #f5e4df;
+
+  --shadow-card: 0 1px 2px rgba(27, 33, 31, 0.07), 0 1px 1px rgba(27, 33, 31, 0.04);
+  --shadow-raised: 0 10px 30px rgba(27, 33, 31, 0.1), 0 2px 8px rgba(27, 33, 31, 0.06);
+  --shadow-modal: 0 24px 70px rgba(20, 24, 22, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e9ebe7;
+    --ink-soft: #a3aca5;
+    --ink-faint: #6c766f;
+    --paper: #14181a;
+    --paper-raised: #1c2220;
+    --paper-sunken: #10130f;
+    --line: #2b322e;
+    --line-soft: #232a27;
+    --accent: #c9a25a;
+    --accent-strong: #ddb876;
+    --accent-soft: #362b18;
+    --good: #6fbe95;
+    --good-soft: #1d2e25;
+    --bad: #e08066;
+    --bad-soft: #33221d;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-raised: 0 10px 30px rgba(0, 0, 0, 0.45);
+    --shadow-modal: 0 24px 70px rgba(0, 0, 0, 0.6);
+  }
+}
+
+body {
+  font-variant-numeric: tabular-nums;
+}
+
+@layer utilities {
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-raised {
+    box-shadow: var(--shadow-raised);
+  }
+  .shadow-modal {
+    box-shadow: var(--shadow-modal);
+  }
+}
