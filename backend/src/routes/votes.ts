@@ -3,6 +3,7 @@ import { castVoteSchema } from '@xerovault/shared'
 import { prisma } from '../db'
 import { requireAuth } from '../middleware/auth'
 import { calcVoteProgress, calcGoalStatus, updateGroupScore } from '../services/scoreService'
+import { publishGoalEvent } from '../services/eventBus'
 
 const router = Router()
 router.use(requireAuth)
@@ -110,6 +111,7 @@ router.post('/goals/:id/votes', async (req, res, next) => {
     }
     // スコア/ストリークは毎回フル再計算する(missedになったconcrete goalを取りこぼさないため)
     await updateGroupScore(goal.groupId)
+    publishGoalEvent(goal.id, 'vote', { progress, justCompleted })
 
     res.json({ ok: true, isYes, progress, justCompleted })
   } catch (err) {
@@ -138,6 +140,7 @@ router.delete('/goals/:id/votes', async (req, res, next) => {
     await prisma.vote.deleteMany({ where: { goalVoteId: goalVote.id } })
     const progress = await calcVoteProgress(goal.id)
     await updateGroupScore(goal.groupId)
+    publishGoalEvent(goal.id, 'vote', { progress, justCompleted: false })
     res.json({ ok: true, progress })
   } catch (err) {
     next(err)

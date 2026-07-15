@@ -11,6 +11,7 @@ import goalRoutes from './routes/goals'
 import voteRoutes from './routes/votes'
 import messageRoutes from './routes/messages'
 import rankingRoutes from './routes/rankings'
+import eventRoutes from './routes/events'
 
 const app = express()
 
@@ -31,6 +32,7 @@ app.use('/api', groupRoutes)
 app.use('/api', goalRoutes)
 app.use('/api', voteRoutes)
 app.use('/api', messageRoutes)
+app.use('/api', eventRoutes)
 app.use('/api/rankings', rankingRoutes)
 
 app.use(errorHandler)

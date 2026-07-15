@@ -161,9 +161,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import type { Message } from '@xerovault/shared'
 import { useGoalStore } from '@/stores/goal'
 import { useVoteStore } from '@/stores/vote'
 import { useMessageStore } from '@/stores/message'
+import { useGoalEvents } from '@/composables/useGoalEvents'
 import AchievementModal from '@/components/vote/AchievementModal.vue'
 
 const route = useRoute()
@@ -171,6 +173,12 @@ const router = useRouter()
 const goalStore = useGoalStore()
 const voteStore = useVoteStore()
 const messageStore = useMessageStore()
+
+const currentGoalId = route.params.goalId as string
+useGoalEvents(currentGoalId, {
+  onVote: () => voteStore.fetchVoteStatus(currentGoalId),
+  onMessage: (payload) => messageStore.receiveMessage(payload as Message),
+})
 
 const goal = ref(goalStore.current)
 const newMessage = ref('')

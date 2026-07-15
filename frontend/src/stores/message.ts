@@ -19,5 +19,12 @@ export const useMessageStore = defineStore('message', () => {
     return msg
   }
 
-  return { messages, fetchMessages, sendMessage }
+  // SSEで受信したメッセージを追加する(自分の送信分が二重にならないようIDで重複排除)
+  function receiveMessage(message: Message): void {
+    if (!messages.value.some((m) => m.id === message.id)) {
+      messages.value.push(message)
+    }
+  }
+
+  return { messages, fetchMessages, sendMessage, receiveMessage }
 })

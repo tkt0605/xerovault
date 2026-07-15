@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { sendMessageSchema } from '@xerovault/shared'
 import { prisma } from '../db'
 import { requireAuth } from '../middleware/auth'
+import { publishGoalEvent } from '../services/eventBus'
 
 const router = Router()
 router.use(requireAuth)
@@ -63,6 +64,7 @@ router.post('/goals/:id/messages', async (req, res, next) => {
       data: { text, goalId: goal.id, authorId: userId },
       include: { author: { select: { id: true, email: true, name: true, avatar: true } } },
     })
+    publishGoalEvent(goal.id, 'message', message)
     res.status(201).json(message)
   } catch (err) {
     next(err)
