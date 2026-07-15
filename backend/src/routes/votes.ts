@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { castVoteSchema } from '@xerovault/shared'
 import { prisma } from '../db'
 import { requireAuth } from '../middleware/auth'
-import { calcVoteProgress, updateGroupScore, incrementStreak } from '../services/scoreService'
+import { calcVoteProgress, calcGoalStatus, updateGroupScore } from '../services/scoreService'
 
 const router = Router()
 router.use(requireAuth)
@@ -74,6 +74,10 @@ router.post('/goals/:id/votes', async (req, res, next) => {
       res.status(400).json({ error: 'このゴールはすでに達成済みです' })
       return
     }
+    if (calcGoalStatus(goal) === 'missed') {
+      res.status(400).json({ error: 'このゴールは期限切れのため投票できません' })
+      return
+    }
 
     const isMember =
       goal.group.ownerId === userId || goal.group.members.some((m) => m.id === userId)
@@ -102,10 +106,10 @@ router.post('/goals/:id/votes', async (req, res, next) => {
     // 達成チェック
     if (!goal.isCompleted && progress >= COMPLETION_THRESHOLD) {
       await prisma.goal.update({ where: { id: goal.id }, data: { isCompleted: true } })
-      await incrementStreak(goal.groupId)
-      await updateGroupScore(goal.groupId)
       justCompleted = true
     }
+    // スコア/ストリークは毎回フル再計算する(missedになったconcrete goalを取りこぼさないため)
+    await updateGroupScore(goal.groupId)
 
     res.json({ ok: true, isYes, progress, justCompleted })
   } catch (err) {
@@ -133,6 +137,7 @@ router.delete('/goals/:id/votes', async (req, res, next) => {
 
     await prisma.vote.deleteMany({ where: { goalVoteId: goalVote.id } })
     const progress = await calcVoteProgress(goal.id)
+    await updateGroupScore(goal.groupId)
     res.json({ ok: true, progress })
   } catch (err) {
     next(err)

@@ -1,11 +1,15 @@
+import type { GoalStatus } from '@xerovault/shared'
 import { prisma } from '../db'
 
 export const BASE_SCORE = 100
 export const MAX_SCORE = 9999
+export const MIN_SCORE = 0
 export const CONCRETE_GOAL_PTS = 25 // 期限・担当者あり
 export const VAGUE_GOAL_PTS = 5 // 期限・担当者なし
 export const FULL_PARTICIPATION_BONUS = 1.5 // 投票参加率100%
-export const STREAK_BONUS = 50 // 3連続達成ボーナス
+export const MISSED_GOAL_PENALTY = 25 // concrete goalを1件missするごとの減点(達成報酬と対称)
+export const STREAK_BONUS = 50 // 連続達成ボーナス
+export const STREAK_THRESHOLD = 3 // ボーナスに必要な連続達成数
 
 export interface CompletedGoalInput {
   hasDeadline: boolean
@@ -24,6 +28,7 @@ export function calcGoalPoints(goal: CompletedGoalInput, totalMembers: number): 
 // グループの合計スコア（純粋関数）
 export function calcGroupScore(
   completedGoals: CompletedGoalInput[],
+  missedConcreteGoalCount: number,
   totalMembers: number,
   streak: number
 ): number {
@@ -31,8 +36,27 @@ export function calcGroupScore(
   for (const goal of completedGoals) {
     totalScore += calcGoalPoints(goal, totalMembers)
   }
-  if (streak >= 3) totalScore += STREAK_BONUS
-  return Math.min(totalScore, MAX_SCORE)
+  totalScore -= missedConcreteGoalCount * MISSED_GOAL_PENALTY
+  if (streak >= STREAK_THRESHOLD) totalScore += STREAK_BONUS
+  return Math.max(MIN_SCORE, Math.min(totalScore, MAX_SCORE))
+}
+
+export interface ResolvedConcreteGoal {
+  deadline: Date
+  isCompleted: boolean
+}
+
+// concrete goal(deadline昇順に無関係な順序で渡してよい)から現在のストリークを導出する（純粋関数）
+export function calcStreak(resolvedConcreteGoals: ResolvedConcreteGoal[]): number {
+  const sorted = [...resolvedConcreteGoals].sort(
+    (a, b) => a.deadline.getTime() - b.deadline.getTime()
+  )
+  let streak = 0
+  for (let i = sorted.length - 1; i >= 0; i--) {
+    if (!sorted[i].isCompleted) break
+    streak++
+  }
+  return streak
 }
 
 // 投票進捗を計算（0〜100の整数、純粋関数）
@@ -41,7 +65,19 @@ export function calcProgress(yesCount: number, totalMembers: number): number {
   return Math.round((yesCount / totalMembers) * 100)
 }
 
+// ゴールの状態を導出する（純粋関数）。concrete goal = deadline と assigneeId の両方がある
+export function calcGoalStatus(
+  goal: { isCompleted: boolean; deadline: Date | null; assigneeId: string | null },
+  now: Date = new Date()
+): GoalStatus {
+  if (goal.isCompleted) return 'completed'
+  const isConcrete = !!(goal.deadline && goal.assigneeId)
+  if (isConcrete && goal.deadline!.getTime() < now.getTime()) return 'missed'
+  return 'pending'
+}
+
 export async function updateGroupScore(groupId: string): Promise<void> {
+  const now = new Date()
   const group = await prisma.group.findUnique({
     where: { id: groupId },
     include: {
@@ -63,19 +99,28 @@ export async function updateGroupScore(groupId: string): Promise<void> {
     participantCount: new Set(goal.goalVotes.filter((gv) => gv.vote).map((gv) => gv.voterId)).size,
   }))
 
-  const score = calcGroupScore(completedGoals, totalMembers, group.streak)
-
-  await prisma.group.update({
-    where: { id: groupId },
-    data: { score },
+  // concrete goal(deadline・assigneeId両方あり)のうち「解決済み」(達成 or 期限切れ未達成)なもの
+  const resolvedConcreteGoals = await prisma.goal.findMany({
+    where: {
+      groupId,
+      deadline: { not: null },
+      assigneeId: { not: null },
+      OR: [{ isCompleted: true }, { deadline: { lt: now } }],
+    },
+    select: { deadline: true, isCompleted: true },
   })
-}
+  const resolved: ResolvedConcreteGoal[] = resolvedConcreteGoals.map((g) => ({
+    deadline: g.deadline!,
+    isCompleted: g.isCompleted,
+  }))
+  const missedConcreteGoalCount = resolved.filter((g) => !g.isCompleted).length
+  const streak = calcStreak(resolved)
 
-// ゴール達成時に連続達成カウントを更新
-export async function incrementStreak(groupId: string): Promise<void> {
+  const score = calcGroupScore(completedGoals, missedConcreteGoalCount, totalMembers, streak)
+
   await prisma.group.update({
     where: { id: groupId },
-    data: { streak: { increment: 1 } },
+    data: { score, streak },
   })
 }
 

@@ -3,10 +3,14 @@ import {
   calcGoalPoints,
   calcGroupScore,
   calcProgress,
+  calcStreak,
+  calcGoalStatus,
   BASE_SCORE,
+  MIN_SCORE,
   CONCRETE_GOAL_PTS,
   VAGUE_GOAL_PTS,
   FULL_PARTICIPATION_BONUS,
+  MISSED_GOAL_PENALTY,
   STREAK_BONUS,
   MAX_SCORE,
 } from './scoreService'
@@ -68,7 +72,7 @@ describe('calcGoalPoints', () => {
 
 describe('calcGroupScore', () => {
   it('達成ゴールがなければ BASE_SCORE のみ', () => {
-    expect(calcGroupScore([], 4, 0)).toBe(BASE_SCORE)
+    expect(calcGroupScore([], 0, 4, 0)).toBe(BASE_SCORE)
   })
 
   it('達成ゴールの得点を積み上げる', () => {
@@ -78,12 +82,16 @@ describe('calcGroupScore', () => {
     ]
     const expected =
       BASE_SCORE + Math.round(CONCRETE_GOAL_PTS * FULL_PARTICIPATION_BONUS) + VAGUE_GOAL_PTS
-    expect(calcGroupScore(goals, 4, 0)).toBe(expected)
+    expect(calcGroupScore(goals, 0, 4, 0)).toBe(expected)
+  })
+
+  it('missed concrete goal 1件につき MISSED_GOAL_PENALTY を減点する', () => {
+    expect(calcGroupScore([], 2, 4, 0)).toBe(BASE_SCORE - 2 * MISSED_GOAL_PENALTY)
   })
 
   it('streakが3以上ならSTREAK_BONUSを加算', () => {
-    expect(calcGroupScore([], 4, 3)).toBe(BASE_SCORE + STREAK_BONUS)
-    expect(calcGroupScore([], 4, 2)).toBe(BASE_SCORE)
+    expect(calcGroupScore([], 0, 4, 3)).toBe(BASE_SCORE + STREAK_BONUS)
+    expect(calcGroupScore([], 0, 4, 2)).toBe(BASE_SCORE)
   })
 
   it('MAX_SCOREでクランプする', () => {
@@ -92,6 +100,83 @@ describe('calcGroupScore', () => {
       hasAssignee: true,
       participantCount: 4,
     }))
-    expect(calcGroupScore(manyGoals, 4, 5)).toBe(MAX_SCORE)
+    expect(calcGroupScore(manyGoals, 0, 4, 5)).toBe(MAX_SCORE)
+  })
+
+  it('MIN_SCOREを下回らない（ペナルティが大きくてもマイナスにならない）', () => {
+    expect(calcGroupScore([], 1000, 4, 0)).toBe(MIN_SCORE)
+  })
+})
+
+describe('calcStreak', () => {
+  const d = (daysAgo: number) => new Date(Date.now() - daysAgo * 86400000)
+
+  it('resolvedなgoalがなければ0', () => {
+    expect(calcStreak([])).toBe(0)
+  })
+
+  it('最新から連続で達成している件数を数える', () => {
+    const goals = [
+      { deadline: d(30), isCompleted: true },
+      { deadline: d(20), isCompleted: true },
+      { deadline: d(10), isCompleted: true },
+    ]
+    expect(calcStreak(goals)).toBe(3)
+  })
+
+  it('missedに当たった時点で打ち切る', () => {
+    const goals = [
+      { deadline: d(30), isCompleted: true },
+      { deadline: d(20), isCompleted: false }, // missed
+      { deadline: d(10), isCompleted: true },
+      { deadline: d(5), isCompleted: true },
+    ]
+    expect(calcStreak(goals)).toBe(2)
+  })
+
+  it('渡す順序に依存しない（内部でdeadline昇順に並べ替える）', () => {
+    const goals = [
+      { deadline: d(10), isCompleted: true },
+      { deadline: d(30), isCompleted: true },
+      { deadline: d(20), isCompleted: false },
+    ]
+    expect(calcStreak(goals)).toBe(1)
+  })
+
+  it('直近がmissedなら0', () => {
+    const goals = [
+      { deadline: d(30), isCompleted: true },
+      { deadline: d(10), isCompleted: false },
+    ]
+    expect(calcStreak(goals)).toBe(0)
+  })
+})
+
+describe('calcGoalStatus', () => {
+  const future = new Date(Date.now() + 86400000)
+  const past = new Date(Date.now() - 86400000)
+
+  it('isCompletedならcompleted', () => {
+    expect(calcGoalStatus({ isCompleted: true, deadline: past, assigneeId: 'u1' })).toBe(
+      'completed'
+    )
+  })
+
+  it('concrete goalでdeadlineが過去かつ未達成ならmissed', () => {
+    expect(calcGoalStatus({ isCompleted: false, deadline: past, assigneeId: 'u1' })).toBe('missed')
+  })
+
+  it('concrete goalでdeadlineが未来ならpending', () => {
+    expect(calcGoalStatus({ isCompleted: false, deadline: future, assigneeId: 'u1' })).toBe(
+      'pending'
+    )
+  })
+
+  it('vague goal(assigneeなし)はdeadlineが過去でもmissedにならない', () => {
+    expect(calcGoalStatus({ isCompleted: false, deadline: past, assigneeId: null })).toBe('pending')
+  })
+
+  it('vague goal(deadlineなし)はpending', () => {
+    expect(calcGoalStatus({ isCompleted: false, deadline: null, assigneeId: 'u1' })).toBe('pending')
   })
 })

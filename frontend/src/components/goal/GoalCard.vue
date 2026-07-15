@@ -14,10 +14,16 @@
             {{ goal.header || '見出しなし' }}
           </h3>
           <span
-            v-if="goal.isCompleted"
+            v-if="goal.status === 'completed'"
             class="shrink-0 text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 font-medium"
           >
             達成
+          </span>
+          <span
+            v-else-if="goal.status === 'missed'"
+            class="shrink-0 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 font-medium"
+          >
+            期限切れ
           </span>
           <span
             v-else-if="goal.isConcrete"

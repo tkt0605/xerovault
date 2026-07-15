@@ -21,9 +21,14 @@
           </p>
         </div>
         <span
-          v-if="goal.isCompleted"
+          v-if="goal.status === 'completed'"
           class="shrink-0 text-xs px-3 py-1 rounded-full bg-green-500 text-white font-medium"
           >達成済み</span
+        >
+        <span
+          v-else-if="goal.status === 'missed'"
+          class="shrink-0 text-xs px-3 py-1 rounded-full bg-red-500 text-white font-medium"
+          >期限切れ</span
         >
       </header>
 
@@ -57,7 +62,7 @@
               {{ voteStore.status?.totalMembers ?? 0 }}人中 {{ yesCount }}人が賛成
             </p>
           </div>
-          <div v-if="!goal.isCompleted" class="flex gap-2 shrink-0">
+          <div v-if="goal.status === 'pending'" class="flex gap-2 shrink-0">
             <button
               :class="
                 voteStore.status?.myVote === true

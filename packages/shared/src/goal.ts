@@ -17,6 +17,9 @@ export const updateGoalSchema = z.object({
 })
 export type UpdateGoalInput = z.infer<typeof updateGoalSchema>
 
+// pending: 未解決 / completed: 達成 / missed: 期限切れ未達成(concrete goalのみ取りうる)
+export type GoalStatus = 'pending' | 'completed' | 'missed'
+
 export interface Goal {
   id: string
   header: string | null
@@ -24,6 +27,7 @@ export interface Goal {
   deadline: string | null
   isConcrete: boolean
   isCompleted: boolean
+  status: GoalStatus
   createdAt: string
   updatedAt: string
   groupId: string

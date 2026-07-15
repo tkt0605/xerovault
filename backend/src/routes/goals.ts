@@ -2,7 +2,7 @@ import { Router, Response } from 'express'
 import { createGoalSchema, updateGoalSchema } from '@xerovault/shared'
 import { prisma } from '../db'
 import { requireAuth } from '../middleware/auth'
-import { calcVoteProgress } from '../services/scoreService'
+import { calcVoteProgress, calcGoalStatus } from '../services/scoreService'
 
 const router = Router()
 router.use(requireAuth)
@@ -40,7 +40,11 @@ router.get('/groups/:groupId/goals', async (req, res, next) => {
     })
 
     const goalsWithProgress = await Promise.all(
-      goals.map(async (g) => ({ ...g, progress: await calcVoteProgress(g.id) }))
+      goals.map(async (g) => ({
+        ...g,
+        progress: await calcVoteProgress(g.id),
+        status: calcGoalStatus(g),
+      }))
     )
     res.json(goalsWithProgress)
   } catch (err) {
@@ -56,7 +60,7 @@ router.post('/groups/:groupId/goals', async (req, res, next) => {
 
     const { header, description, deadline, assigneeId } = createGoalSchema.parse(req.body)
 
-    const isConcrete = !!(deadline || assigneeId)
+    const isConcrete = !!(deadline && assigneeId)
     const goal = await prisma.goal.create({
       data: {
         header,
@@ -68,7 +72,7 @@ router.post('/groups/:groupId/goals', async (req, res, next) => {
       },
       include: { assignee: { select: { id: true, email: true, name: true, avatar: true } } },
     })
-    res.status(201).json({ ...goal, progress: 0 })
+    res.status(201).json({ ...goal, progress: 0, status: calcGoalStatus(goal) })
   } catch (err) {
     next(err)
   }
@@ -97,7 +101,7 @@ router.get('/goals/:id', async (req, res, next) => {
     if (!(await assertMember(goal.groupId, userId, res))) return
 
     const progress = await calcVoteProgress(goal.id)
-    res.json({ ...goal, progress })
+    res.json({ ...goal, progress, status: calcGoalStatus(goal) })
   } catch (err) {
     next(err)
   }
@@ -116,7 +120,9 @@ router.patch('/goals/:id', async (req, res, next) => {
 
     const data = updateGoalSchema.parse(req.body)
 
-    const isConcrete = !!(data.deadline || data.assigneeId || goal.deadline || goal.assigneeId)
+    const finalDeadline = data.deadline !== undefined ? data.deadline : goal.deadline
+    const finalAssigneeId = data.assigneeId !== undefined ? data.assigneeId : goal.assigneeId
+    const isConcrete = !!(finalDeadline && finalAssigneeId)
     const updated = await prisma.goal.update({
       where: { id: goal.id },
       data: {
@@ -131,7 +137,11 @@ router.patch('/goals/:id', async (req, res, next) => {
       },
       include: { assignee: { select: { id: true, email: true, name: true, avatar: true } } },
     })
-    res.json({ ...updated, progress: await calcVoteProgress(updated.id) })
+    res.json({
+      ...updated,
+      progress: await calcVoteProgress(updated.id),
+      status: calcGoalStatus(updated),
+    })
   } catch (err) {
     next(err)
   }
