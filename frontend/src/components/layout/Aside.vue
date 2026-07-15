@@ -6,7 +6,7 @@
   />
 
   <div
-    class="fixed inset-y-0 left-0 z-40 h-screen w-64 shrink-0 overflow-hidden transition-transform duration-[600ms] ease-in-out md:static md:z-auto md:transition-[width] md:duration-[600ms]"
+    class="fixed inset-y-0 left-0 z-40 h-screen w-64 shrink-0 overflow-hidden transition-transform duration-[400ms] ease-in-out md:static md:z-auto md:transition-[width] md:duration-[600ms]"
     :class="ui.asideOpen ? 'translate-x-0 md:w-64' : '-translate-x-full md:w-0 md:translate-x-0'"
   >
     <aside class="flex h-screen w-64 flex-col overflow-y-auto border-r border-line bg-paper-sunken">
