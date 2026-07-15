@@ -1,5 +1,7 @@
 <template>
-  <aside class="w-64 shrink-0 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex flex-col h-screen overflow-y-auto">
+  <aside
+    class="w-64 shrink-0 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex flex-col h-screen overflow-y-auto"
+  >
     <div class="p-4 border-b border-zinc-200 dark:border-zinc-800">
       <div class="flex items-center gap-2">
         <img :src="auth.user?.avatar ?? defaultAvatar" class="w-8 h-8 rounded-full object-cover" />
@@ -8,11 +10,11 @@
     </div>
 
     <nav class="flex-1 p-3 space-y-1">
-      <p class="text-xs font-semibold text-zinc-400 uppercase tracking-wider px-2 mb-2">スタジオ</p>
+      <p class="text-xs font-semibold text-zinc-400 uppercase tracking-wider px-2 mb-2">グループ</p>
       <RouterLink
         v-for="g in groupStore.groups"
         :key="g.id"
-        :to="`/studio/${g.id}`"
+        :to="`/group/${g.id}`"
         class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
         :class="{ 'bg-brand-50 text-brand-600 dark:bg-zinc-800': route.params.id === g.id }"
       >
@@ -22,33 +24,53 @@
     </nav>
 
     <div class="p-3 border-t border-zinc-200 dark:border-zinc-800">
-      <button @click="showCreateDialog = true"
-        class="w-full py-2 rounded-lg text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white transition">
-        ＋ スタジオ作成
+      <button
+        class="w-full py-2 rounded-lg text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white transition"
+        @click="showCreateDialog = true"
+      >
+        ＋ グループ作成
       </button>
     </div>
 
-    <!-- スタジオ作成ダイアログ -->
+    <!-- グループ作成ダイアログ -->
     <Teleport to="body">
-      <div v-if="showCreateDialog" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div
+        v-if="showCreateDialog"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      >
         <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-          <h2 class="text-lg font-bold mb-4">スタジオを作成</h2>
-          <form @submit.prevent="handleCreate" class="space-y-3">
-            <input v-model="form.name" type="text" placeholder="スタジオ名 *" required
-              class="w-full px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500" />
-            <input v-model="form.tag" type="text" placeholder="タグ（任意）"
-              class="w-full px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500" />
+          <h2 class="text-lg font-bold mb-4">グループを作成</h2>
+          <form class="space-y-3" @submit.prevent="handleCreate">
+            <input
+              v-model="form.name"
+              type="text"
+              placeholder="グループ名 *"
+              required
+              class="w-full px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+            <input
+              v-model="form.tag"
+              type="text"
+              placeholder="タグ（任意）"
+              class="w-full px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
             <label class="flex items-center gap-2 text-sm cursor-pointer">
               <input v-model="form.isPublic" type="checkbox" class="rounded" />
               ランキングに公開する
             </label>
             <div class="flex gap-2 pt-2">
-              <button type="button" @click="showCreateDialog = false"
-                class="flex-1 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 text-sm transition hover:bg-zinc-50 dark:hover:bg-zinc-800">
+              <button
+                type="button"
+                class="flex-1 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 text-sm transition hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                @click="showCreateDialog = false"
+              >
                 キャンセル
               </button>
-              <button type="submit" :disabled="creating"
-                class="flex-1 py-2 rounded-xl bg-brand-500 text-white text-sm font-medium transition hover:bg-brand-600 disabled:opacity-50">
+              <button
+                type="submit"
+                :disabled="creating"
+                class="flex-1 py-2 rounded-xl bg-brand-500 text-white text-sm font-medium transition hover:bg-brand-600 disabled:opacity-50"
+              >
                 {{ creating ? '作成中...' : '作成' }}
               </button>
             </div>
@@ -82,7 +104,7 @@ async function handleCreate() {
     const g = await groupStore.createGroup(form.value)
     showCreateDialog.value = false
     form.value = { name: '', tag: '', isPublic: false }
-    router.push(`/studio/${g.id}`)
+    router.push(`/group/${g.id}`)
   } finally {
     creating.value = false
   }

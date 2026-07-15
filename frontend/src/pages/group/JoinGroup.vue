@@ -10,9 +10,11 @@
         <p class="text-2xl mb-3">🎉</p>
         <p class="font-bold text-lg mb-1">参加しました！</p>
         <p class="text-zinc-500 text-sm mb-6">{{ groupName }}</p>
-        <RouterLink :to="`/studio/${route.params.id}`"
-          class="px-6 py-2 rounded-full bg-brand-500 text-white text-sm hover:bg-brand-600 transition">
-          スタジオを開く
+        <RouterLink
+          :to="`/group/${route.params.id}`"
+          class="px-6 py-2 rounded-full bg-brand-500 text-white text-sm hover:bg-brand-600 transition"
+        >
+          グループを開く
         </RouterLink>
       </template>
     </div>
@@ -43,7 +45,11 @@ onMounted(async () => {
     return
   }
   const data = route.query.data as string
-  if (!data) { error.value = '招待リンクが無効です'; loading.value = false; return }
+  if (!data) {
+    error.value = '招待リンクが無効です'
+    loading.value = false
+    return
+  }
   try {
     const g = await groupStore.joinGroup(route.params.id as string, data)
     groupName.value = g.name

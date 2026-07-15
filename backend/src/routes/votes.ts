@@ -19,16 +19,23 @@ router.get('/goals/:id/votes', async (req, res, next) => {
         group: { include: { members: { select: { id: true } } } },
         goalVotes: {
           include: {
-            voter: { select: { id: true, email: true, avatar: true } },
+            voter: { select: { id: true, email: true, name: true, avatar: true } },
             vote: true,
           },
         },
       },
     })
-    if (!goal) { res.status(404).json({ error: 'ゴールが存在しません' }); return }
+    if (!goal) {
+      res.status(404).json({ error: 'ゴールが存在しません' })
+      return
+    }
 
-    const isMember = goal.group.ownerId === userId || goal.group.members.some((m) => m.id === userId)
-    if (!isMember) { res.status(403).json({ error: 'アクセス権がありません' }); return }
+    const isMember =
+      goal.group.ownerId === userId || goal.group.members.some((m) => m.id === userId)
+    if (!isMember) {
+      res.status(403).json({ error: 'アクセス権がありません' })
+      return
+    }
 
     const progress = await calcVoteProgress(goal.id)
     const myVote = goal.goalVotes.find((gv) => gv.voterId === userId)
@@ -59,12 +66,21 @@ router.post('/goals/:id/votes', async (req, res, next) => {
       where: { id: req.params.id },
       include: { group: { include: { members: { select: { id: true } } } } },
     })
-    if (!goal) { res.status(404).json({ error: 'ゴールが存在しません' }); return }
-    if (goal.isCompleted) { res.status(400).json({ error: 'このゴールはすでに達成済みです' }); return }
+    if (!goal) {
+      res.status(404).json({ error: 'ゴールが存在しません' })
+      return
+    }
+    if (goal.isCompleted) {
+      res.status(400).json({ error: 'このゴールはすでに達成済みです' })
+      return
+    }
 
     const isMember =
       goal.group.ownerId === userId || goal.group.members.some((m) => m.id === userId)
-    if (!isMember) { res.status(403).json({ error: 'グループのメンバーではありません' }); return }
+    if (!isMember) {
+      res.status(403).json({ error: 'グループのメンバーではありません' })
+      return
+    }
 
     // GoalVote（投票箱）を取得 or 作成
     const goalVote = await prisma.goalVote.upsert({
@@ -102,12 +118,18 @@ router.delete('/goals/:id/votes', async (req, res, next) => {
   try {
     const userId = req.user!.id
     const goal = await prisma.goal.findUnique({ where: { id: req.params.id } })
-    if (!goal) { res.status(404).json({ error: 'ゴールが存在しません' }); return }
+    if (!goal) {
+      res.status(404).json({ error: 'ゴールが存在しません' })
+      return
+    }
 
     const goalVote = await prisma.goalVote.findUnique({
       where: { goalId_voterId: { goalId: goal.id, voterId: userId } },
     })
-    if (!goalVote) { res.status(404).json({ error: '投票が存在しません' }); return }
+    if (!goalVote) {
+      res.status(404).json({ error: '投票が存在しません' })
+      return
+    }
 
     await prisma.vote.deleteMany({ where: { goalVoteId: goalVote.id } })
     const progress = await calcVoteProgress(goal.id)

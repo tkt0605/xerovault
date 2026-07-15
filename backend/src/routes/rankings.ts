@@ -16,7 +16,7 @@ router.get('/', async (req, res, next) => {
         score: true,
         streak: true,
         createdAt: true,
-        owner: { select: { id: true, email: true, avatar: true } },
+        owner: { select: { id: true, email: true, name: true, avatar: true } },
         _count: { select: { members: true, goals: true } },
       },
       orderBy: { score: 'desc' },

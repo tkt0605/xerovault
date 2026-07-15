@@ -13,8 +13,8 @@ export interface Group {
   joinToken: string | null
   createdAt: string
   updatedAt: string
-  owner: { id: string; email: string; avatar: string | null }
-  members: { id: string; email: string; avatar: string | null }[]
+  owner: { id: string; email: string; name: string | null; avatar: string | null }
+  members: { id: string; email: string; name: string | null; avatar: string | null }[]
   _count: { goals: number }
 }
 
@@ -32,16 +32,22 @@ export const useGroupStore = defineStore('group', () => {
     return g
   }
 
-  async function createGroup(data: { name: string; tag?: string; isPublic?: boolean }): Promise<Group> {
+  async function createGroup(data: {
+    name: string
+    tag?: string
+    isPublic?: boolean
+  }): Promise<Group> {
     const g = await api.post<Group>('/groups', data)
     groups.value.unshift(g)
     return g
   }
 
   async function createInvite(groupId: string): Promise<string> {
-    const res = await api.post<{ encryptedData: string }>(`/groups/${groupId}/invite`, { expireIn: 3600 })
+    const res = await api.post<{ encryptedData: string }>(`/groups/${groupId}/invite`, {
+      expireIn: 3600,
+    })
     const origin = window.location.origin
-    return `${origin}/studio/${groupId}/join?data=${encodeURIComponent(res.encryptedData)}`
+    return `${origin}/group/${groupId}/join?data=${encodeURIComponent(res.encryptedData)}`
   }
 
   async function joinGroup(groupId: string, data: string): Promise<Group> {
@@ -57,5 +63,14 @@ export const useGroupStore = defineStore('group', () => {
     }
   }
 
-  return { groups, current, fetchMyGroups, fetchGroup, createGroup, createInvite, joinGroup, removeMember }
+  return {
+    groups,
+    current,
+    fetchMyGroups,
+    fetchGroup,
+    createGroup,
+    createInvite,
+    joinGroup,
+    removeMember,
+  }
 })

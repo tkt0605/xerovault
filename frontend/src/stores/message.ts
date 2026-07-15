@@ -7,7 +7,7 @@ export interface Message {
   text: string
   createdAt: string
   goalId: string
-  author: { id: string; email: string; avatar: string | null }
+  author: { id: string; email: string; name: string | null; avatar: string | null }
 }
 
 export const useMessageStore = defineStore('message', () => {

@@ -8,7 +8,10 @@ export interface VoteStatus {
   progress: number
   totalMembers: number
   myVote: boolean | null
-  votes: { voter: { id: string; email: string; avatar: string | null }; isYes: boolean | null }[]
+  votes: {
+    voter: { id: string; email: string; name: string | null; avatar: string | null }
+    isYes: boolean | null
+  }[]
 }
 
 export const useVoteStore = defineStore('vote', () => {
@@ -21,11 +24,16 @@ export const useVoteStore = defineStore('vote', () => {
     return s
   }
 
-  async function castVote(goalId: string, isYes: boolean): Promise<{ progress: number; justCompleted: boolean }> {
-    const res = await api.post<{ ok: boolean; isYes: boolean; progress: number; justCompleted: boolean }>(
-      `/goals/${goalId}/votes`,
-      { isYes }
-    )
+  async function castVote(
+    goalId: string,
+    isYes: boolean
+  ): Promise<{ progress: number; justCompleted: boolean }> {
+    const res = await api.post<{
+      ok: boolean
+      isYes: boolean
+      progress: number
+      justCompleted: boolean
+    }>(`/goals/${goalId}/votes`, { isYes })
     if (status.value) {
       status.value.progress = res.progress
       status.value.myVote = isYes

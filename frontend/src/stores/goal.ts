@@ -12,11 +12,11 @@ export interface Goal {
   progress: number
   createdAt: string
   groupId: string
-  assignee: { id: string; email: string; avatar: string | null } | null
+  assignee: { id: string; email: string; name: string | null; avatar: string | null } | null
   group?: {
     id: string
     name: string
-    members: { id: string; email: string; avatar: string | null }[]
+    members: { id: string; email: string; name: string | null; avatar: string | null }[]
   }
 }
 
@@ -35,12 +35,15 @@ export const useGoalStore = defineStore('goal', () => {
     return g
   }
 
-  async function createGoal(groupId: string, data: {
-    header?: string
-    description: string
-    deadline?: string | null
-    assigneeId?: string | null
-  }): Promise<Goal> {
+  async function createGoal(
+    groupId: string,
+    data: {
+      header?: string
+      description: string
+      deadline?: string | null
+      assigneeId?: string | null
+    }
+  ): Promise<Goal> {
     const g = await api.post<Goal>(`/groups/${groupId}/goals`, data)
     goals.value.unshift(g)
     return g

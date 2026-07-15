@@ -4,12 +4,24 @@ import { useAuthStore } from '@/stores/auth'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/auth/login', component: () => import('@/pages/auth/Login.vue'), meta: { public: true } },
-    { path: '/auth/signup', component: () => import('@/pages/auth/Signup.vue'), meta: { public: true } },
+    {
+      path: '/auth/login',
+      component: () => import('@/pages/auth/Login.vue'),
+      meta: { public: true },
+    },
+    {
+      path: '/auth/signup',
+      component: () => import('@/pages/auth/Signup.vue'),
+      meta: { public: true },
+    },
     { path: '/', component: () => import('@/pages/Home.vue') },
-    { path: '/studio/:id', component: () => import('@/pages/studio/StudioDetail.vue') },
-    { path: '/studio/:id/join', component: () => import('@/pages/studio/JoinStudio.vue'), meta: { public: true } },
-    { path: '/studio/:id/goal/:goalId', component: () => import('@/pages/studio/GoalDetail.vue') },
+    { path: '/group/:id', component: () => import('@/pages/group/GroupDetail.vue') },
+    {
+      path: '/group/:id/join',
+      component: () => import('@/pages/group/JoinGroup.vue'),
+      meta: { public: true },
+    },
+    { path: '/group/:id/goal/:goalId', component: () => import('@/pages/group/GoalDetail.vue') },
     { path: '/ranking', component: () => import('@/pages/Ranking.vue'), meta: { public: true } },
   ],
 })

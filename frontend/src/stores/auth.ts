@@ -4,6 +4,7 @@ import { ref, computed } from 'vue'
 interface UserInfo {
   id: string
   email: string
+  name: string | null
   avatar: string | null
 }
 
@@ -29,12 +30,12 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = data.user
   }
 
-  async function signup(email: string, password: string): Promise<void> {
+  async function signup(email: string, password: string, name?: string): Promise<void> {
     const res = await fetch('/api/auth/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, name }),
     })
     if (!res.ok) {
       const err = await res.json()
@@ -58,7 +59,11 @@ export const useAuthStore = defineStore('auth', () => {
         method: 'POST',
         credentials: 'include',
       })
-      if (!res.ok) { accessToken.value = null; user.value = null; return false }
+      if (!res.ok) {
+        accessToken.value = null
+        user.value = null
+        return false
+      }
       const data = await res.json()
       accessToken.value = data.access
       return true

@@ -22,10 +22,13 @@ function avatarUrl(email: string): string {
 // POST /api/auth/signup
 router.post('/signup', async (req, res, next) => {
   try {
-    const { email, password } = z.object({
-      email: z.string().email(),
-      password: z.string().min(8),
-    }).parse(req.body)
+    const { email, password, name } = z
+      .object({
+        email: z.string().email(),
+        password: z.string().min(8),
+        name: z.string().min(1).max(50).optional(),
+      })
+      .parse(req.body)
 
     const exists = await prisma.user.findUnique({ where: { email } })
     if (exists) {
@@ -35,15 +38,15 @@ router.post('/signup', async (req, res, next) => {
 
     const hashed = await bcrypt.hash(password, 12)
     const user = await prisma.user.create({
-      data: { email, password: hashed, avatar: avatarUrl(email) },
+      data: { email, password: hashed, name, avatar: avatarUrl(email) },
     })
 
-    const [access, refresh] = await Promise.all([
-      signAccess(user.id),
-      signRefresh(user.id),
-    ])
+    const [access, refresh] = await Promise.all([signAccess(user.id), signRefresh(user.id)])
     res.cookie('refresh_token', refresh, COOKIE_OPTS)
-    res.status(201).json({ access, user: { id: user.id, email: user.email, avatar: user.avatar } })
+    res.status(201).json({
+      access,
+      user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar },
+    })
   } catch (err) {
     next(err)
   }
@@ -52,10 +55,12 @@ router.post('/signup', async (req, res, next) => {
 // POST /api/auth/login
 router.post('/login', async (req, res, next) => {
   try {
-    const { email, password } = z.object({
-      email: z.string().email(),
-      password: z.string().min(1),
-    }).parse(req.body)
+    const { email, password } = z
+      .object({
+        email: z.string().email(),
+        password: z.string().min(1),
+      })
+      .parse(req.body)
 
     const user = await prisma.user.findUnique({ where: { email } })
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -63,19 +68,19 @@ router.post('/login', async (req, res, next) => {
       return
     }
 
-    const [access, refresh] = await Promise.all([
-      signAccess(user.id),
-      signRefresh(user.id),
-    ])
+    const [access, refresh] = await Promise.all([signAccess(user.id), signRefresh(user.id)])
     res.cookie('refresh_token', refresh, COOKIE_OPTS)
-    res.json({ access, user: { id: user.id, email: user.email, avatar: user.avatar } })
+    res.json({
+      access,
+      user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar },
+    })
   } catch (err) {
     next(err)
   }
 })
 
 // POST /api/auth/refresh
-router.post('/refresh', async (req, res, next) => {
+router.post('/refresh', async (req, res) => {
   try {
     const token = req.cookies?.refresh_token as string | undefined
     if (!token) {
@@ -91,10 +96,7 @@ router.post('/refresh', async (req, res, next) => {
       return
     }
 
-    const [access, newRefresh] = await Promise.all([
-      signAccess(user.id),
-      signRefresh(user.id),
-    ])
+    const [access, newRefresh] = await Promise.all([signAccess(user.id), signRefresh(user.id)])
     res.cookie('refresh_token', newRefresh, COOKIE_OPTS)
     res.json({ access })
   } catch {
@@ -112,7 +114,7 @@ router.post('/logout', (req, res) => {
 // GET /api/auth/me
 router.get('/me', requireAuth, (req, res) => {
   const u = req.user!
-  res.json({ id: u.id, email: u.email, avatar: u.avatar })
+  res.json({ id: u.id, email: u.email, name: u.name, avatar: u.avatar })
 })
 
 export default router

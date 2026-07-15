@@ -13,7 +13,5 @@ import DefaultLayout from '@/components/layout/DefaultLayout.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
 
 const route = useRoute()
-const layout = computed(() =>
-  route.path.startsWith('/auth') ? AuthLayout : DefaultLayout
-)
+const layout = computed(() => (route.path.startsWith('/auth') ? AuthLayout : DefaultLayout))
 </script>

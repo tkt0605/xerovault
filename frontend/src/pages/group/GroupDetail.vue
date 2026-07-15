@@ -12,32 +12,44 @@
           <div class="text-right shrink-0">
             <p class="text-3xl font-extrabold text-brand-500">{{ group.score }}</p>
             <p class="text-xs text-zinc-400">スコア</p>
-            <p v-if="group.streak >= 3" class="text-xs text-orange-500 font-medium mt-0.5">🔥{{ group.streak }}連続達成</p>
+            <p v-if="group.streak >= 3" class="text-xs text-orange-500 font-medium mt-0.5">
+              🔥{{ group.streak }}連続達成
+            </p>
           </div>
         </div>
         <div class="flex items-center gap-3 mt-4 flex-wrap">
           <div class="flex -space-x-2">
-            <img v-for="m in group.members.slice(0, 5)" :key="m.id"
+            <img
+              v-for="m in group.members.slice(0, 5)"
+              :key="m.id"
               :src="m.avatar ?? defaultAvatar"
-              class="w-8 h-8 rounded-full ring-2 ring-white dark:ring-zinc-900 object-cover" />
+              class="w-8 h-8 rounded-full ring-2 ring-white dark:ring-zinc-900 object-cover"
+            />
           </div>
           <span class="text-sm text-zinc-500">{{ group.members.length }}人のメンバー</span>
-          <button @click="handleInvite"
-            class="ml-auto text-sm px-4 py-1.5 rounded-full border border-brand-500 text-brand-500 hover:bg-brand-500 hover:text-white transition">
+          <button
+            class="ml-auto text-sm px-4 py-1.5 rounded-full border border-brand-500 text-brand-500 hover:bg-brand-500 hover:text-white transition"
+            @click="handleInvite"
+          >
             招待リンク作成
           </button>
         </div>
-        <div v-if="inviteUrl" class="mt-3 p-3 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-xs break-all text-zinc-600 dark:text-zinc-300">
+        <div
+          v-if="inviteUrl"
+          class="mt-3 p-3 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-xs break-all text-zinc-600 dark:text-zinc-300"
+        >
           {{ inviteUrl }}
-          <button @click="copyInvite" class="ml-2 text-brand-500 hover:underline">コピー</button>
+          <button class="ml-2 text-brand-500 hover:underline" @click="copyInvite">コピー</button>
         </div>
       </div>
 
       <!-- ゴール一覧 -->
       <div class="flex items-center justify-between mb-4">
         <h2 class="font-semibold text-zinc-900 dark:text-white">ゴール一覧</h2>
-        <button @click="showAddGoal = true"
-          class="text-sm px-4 py-1.5 rounded-full bg-brand-500 text-white hover:bg-brand-600 transition">
+        <button
+          class="text-sm px-4 py-1.5 rounded-full bg-brand-500 text-white hover:bg-brand-600 transition"
+          @click="showAddGoal = true"
+        >
           ＋ ゴール追加
         </button>
       </div>
@@ -51,29 +63,51 @@
           v-for="g in goalStore.goals"
           :key="g.id"
           :goal="g"
-          @click="router.push(`/studio/${group.id}/goal/${g.id}`)" />
+          @click="router.push(`/group/${group.id}/goal/${g.id}`)"
+        />
       </div>
     </template>
 
     <!-- ゴール追加ダイアログ -->
     <Teleport to="body">
-      <div v-if="showAddGoal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div
+        v-if="showAddGoal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      >
         <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 w-full max-w-md shadow-2xl">
           <h2 class="text-lg font-bold mb-4">ゴールを追加</h2>
-          <form @submit.prevent="handleAddGoal" class="space-y-3">
-            <input v-model="goalForm.header" type="text" placeholder="タイトル（任意）"
-              class="w-full px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500" />
-            <textarea v-model="goalForm.description" placeholder="ゴールの内容 *" required rows="3"
-              class="w-full px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none" />
-            <input v-model="goalForm.deadline" type="datetime-local"
-              class="w-full px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500" />
+          <form class="space-y-3" @submit.prevent="handleAddGoal">
+            <input
+              v-model="goalForm.header"
+              type="text"
+              placeholder="タイトル（任意）"
+              class="w-full px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+            <textarea
+              v-model="goalForm.description"
+              placeholder="ゴールの内容 *"
+              required
+              rows="3"
+              class="w-full px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+            />
+            <input
+              v-model="goalForm.deadline"
+              type="datetime-local"
+              class="w-full px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
             <div class="flex gap-2 pt-2">
-              <button type="button" @click="showAddGoal = false"
-                class="flex-1 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 text-sm transition hover:bg-zinc-50 dark:hover:bg-zinc-800">
+              <button
+                type="button"
+                class="flex-1 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 text-sm transition hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                @click="showAddGoal = false"
+              >
                 キャンセル
               </button>
-              <button type="submit" :disabled="addingGoal"
-                class="flex-1 py-2 rounded-xl bg-brand-500 text-white text-sm font-medium transition hover:bg-brand-600 disabled:opacity-50">
+              <button
+                type="submit"
+                :disabled="addingGoal"
+                class="flex-1 py-2 rounded-xl bg-brand-500 text-white text-sm font-medium transition hover:bg-brand-600 disabled:opacity-50"
+              >
                 {{ addingGoal ? '追加中...' : '追加' }}
               </button>
             </div>
