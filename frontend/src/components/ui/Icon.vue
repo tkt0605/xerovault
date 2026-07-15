@@ -29,8 +29,14 @@ export type IconName =
   | 'users'
   | 'logout'
   | 'copy'
+  | 'home'
+  | 'ranking'
+  | 'menu'
 
 const paths: Record<IconName, string> = {
+  menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
+  home: '<path d="m3 10.5 9-7.5 9 7.5"/><path d="M5 9v11a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9"/>',
+  ranking: '<path d="M4 20v-6"/><path d="M12 20V4"/><path d="M20 20v-9"/>',
   check: '<path d="M20 6 9 17l-5-5"/>',
   x: '<path d="M18 6 6 18M6 6l12 12"/>',
   alert: '<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16h.01"/>',
