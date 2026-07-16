@@ -440,7 +440,7 @@ begin
     raise exception '招待権限がありません' using errcode = '42501';
   end if;
 
-  v_token := encode(gen_random_bytes(16), 'hex');
+  v_token := encode(extensions.gen_random_bytes(16), 'hex');
 
   update public.groups
   set join_token = v_token,
