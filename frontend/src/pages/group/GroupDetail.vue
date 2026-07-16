@@ -5,9 +5,21 @@
       <!-- ヘッダー -->
       <div class="mb-6">
         <div class="flex items-start justify-between gap-4">
-          <div>
-            <h1 class="font-serif text-2xl font-medium text-ink">{{ group.name }}</h1>
-            <p v-if="group.tag" class="mt-0.5 text-sm text-ink-soft">#{{ group.tag }}</p>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <h1 class="truncate font-serif text-2xl font-medium text-ink">{{ group.name }}</h1>
+              <button
+                v-if="isOwner"
+                class="shrink-0 text-ink-faint transition-colors hover:text-ink"
+                title="グループを編集"
+                @click="openEditDialog"
+              >
+                <Icon name="edit" :size="15" />
+              </button>
+            </div>
+            <p v-if="group.tags.length" class="mt-0.5 text-sm text-ink-soft">
+              {{ group.tags.map((t) => `#${t}`).join(' ') }}
+            </p>
           </div>
           <div class="shrink-0 text-right">
             <p class="font-serif text-3xl font-medium text-accent">{{ group.score }}</p>
@@ -102,14 +114,42 @@
         </BaseCard>
       </div>
     </Teleport>
+
+    <!-- グループ編集ダイアログ（オーナーのみ） -->
+    <Teleport to="body">
+      <div v-if="showEditGroup" class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4">
+        <BaseCard class="w-full max-w-md shadow-modal">
+          <h2 class="mb-4 font-serif text-lg font-medium text-ink">グループを編集</h2>
+          <form class="space-y-3" @submit.prevent="handleEditGroup">
+            <BaseInput v-model="editForm.name" placeholder="グループ名 *" required />
+            <BaseInput v-model="editForm.tagsInput" placeholder="タグ（カンマ区切りで複数入力可・任意）" />
+            <div class="flex gap-2 pt-2">
+              <BaseButton
+                type="button"
+                variant="ghost"
+                class="flex-1 justify-center"
+                @click="showEditGroup = false"
+              >
+                キャンセル
+              </BaseButton>
+              <BaseButton type="submit" :disabled="savingGroup" class="flex-1 justify-center">
+                {{ savingGroup ? '保存中...' : '保存' }}
+              </BaseButton>
+            </div>
+          </form>
+        </BaseCard>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import { useGroupStore } from '@/stores/group'
 import { useGoalStore } from '@/stores/goal'
+import { parseTags } from '@/lib/tags'
 import GoalCard from '@/components/goal/GoalCard.vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import Icon from '@/components/ui/Icon.vue'
@@ -120,6 +160,7 @@ import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 const groupStore = useGroupStore()
 const goalStore = useGoalStore()
 const group = ref(groupStore.current)
@@ -127,6 +168,11 @@ const inviteUrl = ref('')
 const showAddGoal = ref(false)
 const addingGoal = ref(false)
 const goalForm = ref({ header: '', description: '', deadline: '' })
+
+const isOwner = computed(() => group.value?.owner.id === authStore.user?.id)
+const showEditGroup = ref(false)
+const savingGroup = ref(false)
+const editForm = ref({ name: '', tagsInput: '' })
 
 onMounted(async () => {
   const id = route.params.id as string
@@ -141,6 +187,25 @@ async function handleInvite() {
 
 function copyInvite() {
   navigator.clipboard.writeText(inviteUrl.value)
+}
+
+function openEditDialog() {
+  if (!group.value) return
+  editForm.value = { name: group.value.name, tagsInput: group.value.tags.join(', ') }
+  showEditGroup.value = true
+}
+
+async function handleEditGroup() {
+  savingGroup.value = true
+  try {
+    group.value = await groupStore.updateGroup(route.params.id as string, {
+      name: editForm.value.name,
+      tags: parseTags(editForm.value.tagsInput),
+    })
+    showEditGroup.value = false
+  } finally {
+    savingGroup.value = false
+  }
 }
 
 async function handleAddGoal() {

@@ -38,7 +38,7 @@
         <div class="flex items-center gap-4 text-xs text-ink-faint">
           <span>{{ g.members.length }}人</span>
           <span>{{ g._count?.goals ?? 0 }}ゴール</span>
-          <span v-if="g.tag">#{{ g.tag }}</span>
+          <span v-if="g.tags.length">{{ g.tags.map((t) => `#${t}`).join(' ') }}</span>
         </div>
       </BaseCard>
     </div>

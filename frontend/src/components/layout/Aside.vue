@@ -68,7 +68,7 @@
             <h2 class="mb-4 font-serif text-lg font-medium text-ink">グループを作成</h2>
             <form class="space-y-3" @submit.prevent="handleCreate">
               <BaseInput v-model="form.name" placeholder="グループ名 *" required />
-              <BaseInput v-model="form.tag" placeholder="タグ（任意）" />
+              <BaseInput v-model="form.tagsInput" placeholder="タグ（カンマ区切りで複数入力可・任意）" />
               <label class="flex cursor-pointer items-center gap-2 text-sm text-ink-soft">
                 <input v-model="form.isPublic" type="checkbox" class="rounded" />
                 ランキングに公開する
@@ -108,6 +108,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useGroupStore } from '@/stores/group'
 import { useUiStore } from '@/stores/ui'
+import { parseTags } from '@/lib/tags'
 import Avatar from '@/components/ui/Avatar.vue'
 import Icon from '@/components/ui/Icon.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -121,7 +122,7 @@ const route = useRoute()
 const router = useRouter()
 const showCreateDialog = ref(false)
 const creating = ref(false)
-const form = ref({ name: '', tag: '', isPublic: false })
+const form = ref({ name: '', tagsInput: '', isPublic: false })
 
 onMounted(() => groupStore.fetchMyGroups())
 
@@ -133,9 +134,13 @@ function openCreateDialog() {
 async function handleCreate() {
   creating.value = true
   try {
-    const g = await groupStore.createGroup(form.value)
+    const g = await groupStore.createGroup({
+      name: form.value.name,
+      tags: parseTags(form.value.tagsInput),
+      isPublic: form.value.isPublic,
+    })
     showCreateDialog.value = false
-    form.value = { name: '', tag: '', isPublic: false }
+    form.value = { name: '', tagsInput: '', isPublic: false }
     router.push(`/group/${g.id}`)
   } finally {
     creating.value = false

@@ -32,6 +32,7 @@ export type IconName =
   | 'home'
   | 'ranking'
   | 'menu'
+  | 'edit'
 
 const paths: Record<IconName, string> = {
   menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
@@ -53,5 +54,6 @@ const paths: Record<IconName, string> = {
   logout:
     '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
   copy: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  edit: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>',
 }
 </script>

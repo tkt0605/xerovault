@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Group, CreateGroupInput } from '@xerovault/shared'
+import type { Group, CreateGroupInput, UpdateGroupInput } from '@xerovault/shared'
 import { rpc } from '@/lib/rpc'
 
 export type { Group }
@@ -22,10 +22,21 @@ export const useGroupStore = defineStore('group', () => {
   async function createGroup(data: CreateGroupInput): Promise<Group> {
     const g = await rpc<Group>('create_group', {
       p_name: data.name,
-      p_tag: data.tag ?? null,
+      p_tags: data.tags ?? [],
       p_is_public: data.isPublic ?? false,
     })
     groups.value.unshift(g)
+    return g
+  }
+
+  async function updateGroup(groupId: string, data: UpdateGroupInput): Promise<Group> {
+    const g = await rpc<Group>('update_group', {
+      p_group_id: groupId,
+      p_name: data.name ?? null,
+      p_tags: data.tags ?? null,
+    })
+    if (current.value?.id === groupId) current.value = g
+    groups.value = groups.value.map((x) => (x.id === g.id ? g : x))
     return g
   }
 
@@ -55,6 +66,7 @@ export const useGroupStore = defineStore('group', () => {
     fetchMyGroups,
     fetchGroup,
     createGroup,
+    updateGroup,
     createInvite,
     joinGroup,
     removeMember,

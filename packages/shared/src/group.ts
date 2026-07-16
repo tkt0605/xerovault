@@ -3,10 +3,16 @@ import type { UserSummary } from './user'
 
 export const createGroupSchema = z.object({
   name: z.string().min(1).max(50),
-  tag: z.string().max(30).optional(),
+  tags: z.array(z.string().trim().min(1).max(30)).max(10).default([]),
   isPublic: z.boolean().default(false),
 })
 export type CreateGroupInput = z.infer<typeof createGroupSchema>
+
+export const updateGroupSchema = z.object({
+  name: z.string().min(1).max(50).optional(),
+  tags: z.array(z.string().trim().min(1).max(30)).max(10).optional(),
+})
+export type UpdateGroupInput = z.infer<typeof updateGroupSchema>
 
 export const createInviteSchema = z.object({
   expireIn: z.number().min(300).max(86400).default(3600),
@@ -21,7 +27,7 @@ export type JoinGroupInput = z.infer<typeof joinGroupSchema>
 export interface Group {
   id: string
   name: string
-  tag: string | null
+  tags: string[]
   isPublic: boolean
   score: number
   streak: number

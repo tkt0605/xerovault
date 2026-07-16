@@ -32,8 +32,8 @@
             </span>
           </div>
           <p class="text-xs text-ink-faint">
-            {{ g._count.members }}人 · {{ g._count.goals }}ゴール<span v-if="g.tag">
-              · #{{ g.tag }}</span
+            {{ g._count.members }}人 · {{ g._count.goals }}ゴール<span v-if="g.tags.length">
+              · {{ g.tags.map((t) => `#${t}`).join(' ') }}</span
             >
           </p>
         </div>
