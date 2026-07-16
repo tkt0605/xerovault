@@ -3,6 +3,22 @@
     <h1 class="mb-6 font-serif text-2xl font-medium text-ink">設定</h1>
 
     <BaseCard class="mb-4">
+      <h2 class="mb-3 font-semibold text-ink">実績</h2>
+      <div class="grid grid-cols-2 gap-3 text-center">
+        <div class="rounded-control bg-paper-sunken p-3">
+          <p class="font-serif text-2xl font-medium text-accent">{{ stats?.completedGoalsCount ?? '-' }}</p>
+          <p class="mt-0.5 text-xs text-ink-faint">達成したゴール</p>
+        </div>
+        <div class="rounded-control bg-paper-sunken p-3">
+          <p class="font-serif text-2xl font-medium text-accent">
+            {{ participationRate !== null ? `${participationRate}%` : '-' }}
+          </p>
+          <p class="mt-0.5 text-xs text-ink-faint">投票参加率</p>
+        </div>
+      </div>
+    </BaseCard>
+
+    <BaseCard class="mb-4">
       <h2 class="mb-3 font-semibold text-ink">プロフィール</h2>
       <div class="mb-4 flex items-center gap-3">
         <Avatar :name="form.name || authStore.user?.email || '?'" :size="48" />
@@ -38,9 +54,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import type { UserStats } from '@xerovault/shared'
 import { useAuthStore } from '@/stores/auth'
 import { supabase } from '@/lib/supabase'
+import { rpc } from '@/lib/rpc'
 import Avatar from '@/components/ui/Avatar.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
@@ -51,6 +69,12 @@ const authStore = useAuthStore()
 const form = ref({ name: '', notificationsEnabled: true })
 const savingName = ref(false)
 const savingNotifications = ref(false)
+const stats = ref<UserStats | null>(null)
+
+const participationRate = computed(() => {
+  if (!stats.value || stats.value.totalVotableGoals === 0) return null
+  return Math.round((stats.value.votedGoalsCount / stats.value.totalVotableGoals) * 100)
+})
 
 onMounted(async () => {
   if (!authStore.user) return
@@ -62,6 +86,8 @@ onMounted(async () => {
     .eq('id', authStore.user.id)
     .single()
   if (!error && data) form.value.notificationsEnabled = data.notifications_enabled
+
+  stats.value = await rpc<UserStats>('get_my_stats')
 })
 
 async function handleSaveName() {
