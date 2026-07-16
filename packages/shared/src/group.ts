@@ -24,6 +24,16 @@ export const joinGroupSchema = z.object({
 })
 export type JoinGroupInput = z.infer<typeof joinGroupSchema>
 
+export interface ScoreBreakdown {
+  base: number
+  completedPoints: number
+  missedCount: number
+  missedPenalty: number
+  streak: number
+  streakBonus: number
+  total: number
+}
+
 export interface Group {
   id: string
   name: string

@@ -31,15 +31,41 @@
               </p>
             </div>
           </div>
-          <div class="shrink-0 text-right">
-            <p class="font-serif text-3xl font-medium text-accent">{{ group.score }}</p>
-            <p class="text-xs text-ink-faint">スコア</p>
-            <p
-              v-if="group.streak >= 3"
-              class="mt-0.5 flex items-center justify-end gap-1 text-xs font-semibold text-accent-strong"
+          <div class="relative shrink-0 text-right">
+            <button class="text-right" @click="toggleBreakdown">
+              <p class="font-serif text-3xl font-medium text-accent">{{ group.score }}</p>
+              <p class="text-xs text-ink-faint underline decoration-dotted">スコア</p>
+              <p
+                v-if="group.streak >= 3"
+                class="mt-0.5 flex items-center justify-end gap-1 text-xs font-semibold text-accent-strong"
+              >
+                <Icon name="flame" :size="12" />{{ group.streak }}連続達成
+              </p>
+            </button>
+            <div
+              v-if="showBreakdown"
+              class="absolute right-0 top-full z-10 mt-2 w-56 rounded-surface border border-line bg-paper-raised p-3 text-left shadow-card"
             >
-              <Icon name="flame" :size="12" />{{ group.streak }}連続達成
-            </p>
+              <div v-if="breakdown" class="space-y-1 text-xs text-ink-soft">
+                <div class="flex justify-between"><span>基本</span><span>{{ breakdown.base }}</span></div>
+                <div class="flex justify-between">
+                  <span>達成による加点</span><span class="text-good">+{{ breakdown.completedPoints }}</span>
+                </div>
+                <div v-if="breakdown.missedCount > 0" class="flex justify-between">
+                  <span>未達成（{{ breakdown.missedCount }}件）</span
+                  ><span class="text-bad">-{{ breakdown.missedPenalty }}</span>
+                </div>
+                <div v-if="breakdown.streakBonus > 0" class="flex justify-between">
+                  <span>連続達成ボーナス</span><span class="text-good">+{{ breakdown.streakBonus }}</span>
+                </div>
+                <div
+                  class="mt-1.5 flex justify-between border-t border-line pt-1.5 font-semibold text-ink"
+                >
+                  <span>合計</span><span>{{ breakdown.total }}</span>
+                </div>
+              </div>
+              <p v-else class="text-xs text-ink-faint">計算中...</p>
+            </div>
           </div>
         </div>
         <div class="mt-4 flex flex-wrap items-center gap-3">
@@ -168,6 +194,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import type { ScoreBreakdown } from '@xerovault/shared'
 import { useAuthStore } from '@/stores/auth'
 import { useGroupStore } from '@/stores/group'
 import { useGoalStore } from '@/stores/goal'
@@ -197,6 +224,9 @@ const showEditGroup = ref(false)
 const savingGroup = ref(false)
 const editForm = ref({ name: '', tagsInput: '' })
 
+const showBreakdown = ref(false)
+const breakdown = ref<ScoreBreakdown | null>(null)
+
 onMounted(async () => {
   const id = route.params.id as string
   group.value = await groupStore.fetchGroup(id)
@@ -210,6 +240,13 @@ async function handleInvite() {
 
 function copyInvite() {
   navigator.clipboard.writeText(inviteUrl.value)
+}
+
+async function toggleBreakdown() {
+  showBreakdown.value = !showBreakdown.value
+  if (showBreakdown.value && !breakdown.value) {
+    breakdown.value = await groupStore.fetchScoreBreakdown(route.params.id as string)
+  }
 }
 
 function openEditDialog() {
