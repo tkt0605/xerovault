@@ -6,7 +6,14 @@
       <div class="mb-6">
         <div class="flex items-start justify-between gap-4">
           <div class="flex min-w-0 items-start gap-3">
-            <Avatar :name="group.name" :size="80" class="mt-0.5" />
+            <div class="relative mt-0.5 shrink-0">
+              <Avatar :name="group.name" :size="80" />
+              <span
+                v-if="isStagnant(group.lastActivityAt)"
+                class="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-ink-faint ring-2 ring-paper"
+                title="7日間活動がありません"
+              />
+            </div>
             <div class="min-w-0">
               <div class="flex items-center gap-1.5">
                 <h1 class="truncate font-serif text-2xl font-medium text-ink">{{ group.name }}</h1>
@@ -153,6 +160,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useGroupStore } from '@/stores/group'
 import { useGoalStore } from '@/stores/goal'
 import { parseTags } from '@/lib/tags'
+import { isStagnant } from '@/lib/activity'
 import GoalCard from '@/components/goal/GoalCard.vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import Icon from '@/components/ui/Icon.vue'

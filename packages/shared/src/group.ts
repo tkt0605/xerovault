@@ -34,6 +34,7 @@ export interface Group {
   joinToken: string | null
   createdAt: string
   updatedAt: string
+  lastActivityAt: string
   owner: UserSummary
   members: UserSummary[]
   // グループ一覧・詳細取得時のみ含まれる（作成直後のレスポンスには含まれない）

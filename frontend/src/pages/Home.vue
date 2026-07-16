@@ -16,12 +16,20 @@
         v-for="g in groupStore.groups"
         :key="g.id"
         hoverable
-        class="cursor-pointer"
+        class="cursor-pointer transition-opacity"
+        :class="isStagnant(g.lastActivityAt) ? 'opacity-60 grayscale' : ''"
         @click="router.push(`/group/${g.id}`)"
       >
         <div class="mb-3 flex items-center justify-between">
           <div class="flex min-w-0 items-center gap-2">
-            <Avatar :name="g.name" :size="28" />
+            <div class="relative shrink-0">
+              <Avatar :name="g.name" :size="28" />
+              <span
+                v-if="isStagnant(g.lastActivityAt)"
+                class="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-ink-faint ring-2 ring-paper-raised"
+                title="7日間活動がありません"
+              />
+            </div>
             <h2 class="truncate font-semibold text-ink">{{ g.name }}</h2>
           </div>
           <div class="flex items-center gap-3">
@@ -51,6 +59,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useGroupStore } from '@/stores/group'
+import { isStagnant } from '@/lib/activity'
 import Icon from '@/components/ui/Icon.vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
