@@ -7,7 +7,8 @@
 - `frontend/` – Vue 3 + Vite SPA。Pinia でステート管理、Tailwind CSS でスタイリング。データ・認証は Supabase(`@supabase/supabase-js`)に直接アクセスする。
 - `packages/shared/` – zod スキーマ・API型定義(`@xerovault/shared`)。フロントのフォームバリデーション・型として使用。
 - `supabase/migrations/` – Postgresスキーマ・RLSポリシー・RPC関数(スコア計算・投票処理など、旧Expressバックエンドが担っていたロジック)。
-- `supabase/functions/notify-digest/` – 投票待ち・締切接近・期限切れをまとめてメール通知するEdge Function(pg_cron + pg_netから毎時呼び出される)。
+- `supabase/functions/notify-digest/` – 投票待ち・締切接近・期限切れをまとめてメール通知するEdge Function(pg_cron + pg_netから毎日1回呼び出される)。
+- `supabase/functions/unsubscribe/` – ダイジェストメール本文のリンクから、ログイン不要でワンタップ配信停止するためのEdge Function。
 - `docker-compose.yml` – frontend を起動する開発環境(DB・APIサーバーはSupabaseが提供するため不要)。
 
 ## セットアップ
@@ -25,7 +26,7 @@
 
 ## 通知(投票待ち・締切接近・期限切れ)のセットアップ
 
-`0006_notification_digest.sql` 適用だけでは動かず、以下の手動セットアップが必要(Supabase CLIが必要)。
+`0006_notification_digest.sql`・`0008_notification_preferences.sql` を適用しただけでは動かず、以下の手動セットアップが必要(Supabase CLIが必要)。
 
 1. [Resend](https://resend.com/)でAPIキーを発行し、送信元ドメインを認証する。
 2. Edge Functionのシークレットを設定する。
@@ -34,10 +35,11 @@
    supabase secrets set RESEND_API_KEY=re_xxxxx NOTIFY_FROM_EMAIL="Xerovault <notify@yourdomain.com>"
    ```
 
-3. Edge Functionをデプロイする。
+3. Edge Functionをデプロイする(notify-digestとunsubscribeの2つ)。
 
    ```bash
    supabase functions deploy notify-digest --project-ref <project-ref>
+   supabase functions deploy unsubscribe --project-ref <project-ref>
    ```
 
 4. SQL EditorでSupabase VaultにEdge FunctionのURLとservice_role keyを登録する(このリポジトリには実値を含めない)。
@@ -47,7 +49,9 @@
    select vault.create_secret('<service_role key>', 'notify_digest_service_role_key');
    ```
 
-登録後は `0006_notification_digest.sql` で設定した pg_cron ジョブ(`notify-digest`, 毎時5分)が自動でEdge Functionを叩く。`select * from cron.job_run_details order by start_time desc limit 5;` で実行結果を確認できる。
+登録後は `0008_notification_preferences.sql` で設定した pg_cron ジョブ(`notify-digest`, 毎日 UTC 10:00 = JST 19:00)が自動でEdge Functionを叩く。`select * from cron.job_run_details order by start_time desc limit 5;` で実行結果を確認できる。
+
+配信停止(unsubscribe)自体はSupabase Vaultの設定不要で動く(メール内リンクから直接叩かれるだけ)。デプロイさえしておけば良い。
 
 ## アクセス
 

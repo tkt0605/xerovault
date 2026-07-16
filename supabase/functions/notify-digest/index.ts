@@ -1,5 +1,5 @@
-// pg_cronから毎時叩かれ、投票待ち・期限接近・新規missedをユーザーごとに
-// 1通のダイジェストメールにまとめて送る。
+// pg_cronから毎日1回叩かれ、投票待ち・期限接近・新規missedをユーザーごとに
+// 1通のダイジェストメールにまとめて送る。即時通知は行わない設計。
 // 呼び出し元の認証はSupabaseのEdge Function標準機構（Authorization: Bearer <service_role key>
 // をJWTとして検証）に任せており、このファイル内で独自のシークレット検証は行わない。
 
@@ -18,6 +18,7 @@ interface Candidate {
   group_id: string
   group_name: string
   deadline: string | null
+  unsubscribe_token: string
 }
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -26,9 +27,9 @@ const resendApiKey = Deno.env.get('RESEND_API_KEY')!
 const fromEmail = Deno.env.get('NOTIFY_FROM_EMAIL') ?? 'Xerovault <notify@xerovault.app>'
 
 const KIND_LABEL: Record<Kind, string> = {
-  pending_vote: '投票待ち',
-  deadline_approaching: '締切が近づいています',
-  missed: '期限切れになりました',
+  pending_vote: '投票のお願い',
+  deadline_approaching: '締切間近',
+  missed: '期限切れ',
 }
 const KIND_ORDER: Kind[] = ['missed', 'deadline_approaching', 'pending_vote']
 
@@ -91,8 +92,8 @@ async function sendDigestEmail(items: Candidate[]) {
     body: JSON.stringify({
       from: fromEmail,
       to: email,
-      subject: `Xerovault: ${sections.map((s) => KIND_LABEL[s.kind]).join(' / ')}`,
-      html: renderDigestHtml(name, sections),
+      subject: 'Xerovault: 本日のサマリー',
+      html: renderDigestHtml(name, sections, items[0].unsubscribe_token),
     }),
   })
 
@@ -101,7 +102,11 @@ async function sendDigestEmail(items: Candidate[]) {
   }
 }
 
-function renderDigestHtml(name: string | null, sections: { kind: Kind; items: Candidate[] }[]) {
+function renderDigestHtml(
+  name: string | null,
+  sections: { kind: Kind; items: Candidate[] }[],
+  unsubscribeToken: string
+) {
   const greeting = name ? `${escapeHtml(name)}さん` : 'こんにちは'
   const body = sections
     .map(
@@ -113,7 +118,14 @@ function renderDigestHtml(name: string | null, sections: { kind: Kind; items: Ca
       `
     )
     .join('')
-  return `<div>${greeting}<br/>${body}</div>`
+  const unsubscribeUrl = `${supabaseUrl}/functions/v1/unsubscribe?token=${unsubscribeToken}`
+  return `<div>
+    ${greeting}<br/>本日のサマリーです。いくつかのお知らせがあります。
+    ${body}
+    <p style="margin-top:24px;color:#999;font-size:12px;">
+      この通知が不要な場合は<a href="${unsubscribeUrl}">こちら</a>から配信を停止できます。
+    </p>
+  </div>`
 }
 
 function renderItem(i: Candidate) {
