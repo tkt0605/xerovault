@@ -24,6 +24,7 @@
         >
           {{ i + 1 }}
         </div>
+        <Avatar :name="g.name" :size="28" />
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
             <p class="truncate font-semibold text-ink">{{ g.name }}</p>
@@ -50,6 +51,7 @@ import { ref, onMounted } from 'vue'
 import type { RankingGroup } from '@xerovault/shared'
 import { rpc } from '@/lib/rpc'
 import Icon from '@/components/ui/Icon.vue'
+import Avatar from '@/components/ui/Avatar.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 
 const groups = ref<RankingGroup[]>([])

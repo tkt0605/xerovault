@@ -20,7 +20,10 @@
         @click="router.push(`/group/${g.id}`)"
       >
         <div class="mb-3 flex items-center justify-between">
-          <h2 class="font-semibold text-ink">{{ g.name }}</h2>
+          <div class="flex min-w-0 items-center gap-2">
+            <Avatar :name="g.name" :size="28" />
+            <h2 class="truncate font-semibold text-ink">{{ g.name }}</h2>
+          </div>
           <div class="flex items-center gap-3">
             <span
               v-if="g.streak >= 3"
@@ -49,6 +52,7 @@
 import { useRouter } from 'vue-router'
 import { useGroupStore } from '@/stores/group'
 import Icon from '@/components/ui/Icon.vue'
+import Avatar from '@/components/ui/Avatar.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 
 const router = useRouter()

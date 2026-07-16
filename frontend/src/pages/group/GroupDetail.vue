@@ -5,21 +5,24 @@
       <!-- ヘッダー -->
       <div class="mb-6">
         <div class="flex items-start justify-between gap-4">
-          <div class="min-w-0">
-            <div class="flex items-center gap-1.5">
-              <h1 class="truncate font-serif text-2xl font-medium text-ink">{{ group.name }}</h1>
-              <button
-                v-if="isOwner"
-                class="shrink-0 text-ink-faint transition-colors hover:text-ink"
-                title="グループを編集"
-                @click="openEditDialog"
-              >
-                <Icon name="edit" :size="15" />
-              </button>
+          <div class="flex min-w-0 items-start gap-3">
+            <Avatar :name="group.name" :size="80" class="mt-0.5" />
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <h1 class="truncate font-serif text-2xl font-medium text-ink">{{ group.name }}</h1>
+                <button
+                  v-if="isOwner"
+                  class="shrink-0 text-ink-faint transition-colors hover:text-ink"
+                  title="グループを編集"
+                  @click="openEditDialog"
+                >
+                  <Icon name="edit" :size="15" />
+                </button>
+              </div>
+              <p v-if="group.tags.length" class="mt-0.5 text-sm text-ink-soft">
+                {{ group.tags.map((t) => `#${t}`).join(' ') }}
+              </p>
             </div>
-            <p v-if="group.tags.length" class="mt-0.5 text-sm text-ink-soft">
-              {{ group.tags.map((t) => `#${t}`).join(' ') }}
-            </p>
           </div>
           <div class="shrink-0 text-right">
             <p class="font-serif text-3xl font-medium text-accent">{{ group.score }}</p>
