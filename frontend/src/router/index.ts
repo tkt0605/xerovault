@@ -20,6 +20,7 @@ const router = createRouter({
       meta: { public: true },
     },
     { path: '/', component: () => import('@/pages/Home.vue') },
+    { path: '/settings', component: () => import('@/pages/Settings.vue') },
     { path: '/group/:id', component: () => import('@/pages/group/GroupDetail.vue') },
     {
       path: '/group/:id/join',
