@@ -16,24 +16,16 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
-import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
-const auth = useAuthStore()
 const error = ref('')
 
 onMounted(async () => {
   const { data, error: sessionError } = await supabase.auth.getSession()
-  const token = data.session?.access_token
-  if (sessionError || !token) {
+  if (sessionError || !data.session) {
     error.value = 'Googleログインに失敗しました'
     return
   }
-  try {
-    await auth.loginWithGoogle(token)
-    router.push('/')
-  } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : 'Googleログインに失敗しました'
-  }
+  router.push('/')
 })
 </script>

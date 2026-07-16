@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { Group, CreateGroupInput } from '@xerovault/shared'
-import { api } from '@/api/client'
+import { rpc } from '@/lib/rpc'
 
 export type { Group }
 
@@ -10,37 +10,40 @@ export const useGroupStore = defineStore('group', () => {
   const current = ref<Group | null>(null)
 
   async function fetchMyGroups(): Promise<void> {
-    groups.value = await api.get<Group[]>('/groups')
+    groups.value = await rpc<Group[]>('get_my_groups')
   }
 
   async function fetchGroup(id: string): Promise<Group> {
-    const g = await api.get<Group>(`/groups/${id}`)
+    const g = await rpc<Group>('get_group_detail', { p_group_id: id })
     current.value = g
     return g
   }
 
   async function createGroup(data: CreateGroupInput): Promise<Group> {
-    const g = await api.post<Group>('/groups', data)
+    const g = await rpc<Group>('create_group', {
+      p_name: data.name,
+      p_tag: data.tag ?? null,
+      p_is_public: data.isPublic ?? false,
+    })
     groups.value.unshift(g)
     return g
   }
 
+  // 招待リンクを発行する（トークンは平文。有効期限はSupabase側のRPCで検証する）
   async function createInvite(groupId: string): Promise<string> {
-    const res = await api.post<{ encryptedData: string }>(`/groups/${groupId}/invite`, {
-      expireIn: 3600,
-    })
+    const token = await rpc<string>('create_invite', { p_group_id: groupId, p_expire_in: 3600 })
     const origin = window.location.origin
-    return `${origin}/group/${groupId}/join?data=${encodeURIComponent(res.encryptedData)}`
+    return `${origin}/group/${groupId}/join?token=${encodeURIComponent(token)}`
   }
 
-  async function joinGroup(groupId: string, data: string): Promise<Group> {
-    const res = await api.post<{ group: Group }>(`/groups/${groupId}/join`, { data })
-    groups.value.unshift(res.group)
-    return res.group
+  async function joinGroup(groupId: string, token: string): Promise<Group> {
+    const group = await rpc<Group>('join_group', { p_group_id: groupId, p_token: token })
+    groups.value.unshift(group)
+    return group
   }
 
   async function removeMember(groupId: string, memberId: string): Promise<void> {
-    await api.delete(`/groups/${groupId}/members/${memberId}`)
+    await rpc('remove_member', { p_group_id: groupId, p_member_id: memberId })
     if (current.value?.id === groupId) {
       current.value.members = current.value.members.filter((m) => m.id !== memberId)
     }

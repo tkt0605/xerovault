@@ -1,6 +1,6 @@
 # スコア/ストリーク仕様 v2
 
-> Confirmed。`backend/src/services/scoreService.ts` に実装済み(コミット `b7c8483`)。
+> Confirmed。Express+Prisma時代は`backend/src/services/scoreService.ts`に実装(コミット `b7c8483`)。Supabase移行後は`supabase/migrations/0001_init.sql`の`recalc_group_score`関数に移植済み。
 
 ## 現行仕様の何が問題か
 
@@ -75,7 +75,7 @@ group.score
 
 ## 実装への影響
 
-- `backend/src/routes/votes.ts` の `POST /goals/:id/votes` に、**deadlineを過ぎたconcrete goalへの投票を拒否するガード**を追加する(missedが「確定」した後に投票で覆せないようにするため)
+- `cast_vote` RPC(`supabase/migrations/0001_init.sql`)に、**deadlineを過ぎたconcrete goalへの投票を拒否するガード**を追加する(missedが「確定」した後に投票で覆せないようにするため)
 - `updateGroupScore` は「達成済みgoal」に加えて「missed(deadline超過かつ未達成)なconcrete goal」も取得し、ペナルティ計算に使う
 - ストリークをDB保存の増分値からフル再計算方式に変えるため、`Group.streak` カラムは実質的に「毎回上書きされるキャッシュ値」になる(スキーマは変えず、常にupdateGroupScore内で再計算して書き込む形にする — Vote/GoalVoteの統合を見送ったのと同じ理由で、今回はカラム自体の削除は行わない)
 - frontendのGoal表示に「missed」状態を出せるよう、Goal APIレスポンスに `status: 'pending' | 'completed' | 'missed'` を追加する(`packages/shared`のGoal型を拡張)
@@ -87,5 +87,5 @@ group.score
 ## 未解決の課題(実装後も残っているもの)
 
 1. **`MISSED_GOAL_PENALTY = 25`の妥当性が未検証** — 「要確認」のまま値を確定させて実装した。実グループ運用で+25/-25の対称性が体験として適切か、フィードバックを集めていない。検証には本番デプロイ・実ユーザー・analytics基盤(イベント履歴やフィードバックUI)のいずれかが要るが、現状はどれも存在しない(ローカル/dev環境のみで、デプロイパイプラインも未整備)。したがって**今は着手せず、本番デプロイが実現してから検証に取り組む**。
-2. **遅延評価問題への暫定対応** — missed判定は元々「誰かが投票操作した時にしか再計算されない」問題があったが、`backend/src/services/scoreService.ts` の `runScoreSweep` と `backend/src/server.ts` の定期実行(デフォルト5分間隔、`SCORE_SWEEP_INTERVAL_MS`で調整可)により軽減した。ただし専用のcron/ワーカープロセスではなくアプリプロセスの生存期間に依存する暫定策であり、プロセスが落ちている間は再計算も止まる。デプロイパイプラインが整備されて初めて真のcronベース監視に置き換えられる。
+2. **遅延評価問題** — missed判定は「誰かが投票操作した時(`cast_vote`/`cancel_vote`実行時)にしか再計算されない」。Express時代は`runScoreSweep`によるアプリプロセス内の定期実行で軽減していたが、Supabase移行(SQL関数のみで完結させる方針)に伴いこの定期スイープは**移植していない**。`pg_cron`拡張でSQL Editorから`recalc_group_score`を定期実行するジョブを別途設定すれば同等のことができるが、今回のスコープ外。
 3. **GoalVote/Voteの分離** — 投票取り消しの意味論のために2テーブルに分かれているが、統合すべきか未検討のまま(レベル2で見送り済み)。

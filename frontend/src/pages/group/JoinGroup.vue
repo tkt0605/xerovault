@@ -48,14 +48,14 @@ onMounted(async () => {
     router.push(`/auth/login?redirect=${route.fullPath}`)
     return
   }
-  const data = route.query.data as string
-  if (!data) {
+  const token = route.query.token as string
+  if (!token) {
     error.value = '招待リンクが無効です'
     loading.value = false
     return
   }
   try {
-    const g = await groupStore.joinGroup(route.params.id as string, data)
+    const g = await groupStore.joinGroup(route.params.id as string, token)
     groupName.value = g.name
     joined.value = true
   } catch (e: unknown) {

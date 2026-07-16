@@ -48,12 +48,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import type { RankingGroup } from '@xerovault/shared'
-import { api } from '@/api/client'
+import { rpc } from '@/lib/rpc'
 import Icon from '@/components/ui/Icon.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 
 const groups = ref<RankingGroup[]>([])
 onMounted(async () => {
-  groups.value = await api.get<RankingGroup[]>('/rankings')
+  groups.value = await rpc<RankingGroup[]>('get_rankings', { p_limit: 20 })
 })
 </script>

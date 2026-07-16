@@ -1,42 +1,4 @@
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: xero-db
-    env_file: .env
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - '5432:5432'
-    volumes:
-      - xero-db-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-  backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    container_name: xero-backend
-    working_dir: /app/backend
-    env_file: .env
-    ports:
-      - '8000:8000'
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/backend/node_modules
-      - /app/frontend/node_modules
-      - /app/packages/shared/node_modules
-    depends_on:
-      db:
-        condition: service_healthy
-    command: sh -c "npx prisma migrate deploy && pnpm run dev"
-
   frontend:
     build:
       context: .
@@ -44,18 +6,10 @@ services:
     container_name: xero-frontend
     working_dir: /app/frontend
     env_file: .env
-    environment:
-      VITE_API_PROXY_TARGET: http://backend:8000
     ports:
       - '5173:5173'
     volumes:
       - .:/app
       - /app/node_modules
-      - /app/backend/node_modules
       - /app/frontend/node_modules
       - /app/packages/shared/node_modules
-    depends_on:
-      - backend
-
-volumes:
-  xero-db-data:
