@@ -5,10 +5,25 @@
       <p class="mt-1 text-sm text-ink-soft">参加中のグループからゴールを選んで進めましょう</p>
     </div>
 
-    <div v-if="!groupStore.groups.length" class="py-16 text-center text-ink-faint">
-      <Icon name="users" :size="32" class="mx-auto mb-4" />
-      <p class="font-medium text-ink-soft">グループがまだありません</p>
-      <p class="mt-1 text-sm">左のサイドバーから作成してください</p>
+    <div v-if="!groupStore.groups.length" class="rounded-surface border border-line bg-paper-raised p-8 text-center">
+      <Icon name="target" :size="32" class="mx-auto mb-4 text-accent" />
+      <h2 class="mb-2 font-serif text-lg font-medium text-ink">Xerovaultへようこそ</h2>
+      <p class="mx-auto mb-6 max-w-sm text-sm text-ink-soft">
+        グループで目標(ゴール)を立て、達成したかどうかをメンバー同士の投票で確認し合います。自己申告では終わらない、正直な達成管理です。
+      </p>
+      <div class="mx-auto mb-6 grid max-w-sm grid-cols-2 gap-3 text-left text-xs">
+        <div class="rounded-control bg-paper-sunken p-3">
+          <p class="font-semibold text-ink">具体的な目標</p>
+          <p class="mt-1 text-ink-faint">締切と担当者を設定 → 達成+25pt / 未達成-25pt</p>
+        </div>
+        <div class="rounded-control bg-paper-sunken p-3">
+          <p class="font-semibold text-ink">曖昧な目標</p>
+          <p class="mt-1 text-ink-faint">締切・担当者なし → 達成+5pt、ペナルティなし</p>
+        </div>
+      </div>
+      <BaseButton @click="ui.openCreateGroupDialog()">
+        <Icon name="plus" :size="14" />最初のグループを作る
+      </BaseButton>
     </div>
 
     <div v-else class="space-y-3">
@@ -59,11 +74,14 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useGroupStore } from '@/stores/group'
+import { useUiStore } from '@/stores/ui'
 import { isStagnant } from '@/lib/activity'
 import Icon from '@/components/ui/Icon.vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 
 const router = useRouter()
 const groupStore = useGroupStore()
+const ui = useUiStore()
 </script>

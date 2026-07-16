@@ -7,6 +7,7 @@ export const useUiStore = defineStore('ui', () => {
   const asideOpen = ref(
     typeof window === 'undefined' ? true : window.matchMedia(MOBILE_BREAKPOINT).matches
   )
+  const showCreateGroupDialog = ref(false)
 
   function toggleAside(): void {
     asideOpen.value = !asideOpen.value
@@ -18,5 +19,16 @@ export const useUiStore = defineStore('ui', () => {
     }
   }
 
-  return { asideOpen, toggleAside, closeAsideOnMobile }
+  function openCreateGroupDialog(): void {
+    showCreateGroupDialog.value = true
+    closeAsideOnMobile()
+  }
+
+  return {
+    asideOpen,
+    toggleAside,
+    closeAsideOnMobile,
+    showCreateGroupDialog,
+    openCreateGroupDialog,
+  }
 })

@@ -36,7 +36,7 @@
         </RouterLink>
         <button
           class="flex w-full items-center gap-2.5 rounded-control px-3 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-paper-raised hover:text-ink"
-          @click="openCreateDialog"
+          @click="ui.openCreateGroupDialog()"
         >
           <Icon name="plus" :size="15" />
           グループ作成
@@ -61,7 +61,7 @@
       <!-- グループ作成ダイアログ -->
       <Teleport to="body">
         <div
-          v-if="showCreateDialog"
+          v-if="ui.showCreateGroupDialog"
           class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
         >
           <BaseCard class="w-full max-w-md shadow-modal">
@@ -73,12 +73,13 @@
                 <input v-model="form.isPublic" type="checkbox" class="rounded" />
                 ランキングに公開する
               </label>
+              <p v-if="error" class="text-sm font-medium text-bad">{{ error }}</p>
               <div class="flex gap-2 pt-2">
                 <BaseButton
                   type="button"
                   variant="ghost"
                   class="flex-1 justify-center"
-                  @click="showCreateDialog = false"
+                  @click="handleCancel"
                 >
                   キャンセル
                 </BaseButton>
@@ -120,30 +121,33 @@ const ui = useUiStore()
 const groupStore = useGroupStore()
 const route = useRoute()
 const router = useRouter()
-const showCreateDialog = ref(false)
 const creating = ref(false)
+const error = ref('')
 const form = ref({ name: '', tagsInput: '', isPublic: false })
 
 onMounted(() => groupStore.fetchMyGroups())
 
-function openCreateDialog() {
-  showCreateDialog.value = true
-  ui.closeAsideOnMobile()
-}
-
 async function handleCreate() {
   creating.value = true
+  error.value = ''
   try {
     const g = await groupStore.createGroup({
       name: form.value.name,
       tags: parseTags(form.value.tagsInput),
       isPublic: form.value.isPublic,
     })
-    showCreateDialog.value = false
+    ui.showCreateGroupDialog = false
     form.value = { name: '', tagsInput: '', isPublic: false }
     router.push(`/group/${g.id}`)
+  } catch (e: unknown) {
+    error.value = e instanceof Error ? e.message : 'グループの作成に失敗しました'
   } finally {
     creating.value = false
   }
+}
+
+function handleCancel() {
+  ui.showCreateGroupDialog = false
+  error.value = ''
 }
 </script>
