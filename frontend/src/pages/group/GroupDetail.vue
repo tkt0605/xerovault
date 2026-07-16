@@ -79,6 +79,13 @@
             />
           </div>
           <span class="text-sm text-ink-soft">{{ group.members.length }}人のメンバー</span>
+          <button
+            v-if="isOwner"
+            class="text-xs text-ink-faint transition-colors hover:text-ink"
+            @click="showManageMembers = true"
+          >
+            管理
+          </button>
           <BaseButton variant="outline" size="sm" class="ml-auto" @click="handleInvite">
             招待リンク作成
           </BaseButton>
@@ -188,6 +195,40 @@
         </BaseCard>
       </div>
     </Teleport>
+
+    <!-- メンバー管理ダイアログ（オーナーのみ） -->
+    <Teleport to="body">
+      <div
+        v-if="showManageMembers"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+      >
+        <BaseCard class="w-full max-w-md shadow-modal">
+          <h2 class="mb-4 font-serif text-lg font-medium text-ink">メンバー管理</h2>
+          <div class="max-h-80 space-y-1 overflow-y-auto">
+            <div
+              v-for="m in group?.members"
+              :key="m.id"
+              class="flex items-center gap-2 rounded-control px-2 py-1.5 hover:bg-paper-sunken"
+            >
+              <Avatar :name="m.name ?? m.email" :size="28" />
+              <span class="min-w-0 flex-1 truncate text-sm text-ink">{{ m.name ?? m.email }}</span>
+              <Badge v-if="m.id === group?.owner.id" variant="info">オーナー</Badge>
+              <button
+                v-else
+                class="shrink-0 text-ink-faint transition-colors hover:text-bad"
+                title="除名"
+                @click="handleRemoveMember(m.id)"
+              >
+                <Icon name="trash" :size="14" />
+              </button>
+            </div>
+          </div>
+          <div class="flex justify-end pt-4">
+            <BaseButton variant="ghost" @click="showManageMembers = false">閉じる</BaseButton>
+          </div>
+        </BaseCard>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -203,6 +244,7 @@ import { isStagnant } from '@/lib/activity'
 import GoalCard from '@/components/goal/GoalCard.vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import Icon from '@/components/ui/Icon.vue'
+import Badge from '@/components/ui/Badge.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
@@ -227,6 +269,8 @@ const editForm = ref({ name: '', tagsInput: '' })
 const showBreakdown = ref(false)
 const breakdown = ref<ScoreBreakdown | null>(null)
 
+const showManageMembers = ref(false)
+
 onMounted(async () => {
   const id = route.params.id as string
   group.value = await groupStore.fetchGroup(id)
@@ -247,6 +291,12 @@ async function toggleBreakdown() {
   if (showBreakdown.value && !breakdown.value) {
     breakdown.value = await groupStore.fetchScoreBreakdown(route.params.id as string)
   }
+}
+
+async function handleRemoveMember(memberId: string) {
+  if (!confirm('このメンバーをグループから除名しますか?')) return
+  await groupStore.removeMember(route.params.id as string, memberId)
+  group.value = groupStore.current
 }
 
 function openEditDialog() {
