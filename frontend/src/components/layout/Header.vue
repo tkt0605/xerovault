@@ -50,14 +50,6 @@
           </button>
         </div>
       </div>
-      <RouterLink
-        v-if="auth.isAuthenticated"
-        to="/settings"
-        class="flex items-center justify-center rounded-control p-1.5 text-ink-soft transition-colors hover:bg-paper-sunken hover:text-ink"
-        aria-label="設定"
-      >
-        <Icon name="settings" :size="18" />
-      </RouterLink>
       <button
         v-if="auth.isAuthenticated"
         class="flex items-center gap-1.5 text-sm text-ink-soft transition-colors hover:text-bad"

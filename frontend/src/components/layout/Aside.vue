@@ -94,9 +94,17 @@
       <div class="border-b border-line p-4">
         <div class="flex items-center gap-2.5">
           <Avatar :name="auth.user?.name ?? auth.user?.email ?? '?'" :size="32" />
-          <span class="truncate text-sm font-medium text-ink">{{
+          <span class="min-w-0 flex-1 truncate text-sm font-medium text-ink">{{
             auth.user?.name ?? auth.user?.email
           }}</span>
+          <RouterLink
+            to="/settings"
+            class="shrink-0 rounded-control p-1.5 text-ink-faint transition-colors hover:bg-paper-raised hover:text-ink"
+            aria-label="設定"
+            @click="ui.closeAsideOnMobile()"
+          >
+            <Icon name="settings" :size="16" />
+          </RouterLink>
         </div>
       </div>
     </aside>
