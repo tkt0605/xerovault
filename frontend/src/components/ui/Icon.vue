@@ -34,6 +34,7 @@ export type IconName =
   | 'menu'
   | 'edit'
   | 'trash'
+  | 'bell'
 
 const paths: Record<IconName, string> = {
   menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
@@ -58,5 +59,6 @@ const paths: Record<IconName, string> = {
   edit: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>',
   trash:
     '<path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+  bell: '<path d="M6 8a6 6 0 0 1 12 0c0 4 1.5 6 2 6.5H4C4.5 14 6 12 6 8Z"/><path d="M10 19a2 2 0 0 0 4 0"/>',
 }
 </script>
