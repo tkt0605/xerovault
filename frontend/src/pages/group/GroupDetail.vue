@@ -107,6 +107,18 @@
               rows="3"
             />
             <BaseInput v-model="goalForm.deadline" type="datetime-local" />
+            <select
+              v-model="goalForm.assigneeId"
+              class="w-full rounded-control border border-line bg-paper-raised px-3 py-2 text-sm text-ink focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent-soft"
+            >
+              <option value="">担当者なし</option>
+              <option v-for="m in group?.members" :key="m.id" :value="m.id">
+                {{ m.name ?? m.email }}
+              </option>
+            </select>
+            <p class="text-xs text-ink-faint">
+              締切と担当者を両方設定すると「具体的な目標」として高スコア(達成25pt/未達成-25pt)になります
+            </p>
             <div class="flex gap-2 pt-2">
               <BaseButton
                 type="button"
@@ -178,7 +190,7 @@ const group = ref(groupStore.current)
 const inviteUrl = ref('')
 const showAddGoal = ref(false)
 const addingGoal = ref(false)
-const goalForm = ref({ header: '', description: '', deadline: '' })
+const goalForm = ref({ header: '', description: '', deadline: '', assigneeId: '' })
 
 const isOwner = computed(() => group.value?.owner.id === authStore.user?.id)
 const showEditGroup = ref(false)
@@ -223,11 +235,13 @@ async function handleAddGoal() {
   addingGoal.value = true
   try {
     await goalStore.createGoal(route.params.id as string, {
-      ...goalForm.value,
+      header: goalForm.value.header,
+      description: goalForm.value.description,
       deadline: goalForm.value.deadline || null,
+      assigneeId: goalForm.value.assigneeId || null,
     })
     showAddGoal.value = false
-    goalForm.value = { header: '', description: '', deadline: '' }
+    goalForm.value = { header: '', description: '', deadline: '', assigneeId: '' }
   } finally {
     addingGoal.value = false
   }

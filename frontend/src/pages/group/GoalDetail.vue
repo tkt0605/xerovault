@@ -15,9 +15,28 @@
         </button>
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <h1 class="truncate font-serif text-lg font-medium text-ink">
-              {{ goal.header || goal.description }}
-            </h1>
+            <div class="flex items-center gap-1.5">
+              <h1 class="truncate font-serif text-lg font-medium text-ink">
+                {{ goal.header || goal.description }}
+              </h1>
+              <button
+                class="shrink-0 text-ink-faint transition-colors hover:text-ink"
+                title="ゴールを編集"
+                @click="openEditDialog"
+              >
+                <Icon name="edit" :size="13" />
+              </button>
+              <button
+                class="shrink-0 text-ink-faint transition-colors hover:text-bad"
+                title="ゴールを削除"
+                @click="handleDeleteGoal"
+              >
+                <Icon name="trash" :size="13" />
+              </button>
+            </div>
+            <p v-if="goal.assignee" class="mt-0.5 text-xs text-ink-faint">
+              担当: {{ goal.assignee.name ?? goal.assignee.email }}
+            </p>
             <p v-if="goal.deadline" class="mt-0.5 text-xs text-ink-faint">
               締切: {{ formatDate(goal.deadline) }}
             </p>
@@ -151,6 +170,42 @@
       :points-earned="earnedPoints"
       @close="showAchievement = false"
     />
+
+    <!-- ゴール編集ダイアログ -->
+    <Teleport to="body">
+      <div v-if="showEditGoal" class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4">
+        <BaseCard class="w-full max-w-md shadow-modal">
+          <h2 class="mb-4 font-serif text-lg font-medium text-ink">ゴールを編集</h2>
+          <form class="space-y-3" @submit.prevent="handleEditGoal">
+            <BaseInput v-model="editForm.header" placeholder="タイトル（任意）" />
+            <BaseTextarea v-model="editForm.description" placeholder="ゴールの内容 *" required rows="3" />
+            <BaseInput v-model="editForm.deadline" type="datetime-local" />
+            <select
+              v-model="editForm.assigneeId"
+              class="w-full rounded-control border border-line bg-paper-raised px-3 py-2 text-sm text-ink focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent-soft"
+            >
+              <option value="">担当者なし</option>
+              <option v-for="m in goal?.group?.members" :key="m.id" :value="m.id">
+                {{ m.name ?? m.email }}
+              </option>
+            </select>
+            <div class="flex gap-2 pt-2">
+              <BaseButton
+                type="button"
+                variant="ghost"
+                class="flex-1 justify-center"
+                @click="showEditGoal = false"
+              >
+                キャンセル
+              </BaseButton>
+              <BaseButton type="submit" :disabled="savingGoal" class="flex-1 justify-center">
+                {{ savingGoal ? '保存中...' : '保存' }}
+              </BaseButton>
+            </div>
+          </form>
+        </BaseCard>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -169,6 +224,8 @@ import Icon from '@/components/ui/Icon.vue'
 import Badge from '@/components/ui/Badge.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
+import BaseInput from '@/components/ui/BaseInput.vue'
+import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -188,6 +245,10 @@ const newMessage = ref('')
 const scrollArea = ref<HTMLElement | null>(null)
 const showAchievement = ref(false)
 const earnedPoints = ref(25)
+
+const showEditGoal = ref(false)
+const savingGoal = ref(false)
+const editForm = ref({ header: '', description: '', deadline: '', assigneeId: '' })
 
 const yesCount = computed(() => voteStore.status?.votes.filter((v) => v.isYes === true).length ?? 0)
 
@@ -242,5 +303,43 @@ async function handleSend() {
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })
+}
+
+function toDatetimeLocal(d: string) {
+  const date = new Date(d)
+  const offset = date.getTimezoneOffset()
+  return new Date(date.getTime() - offset * 60000).toISOString().slice(0, 16)
+}
+
+function openEditDialog() {
+  if (!goal.value) return
+  editForm.value = {
+    header: goal.value.header ?? '',
+    description: goal.value.description,
+    deadline: goal.value.deadline ? toDatetimeLocal(goal.value.deadline) : '',
+    assigneeId: goal.value.assigneeId ?? '',
+  }
+  showEditGoal.value = true
+}
+
+async function handleEditGoal() {
+  savingGoal.value = true
+  try {
+    goal.value = await goalStore.updateGoal(route.params.goalId as string, {
+      header: editForm.value.header,
+      description: editForm.value.description,
+      deadline: editForm.value.deadline || null,
+      assigneeId: editForm.value.assigneeId || null,
+    })
+    showEditGoal.value = false
+  } finally {
+    savingGoal.value = false
+  }
+}
+
+async function handleDeleteGoal() {
+  if (!confirm('このゴールを削除しますか?')) return
+  await goalStore.deleteGoal(route.params.goalId as string)
+  router.push(`/group/${route.params.id}`)
 }
 </script>
