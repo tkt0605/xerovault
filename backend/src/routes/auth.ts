@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
-import { signupSchema, loginSchema } from '@xerovault/shared'
+import { signupSchema, loginSchema, googleAuthSchema } from '@xerovault/shared'
 import { prisma } from '../db'
 import { signAccess, signRefresh, verifyToken } from '../utils/jwt'
 import { requireAuth } from '../middleware/auth'
@@ -52,8 +52,63 @@ router.post('/login', async (req, res, next) => {
     const { email, password } = loginSchema.parse(req.body)
 
     const user = await prisma.user.findUnique({ where: { email } })
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user || !user.password || !(await bcrypt.compare(password, user.password))) {
       res.status(401).json({ error: 'メールアドレスまたはパスワードが正しくありません' })
+      return
+    }
+
+    const [access, refresh] = await Promise.all([signAccess(user.id), signRefresh(user.id)])
+    res.cookie('refresh_token', refresh, COOKIE_OPTS)
+    res.json({
+      access,
+      user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar },
+    })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// POST /api/auth/google — Supabase経由のGoogle OAuthセッションを検証し、アプリ独自のセッションを発行する
+router.post('/google', async (req, res, next) => {
+  try {
+    const { accessToken } = googleAuthSchema.parse(req.body)
+
+    const supabaseUrl = process.env.SUPABASE_URL
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
+    if (!supabaseUrl || !supabaseAnonKey) {
+      res.status(500).json({ error: 'Supabaseの設定が不足しています' })
+      return
+    }
+
+    const supabaseRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: { Authorization: `Bearer ${accessToken}`, apikey: supabaseAnonKey },
+    })
+    if (!supabaseRes.ok) {
+      res.status(401).json({ error: 'Google認証の検証に失敗しました' })
+      return
+    }
+
+    const supabaseUser = (await supabaseRes.json()) as {
+      email?: string
+      user_metadata?: Record<string, unknown>
+    }
+    const email = supabaseUser.email
+    if (!email) {
+      res.status(400).json({ error: 'メールアドレスを取得できませんでした' })
+      return
+    }
+
+    const metadata = supabaseUser.user_metadata ?? {}
+    const name = (metadata.full_name ?? metadata.name ?? null) as string | null
+    const avatar = (metadata.avatar_url ?? metadata.picture ?? avatarUrl(email)) as string
+
+    let user = await prisma.user.findUnique({ where: { email } })
+    if (!user) {
+      // 既存の同一メールアカウントがなければ、Googleプロフィールから新規作成する（passwordなし）
+      user = await prisma.user.create({ data: { email, password: null, name, avatar } })
+    }
+    if (!user.isActive) {
+      res.status(403).json({ error: 'このアカウントは無効化されています' })
       return
     }
 

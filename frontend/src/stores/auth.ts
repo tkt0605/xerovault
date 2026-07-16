@@ -40,6 +40,23 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = data.user
   }
 
+  // SupabaseのGoogle OAuthセッション(access_token)をバックエンドで検証し、アプリ独自のセッションを発行する
+  async function loginWithGoogle(supabaseAccessToken: string): Promise<void> {
+    const res = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ accessToken: supabaseAccessToken }),
+    })
+    if (!res.ok) {
+      const err = await res.json()
+      throw new Error(err.error ?? 'Googleログインに失敗しました')
+    }
+    const data: AuthResponse = await res.json()
+    accessToken.value = data.access
+    user.value = data.user
+  }
+
   async function logout(): Promise<void> {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
     accessToken.value = null
@@ -78,5 +95,15 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { accessToken, user, isAuthenticated, login, signup, logout, refresh, restoreSession }
+  return {
+    accessToken,
+    user,
+    isAuthenticated,
+    login,
+    signup,
+    loginWithGoogle,
+    logout,
+    refresh,
+    restoreSession,
+  }
 })

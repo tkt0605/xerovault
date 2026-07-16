@@ -14,6 +14,11 @@ export const loginSchema = z.object({
 })
 export type LoginInput = z.infer<typeof loginSchema>
 
+export const googleAuthSchema = z.object({
+  accessToken: z.string().min(1),
+})
+export type GoogleAuthInput = z.infer<typeof googleAuthSchema>
+
 export interface AuthResponse {
   access: string
   user: UserSummary

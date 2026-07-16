@@ -14,6 +14,11 @@ const router = createRouter({
       component: () => import('@/pages/auth/Signup.vue'),
       meta: { public: true },
     },
+    {
+      path: '/auth/callback',
+      component: () => import('@/pages/auth/AuthCallback.vue'),
+      meta: { public: true },
+    },
     { path: '/', component: () => import('@/pages/Home.vue') },
     { path: '/group/:id', component: () => import('@/pages/group/GroupDetail.vue') },
     {
