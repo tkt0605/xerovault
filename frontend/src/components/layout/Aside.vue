@@ -10,7 +10,7 @@
     :class="ui.asideOpen ? 'translate-x-0 md:w-64' : '-translate-x-full md:w-0 md:translate-x-0'"
   >
     <aside class="flex h-screen w-64 flex-col overflow-y-auto border-r border-line bg-paper-sunken">
-      <div class="border-b border-line p-3">
+      <div class="p-3">
         <div class="flex items-center gap-3">
           <span class="font-serif text-lg font-medium tracking-tight text-ink">Xerovault</span>
         </div>
