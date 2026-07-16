@@ -11,12 +11,22 @@
 --     既存の "profiles are viewable by authenticated users" ポリシー
 --     (using (true)、列制限なし)により、全認証済みユーザーから閲覧可能に
 --     なってしまっていた。unsubscribe_tokenが分かれば他人の通知配信を
---     無断で停止できてしまうため、この列だけ列単位でREVOKEする。
+--     無断で停止できてしまうため、この列を閲覧不可にする。
+--
+--     注意: PostgreSQLの列単位の権限は「テーブル単位の権限に対する追加許可」
+--     としてのみ働き、テーブル単位でSELECTが許可されている場合、列単位の
+--     REVOKEだけでは効果がない(テーブル単位の許可がそのまま優先される)。
+--     Supabaseはデフォルトでauthenticated/anonにテーブル単位のGRANT ALLを
+--     付与しているため、まずテーブル単位のSELECTを一旦REVOKEし、
+--     unsubscribe_token以外の列に対してのみ改めて列単位でSELECTを
+--     GRANTし直す。
 -- =====================================================================
 
 alter table public.notification_log add column read_at timestamptz;
 
-revoke select (unsubscribe_token) on public.profiles from authenticated, anon;
+revoke select on public.profiles from authenticated, anon;
+grant select (id, email, name, avatar, is_active, notifications_enabled, created_at, updated_at)
+  on public.profiles to authenticated, anon;
 
 create or replace function public.get_my_notifications(p_limit integer default 30)
 returns jsonb
