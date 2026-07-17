@@ -69,6 +69,7 @@ import type { NotificationItem, NotificationKind } from '@xerovault/shared'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import { useNotificationStore } from '@/stores/notification'
+import { useNotificationEvents } from '@/composables/useNotificationEvents'
 import Icon from '@/components/ui/Icon.vue'
 
 const auth = useAuthStore()
@@ -85,7 +86,9 @@ const KIND_LABEL: Record<NotificationKind, string> = {
 }
 
 onMounted(() => {
-  if (auth.isAuthenticated) notification.fetchUnreadCount()
+  if (!auth.user) return
+  notification.fetchUnreadCount()
+  useNotificationEvents(auth.user.id, () => notification.incrementUnread())
 })
 
 async function toggleNotifications() {

@@ -22,5 +22,9 @@ export const useNotificationStore = defineStore('notification', () => {
     unreadCount.value = 0
   }
 
-  return { items, unreadCount, fetchUnreadCount, fetchNotifications, markAllRead }
+  function incrementUnread(): void {
+    unreadCount.value++
+  }
+
+  return { items, unreadCount, fetchUnreadCount, fetchNotifications, markAllRead, incrementUnread }
 })
