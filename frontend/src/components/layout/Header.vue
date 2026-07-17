@@ -33,17 +33,36 @@
           v-if="showNotifications"
           class="absolute right-0 top-full z-20 mt-2 w-80 rounded-surface border border-line bg-paper-raised p-2 text-left shadow-card"
         >
+          <div class="mb-1 flex items-center justify-between px-1">
+            <span class="text-xs text-ink-faint">通知</span>
+            <button
+              v-if="notification.unreadCount > 0"
+              class="text-xs text-accent hover:underline"
+              @click="notification.markAllRead()"
+            >
+              すべて既読にする
+            </button>
+          </div>
           <p v-if="!notification.items.length" class="p-3 text-center text-xs text-ink-faint">
             通知はありません
           </p>
           <button
             v-for="n in notification.items"
             :key="n.id"
-            class="flex w-full flex-col items-start gap-0.5 rounded-control p-2 text-left transition-colors hover:bg-paper-sunken"
+            class="relative flex w-full flex-col items-start gap-0.5 rounded-control p-2 pl-4 text-left transition-colors hover:bg-paper-sunken"
             @click="goToNotification(n)"
           >
-            <span class="text-xs font-semibold text-ink-soft">{{ KIND_LABEL[n.kind] }}</span>
-            <span class="truncate text-sm text-ink">
+            <span
+              v-if="!n.readAt"
+              class="absolute left-1.5 top-3.5 h-1.5 w-1.5 rounded-full bg-accent"
+            />
+            <span
+              class="text-xs font-semibold"
+              :class="n.readAt ? 'text-ink-faint' : 'text-ink-soft'"
+            >
+              {{ KIND_LABEL[n.kind] }}
+            </span>
+            <span class="truncate text-sm" :class="n.readAt ? 'text-ink-soft' : 'font-medium text-ink'">
               [{{ n.groupName }}] {{ n.goalHeader || n.goalDescription }}
             </span>
             <span class="text-[11px] text-ink-faint">{{ formatDate(n.sentAt) }}</span>
@@ -95,12 +114,12 @@ async function toggleNotifications() {
   showNotifications.value = !showNotifications.value
   if (showNotifications.value) {
     await notification.fetchNotifications()
-    await notification.markAllRead()
   }
 }
 
 function goToNotification(n: NotificationItem) {
   showNotifications.value = false
+  notification.markRead(n.id)
   router.push(`/group/${n.groupId}/goal/${n.goalId}`)
 }
 

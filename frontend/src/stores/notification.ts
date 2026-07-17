@@ -22,9 +22,25 @@ export const useNotificationStore = defineStore('notification', () => {
     unreadCount.value = 0
   }
 
+  async function markRead(id: string): Promise<void> {
+    const target = items.value.find((n) => n.id === id)
+    if (!target || target.readAt) return
+    await rpc('mark_notifications_read', { p_ids: [id] })
+    target.readAt = new Date().toISOString()
+    unreadCount.value = Math.max(0, unreadCount.value - 1)
+  }
+
   function incrementUnread(): void {
     unreadCount.value++
   }
 
-  return { items, unreadCount, fetchUnreadCount, fetchNotifications, markAllRead, incrementUnread }
+  return {
+    items,
+    unreadCount,
+    fetchUnreadCount,
+    fetchNotifications,
+    markAllRead,
+    markRead,
+    incrementUnread,
+  }
 })
