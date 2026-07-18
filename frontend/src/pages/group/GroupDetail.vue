@@ -86,8 +86,23 @@
           >
             管理
           </button>
-          <BaseButton variant="outline" size="sm" class="ml-auto" @click="handleInvite">
+          <BaseButton
+            v-if="isOwner && !group.isPublic"
+            variant="outline"
+            size="sm"
+            class="ml-auto"
+            @click="handleInvite"
+          >
             招待リンク作成
+          </BaseButton>
+          <BaseButton
+            v-if="!isMember && group.isPublic"
+            size="sm"
+            class="ml-auto"
+            :disabled="joining"
+            @click="handleJoin"
+          >
+            {{ joining ? '参加中...' : '参加する' }}
           </BaseButton>
         </div>
         <div
@@ -107,7 +122,7 @@
       <!-- ゴール一覧 -->
       <div class="mb-4 flex items-center justify-between">
         <h2 class="font-semibold text-ink">ゴール一覧</h2>
-        <BaseButton size="sm" @click="showAddGoal = true">
+        <BaseButton v-if="isMember" size="sm" @click="showAddGoal = true">
           <Icon name="plus" :size="13" />ゴール追加
         </BaseButton>
       </div>
@@ -262,6 +277,10 @@ const addingGoal = ref(false)
 const goalForm = ref({ header: '', description: '', deadline: '', assigneeId: '' })
 
 const isOwner = computed(() => group.value?.owner.id === authStore.user?.id)
+const isMember = computed(
+  () => group.value?.members.some((m) => m.id === authStore.user?.id) ?? false
+)
+const joining = ref(false)
 const showEditGroup = ref(false)
 const savingGroup = ref(false)
 const editForm = ref({ name: '', tagsInput: '' })
@@ -276,6 +295,16 @@ onMounted(async () => {
   group.value = await groupStore.fetchGroup(id)
   await goalStore.fetchGoals(id)
 })
+
+async function handleJoin() {
+  joining.value = true
+  try {
+    group.value = await groupStore.joinGroup(route.params.id as string)
+    await goalStore.fetchGoals(route.params.id as string)
+  } finally {
+    joining.value = false
+  }
+}
 
 async function handleInvite() {
   const id = route.params.id as string

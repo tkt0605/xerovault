@@ -47,8 +47,8 @@ export const useGroupStore = defineStore('group', () => {
     return `${origin}/group/${groupId}/join?token=${encodeURIComponent(token)}`
   }
 
-  async function joinGroup(groupId: string, token: string): Promise<Group> {
-    const group = await rpc<Group>('join_group', { p_group_id: groupId, p_token: token })
+  async function joinGroup(groupId: string, token?: string): Promise<Group> {
+    const group = await rpc<Group>('join_group', { p_group_id: groupId, p_token: token ?? null })
     groups.value.unshift(group)
     return group
   }

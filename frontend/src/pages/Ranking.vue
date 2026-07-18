@@ -23,7 +23,8 @@
         v-for="(g, i) in groups"
         :key="g.id"
         :padded="false"
-        class="flex items-center gap-4 p-4"
+        class="flex cursor-pointer items-center gap-4 p-4"
+        @click="router.push(`/group/${g.id}`)"
       >
         <div
           class="w-8 text-center font-serif text-lg font-medium"
