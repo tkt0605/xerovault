@@ -383,9 +383,9 @@ const posting = ref(false)
 
 type SectionKey = 'posts' | 'members' | 'goals'
 const sections: { key: SectionKey; label: string; icon: IconName }[] = [
-  { key: 'posts', label: '掲示板', icon: 'send' },
-  { key: 'members', label: 'メンバー', icon: 'users' },
   { key: 'goals', label: 'ゴール一覧', icon: 'target' },
+  { key: 'members', label: 'メンバー', icon: 'users' },
+  { key: 'posts', label: '掲示板', icon: 'send' },
 ]
 const activeSection = ref<SectionKey>('goals')
 function toggleSection(key: SectionKey): void {
