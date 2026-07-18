@@ -10,3 +10,8 @@ export interface RankingGroup {
   owner: UserSummary
   _count: { members: number; goals: number }
 }
+
+export interface TagStat {
+  tag: string
+  groupCount: number
+}

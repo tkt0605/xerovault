@@ -1,9 +1,24 @@
 <template>
   <div class="mx-auto max-w-2xl p-6">
     <h1 class="mb-2 font-serif text-2xl font-medium text-ink">スコアランキング</h1>
-    <p class="mb-6 text-sm text-ink-soft">公開中の全グループの合意スコアランキングです</p>
+    <p class="text-sm text-ink-soft">
+      <template v-if="activeTag">「#{{ activeTag }}」の公開グループです</template>
+      <template v-else>公開中の全グループの合意スコアランキングです</template>
+    </p>
+    <button
+      v-if="activeTag"
+      type="button"
+      class="mb-4 text-xs font-semibold text-accent-strong hover:underline"
+      @click="clearTag"
+    >
+      すべて表示
+    </button>
+    <div v-else class="mb-4" />
 
-    <div class="space-y-2">
+    <p v-if="!groups.length" class="rounded-surface border border-line bg-paper-raised p-6 text-center text-sm text-ink-faint">
+      該当する公開グループはありません
+    </p>
+    <div v-else class="space-y-2">
       <BaseCard
         v-for="(g, i) in groups"
         :key="g.id"
@@ -47,15 +62,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import type { RankingGroup } from '@xerovault/shared'
 import { rpc } from '@/lib/rpc'
 import Icon from '@/components/ui/Icon.vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 
+const route = useRoute()
+const router = useRouter()
+
 const groups = ref<RankingGroup[]>([])
-onMounted(async () => {
-  groups.value = await rpc<RankingGroup[]>('get_rankings', { p_limit: 20 })
+const activeTag = computed(() => {
+  const tag = route.query.tag
+  return typeof tag === 'string' && tag ? tag : null
 })
+
+async function fetchRankings(): Promise<void> {
+  groups.value = await rpc<RankingGroup[]>('get_rankings', {
+    p_limit: 20,
+    p_tag: activeTag.value,
+  })
+}
+
+function clearTag(): void {
+  router.push('/ranking')
+}
+
+watch(activeTag, fetchRankings)
+onMounted(fetchRankings)
 </script>

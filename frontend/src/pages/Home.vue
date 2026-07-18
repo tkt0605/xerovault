@@ -5,6 +5,20 @@
       <p class="mt-1 text-sm text-ink-soft">参加中のグループからゴールを選んで進めましょう</p>
     </div>
 
+    <div v-if="tagStats.length" class="mb-6">
+      <h2 class="mb-2 text-xs font-semibold text-ink-faint">話題のタグから探す</h2>
+      <div class="flex flex-wrap gap-2">
+        <Badge
+          v-for="t in tagStats"
+          :key="t.tag"
+          class="cursor-pointer hover:bg-paper-raised"
+          @click="goToTag(t.tag)"
+        >
+          #{{ t.tag }} <span class="text-ink-faint">{{ t.groupCount }}</span>
+        </Badge>
+      </div>
+    </div>
+
     <div v-if="!groupStore.groups.length" class="rounded-surface border border-line bg-paper-raised p-8 text-center">
       <Icon name="target" :size="32" class="mx-auto mb-4 text-accent" />
       <h2 class="mb-2 font-serif text-lg font-medium text-ink">Xerovaultへようこそ</h2>
@@ -72,16 +86,30 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import type { TagStat } from '@xerovault/shared'
 import { useGroupStore } from '@/stores/group'
 import { useUiStore } from '@/stores/ui'
 import { isStagnant } from '@/lib/activity'
+import { rpc } from '@/lib/rpc'
 import Icon from '@/components/ui/Icon.vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import Badge from '@/components/ui/Badge.vue'
 
 const router = useRouter()
 const groupStore = useGroupStore()
 const ui = useUiStore()
+
+const tagStats = ref<TagStat[]>([])
+
+function goToTag(tag: string): void {
+  router.push({ path: '/ranking', query: { tag } })
+}
+
+onMounted(async () => {
+  tagStats.value = await rpc<TagStat[]>('get_public_tag_stats', { p_limit: 10 })
+})
 </script>
