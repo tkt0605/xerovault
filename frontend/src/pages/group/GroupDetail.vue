@@ -292,7 +292,10 @@
               rows="2"
               maxlength="200"
             />
-            <BaseInput v-model="editForm.tagsInput" placeholder="タグ（カンマ区切りで複数入力可・任意）" />
+            <TagAutocompleteInput
+              v-model="editForm.tagsInput"
+              placeholder="タグ（カンマ区切りで複数入力可・任意）"
+            />
             <div class="flex gap-2 pt-2">
               <BaseButton
                 type="button"
@@ -366,6 +369,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseTextarea from '@/components/ui/BaseTextarea.vue'
+import TagAutocompleteInput from '@/components/ui/TagAutocompleteInput.vue'
 
 const route = useRoute()
 const router = useRouter()

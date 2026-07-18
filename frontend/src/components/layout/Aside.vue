@@ -74,7 +74,10 @@
                 rows="2"
                 maxlength="200"
               />
-              <BaseInput v-model="form.tagsInput" placeholder="タグ（カンマ区切りで複数入力可・任意）" />
+              <TagAutocompleteInput
+                v-model="form.tagsInput"
+                placeholder="タグ（カンマ区切りで複数入力可・任意）"
+              />
               <label class="flex cursor-pointer items-center gap-2 text-sm text-ink-soft">
                 <input v-model="form.isPublic" type="checkbox" class="rounded" />
                 ランキングに公開する
@@ -130,6 +133,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseTextarea from '@/components/ui/BaseTextarea.vue'
+import TagAutocompleteInput from '@/components/ui/TagAutocompleteInput.vue'
 
 const auth = useAuthStore()
 const ui = useUiStore()

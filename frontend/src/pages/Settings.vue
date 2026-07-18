@@ -45,7 +45,10 @@
           rows="3"
           maxlength="160"
         />
-        <BaseInput v-model="form.tagsInput" placeholder="興味タグ（カンマ区切りで複数入力可・任意）" />
+        <TagAutocompleteInput
+          v-model="form.tagsInput"
+          placeholder="興味タグ（カンマ区切りで複数入力可・任意）"
+        />
         <div class="flex justify-end">
           <BaseButton type="submit" :disabled="savingName">
             {{ savingName ? '保存中...' : '保存' }}
@@ -99,6 +102,7 @@ import Badge from '@/components/ui/Badge.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseTextarea from '@/components/ui/BaseTextarea.vue'
+import TagAutocompleteInput from '@/components/ui/TagAutocompleteInput.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 
 const authStore = useAuthStore()

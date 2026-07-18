@@ -16,3 +16,8 @@ export interface TagStat {
   tag: string
   groupCount: number
 }
+
+export interface TagSuggestion {
+  tag: string
+  usageCount: number
+}
