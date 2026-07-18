@@ -6,12 +6,6 @@ settings:
 
 importers:
 
-  .:
-    devDependencies:
-      supabase:
-        specifier: ^2.109.1
-        version: 2.109.1
-
   frontend:
     dependencies:
       '@supabase/supabase-js':
