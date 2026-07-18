@@ -119,8 +119,63 @@
         </div>
       </div>
 
+      <!-- セクション開閉ベルト -->
+      <div class="mb-6 flex gap-2 border-b border-line pb-3">
+        <button
+          v-for="s in sections"
+          :key="s.key"
+          type="button"
+          class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
+          :class="
+            activeSection === s.key
+              ? 'bg-accent text-paper'
+              : 'bg-paper-sunken text-ink-soft hover:bg-paper-raised'
+          "
+          @click="toggleSection(s.key)"
+        >
+          <Icon :name="s.icon" :size="13" />{{ s.label }}
+        </button>
+      </div>
+
+      <!-- ようこそ掲示板 -->
+      <div v-if="activeSection === 'posts'" class="mb-6">
+        <h2 class="mb-3 font-semibold text-ink">ようこそ掲示板</h2>
+        <form class="mb-3 flex gap-2" @submit.prevent="handlePost">
+          <BaseInput
+            v-model="postText"
+            placeholder="ひとこと挨拶してみましょう(280文字まで)"
+            maxlength="280"
+            class="flex-1"
+          />
+          <BaseButton type="submit" :disabled="posting || !postText.trim()">
+            {{ posting ? '投稿中...' : '投稿' }}
+          </BaseButton>
+        </form>
+        <div v-if="!groupPostStore.posts.length" class="py-6 text-center text-xs text-ink-faint">
+          まだ投稿がありません。最初のひとことを送ってみましょう
+        </div>
+        <div v-else class="space-y-2">
+          <div
+            v-for="p in groupPostStore.posts"
+            :key="p.id"
+            class="flex gap-3 rounded-control bg-paper-sunken p-3"
+          >
+            <Avatar :name="p.author.name ?? p.author.email" :size="32" />
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5">
+                <p class="truncate text-sm font-semibold text-ink">
+                  {{ p.author.name ?? p.author.email }}
+                </p>
+                <span class="text-xs text-ink-faint">{{ formatRelativeTime(p.createdAt) }}</span>
+              </div>
+              <p class="mt-0.5 whitespace-pre-wrap text-sm text-ink-soft">{{ p.text }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- メンバー -->
-      <div class="mb-6">
+      <div v-if="activeSection === 'members'" class="mb-6">
         <h2 class="mb-3 font-semibold text-ink">メンバー</h2>
         <div class="space-y-2">
           <div
@@ -154,24 +209,26 @@
       </div>
 
       <!-- ゴール一覧 -->
-      <div class="mb-4 flex items-center justify-between">
-        <h2 class="font-semibold text-ink">ゴール一覧</h2>
-        <BaseButton v-if="isMember" size="sm" @click="showAddGoal = true">
-          <Icon name="plus" :size="13" />ゴール追加
-        </BaseButton>
-      </div>
+      <div v-if="activeSection === 'goals'">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="font-semibold text-ink">ゴール一覧</h2>
+          <BaseButton v-if="isMember" size="sm" @click="showAddGoal = true">
+            <Icon name="plus" :size="13" />ゴール追加
+          </BaseButton>
+        </div>
 
-      <div v-if="!goalStore.goals.length" class="py-12 text-center text-ink-faint">
-        <Icon name="target" :size="28" class="mx-auto mb-3" />
-        <p class="font-medium text-ink-soft">ゴールがまだありません</p>
-      </div>
-      <div v-else class="space-y-3">
-        <GoalCard
-          v-for="g in goalStore.goals"
-          :key="g.id"
-          :goal="g"
-          @click="router.push(`/group/${group.id}/goal/${g.id}`)"
-        />
+        <div v-if="!goalStore.goals.length" class="py-12 text-center text-ink-faint">
+          <Icon name="target" :size="28" class="mx-auto mb-3" />
+          <p class="font-medium text-ink-soft">ゴールがまだありません</p>
+        </div>
+        <div v-else class="space-y-3">
+          <GoalCard
+            v-for="g in goalStore.goals"
+            :key="g.id"
+            :goal="g"
+            @click="router.push(`/group/${group.id}/goal/${g.id}`)"
+          />
+        </div>
       </div>
     </template>
 
@@ -288,12 +345,13 @@ import type { ScoreBreakdown } from '@xerovault/shared'
 import { useAuthStore } from '@/stores/auth'
 import { useGroupStore } from '@/stores/group'
 import { useGoalStore } from '@/stores/goal'
+import { useGroupPostStore } from '@/stores/groupPost'
 import { parseTags } from '@/lib/tags'
-import { isStagnant, formatLastActive } from '@/lib/activity'
+import { isStagnant, formatLastActive, formatRelativeTime } from '@/lib/activity'
 import { supabase } from '@/lib/supabase'
 import GoalCard from '@/components/goal/GoalCard.vue'
 import Avatar from '@/components/ui/Avatar.vue'
-import Icon from '@/components/ui/Icon.vue'
+import Icon, { type IconName } from '@/components/ui/Icon.vue'
 import Badge from '@/components/ui/Badge.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
@@ -305,11 +363,25 @@ const router = useRouter()
 const authStore = useAuthStore()
 const groupStore = useGroupStore()
 const goalStore = useGoalStore()
+const groupPostStore = useGroupPostStore()
 const group = ref(groupStore.current)
 const inviteUrl = ref('')
 const showAddGoal = ref(false)
 const addingGoal = ref(false)
 const goalForm = ref({ header: '', description: '', deadline: '', assigneeId: '' })
+const postText = ref('')
+const posting = ref(false)
+
+type SectionKey = 'posts' | 'members' | 'goals'
+const sections: { key: SectionKey; label: string; icon: IconName }[] = [
+  { key: 'posts', label: '掲示板', icon: 'send' },
+  { key: 'members', label: 'メンバー', icon: 'users' },
+  { key: 'goals', label: 'ゴール一覧', icon: 'target' },
+]
+const activeSection = ref<SectionKey>('goals')
+function toggleSection(key: SectionKey): void {
+  activeSection.value = key
+}
 
 const isOwner = computed(() => group.value?.owner.id === authStore.user?.id)
 const isMember = computed(
@@ -333,6 +405,7 @@ onMounted(async () => {
   const id = route.params.id as string
   group.value = await groupStore.fetchGroup(id)
   await goalStore.fetchGoals(id)
+  await groupPostStore.fetchPosts(id)
 
   if (authStore.user) {
     const { data } = await supabase
@@ -351,6 +424,17 @@ async function handleJoin() {
     await goalStore.fetchGoals(route.params.id as string)
   } finally {
     joining.value = false
+  }
+}
+
+async function handlePost() {
+  if (!postText.value.trim()) return
+  posting.value = true
+  try {
+    await groupPostStore.createPost(route.params.id as string, postText.value)
+    postText.value = ''
+  } finally {
+    posting.value = false
   }
 }
 

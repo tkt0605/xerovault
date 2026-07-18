@@ -11,3 +11,9 @@ export function formatLastActive(lastActiveAt: string | null): string {
   if (days <= 0) return '今日活動'
   return `${days}日前に活動`
 }
+
+export function formatRelativeTime(iso: string): string {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / DAY_MS)
+  if (days <= 0) return '今日'
+  return `${days}日前`
+}
