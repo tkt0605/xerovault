@@ -45,12 +45,26 @@
           rows="3"
           maxlength="160"
         />
+        <BaseInput v-model="form.tagsInput" placeholder="興味タグ（カンマ区切りで複数入力可・任意）" />
         <div class="flex justify-end">
           <BaseButton type="submit" :disabled="savingName">
             {{ savingName ? '保存中...' : '保存' }}
           </BaseButton>
         </div>
       </form>
+
+      <div class="mt-3 rounded-control bg-paper-sunken p-3">
+        <p class="mb-1 text-xs font-semibold text-ink-faint">他のメンバーに表示される内容</p>
+        <p class="text-xs" :class="form.bio ? 'text-ink-soft' : 'italic text-ink-faint'">
+          {{ form.bio || '自己紹介はまだありません' }}
+        </p>
+        <div class="mt-1 flex flex-wrap items-center gap-1">
+          <template v-if="previewTags.length">
+            <Badge v-for="t in previewTags" :key="t">#{{ t }}</Badge>
+          </template>
+          <span v-else class="text-xs italic text-ink-faint">興味タグ未設定</span>
+        </div>
+      </div>
     </BaseCard>
 
     <BaseCard>
@@ -79,7 +93,9 @@ import { useAuthStore } from '@/stores/auth'
 import { useGroupStore } from '@/stores/group'
 import { supabase } from '@/lib/supabase'
 import { rpc } from '@/lib/rpc'
+import { parseTags } from '@/lib/tags'
 import Avatar from '@/components/ui/Avatar.vue'
+import Badge from '@/components/ui/Badge.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseTextarea from '@/components/ui/BaseTextarea.vue'
@@ -88,7 +104,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 const authStore = useAuthStore()
 const groupStore = useGroupStore()
 
-const form = ref({ name: '', notificationsEnabled: true, bio: '' })
+const form = ref({ name: '', notificationsEnabled: true, bio: '', tagsInput: '' })
 const savingName = ref(false)
 const savingNotifications = ref(false)
 const stats = ref<UserStats | null>(null)
@@ -114,18 +130,21 @@ const participationRate = computed(() => {
   return Math.round((stats.value.votedGoalsCount / stats.value.totalVotableGoals) * 100)
 })
 
+const previewTags = computed(() => parseTags(form.value.tagsInput))
+
 onMounted(async () => {
   if (!authStore.user) return
   form.value.name = authStore.user.name ?? ''
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('notifications_enabled, bio')
+    .select('notifications_enabled, bio, interest_tags')
     .eq('id', authStore.user.id)
     .single()
   if (!error && data) {
     form.value.notificationsEnabled = data.notifications_enabled
     form.value.bio = data.bio ?? ''
+    form.value.tagsInput = (data.interest_tags ?? []).join(', ')
   }
 
   stats.value = await rpc<UserStats>('get_my_stats')
@@ -139,7 +158,11 @@ async function handleSaveProfile() {
   try {
     const { error } = await supabase
       .from('profiles')
-      .update({ name: form.value.name || null, bio: form.value.bio || null })
+      .update({
+        name: form.value.name || null,
+        bio: form.value.bio || null,
+        interest_tags: parseTags(form.value.tagsInput),
+      })
       .eq('id', authStore.user.id)
     if (error) throw new Error(error.message)
     await authStore.fetchProfile(authStore.user.id)

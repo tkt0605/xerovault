@@ -7,6 +7,7 @@ export interface UserSummary {
 
 export interface GroupMember extends UserSummary {
   bio: string | null
+  interestTags: string[]
   completedGoalsCount: number
   lastActiveAt: string | null
 }

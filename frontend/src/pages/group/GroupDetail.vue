@@ -134,7 +134,17 @@
                 <p class="truncate text-sm font-semibold text-ink">{{ m.name ?? m.email }}</p>
                 <Badge v-if="m.id === group.owner.id" variant="info">オーナー</Badge>
               </div>
-              <p v-if="m.bio" class="mt-0.5 text-xs text-ink-soft">{{ m.bio }}</p>
+              <p class="mt-0.5 text-xs" :class="m.bio ? 'text-ink-soft' : 'italic text-ink-faint'">
+                {{ m.bio || '自己紹介はまだありません' }}
+              </p>
+              <div class="mt-1 flex flex-wrap items-center gap-1">
+                <template v-if="m.interestTags.length">
+                  <Badge v-for="t in m.interestTags" :key="t" :variant="isSharedTag(t) ? 'good' : 'info'">
+                    #{{ t }}
+                  </Badge>
+                </template>
+                <span v-else class="text-xs italic text-ink-faint">興味タグ未設定</span>
+              </div>
               <p class="mt-1 text-xs text-ink-faint">
                 {{ m.completedGoalsCount }}件達成 · {{ formatLastActive(m.lastActiveAt) }}
               </p>
@@ -280,6 +290,7 @@ import { useGroupStore } from '@/stores/group'
 import { useGoalStore } from '@/stores/goal'
 import { parseTags } from '@/lib/tags'
 import { isStagnant, formatLastActive } from '@/lib/activity'
+import { supabase } from '@/lib/supabase'
 import GoalCard from '@/components/goal/GoalCard.vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import Icon from '@/components/ui/Icon.vue'
@@ -305,6 +316,10 @@ const isMember = computed(
   () => group.value?.members.some((m) => m.id === authStore.user?.id) ?? false
 )
 const joining = ref(false)
+const myInterestTags = ref<string[]>([])
+function isSharedTag(tag: string): boolean {
+  return myInterestTags.value.includes(tag)
+}
 const showEditGroup = ref(false)
 const savingGroup = ref(false)
 const editForm = ref({ name: '', tagsInput: '' })
@@ -318,6 +333,15 @@ onMounted(async () => {
   const id = route.params.id as string
   group.value = await groupStore.fetchGroup(id)
   await goalStore.fetchGoals(id)
+
+  if (authStore.user) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('interest_tags')
+      .eq('id', authStore.user.id)
+      .single()
+    myInterestTags.value = data?.interest_tags ?? []
+  }
 })
 
 async function handleJoin() {
