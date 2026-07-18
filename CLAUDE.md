@@ -1,61 +1,53 @@
-# CLAUDE.md
+# Xerovault
+共通の趣味嗜好を持つ仲間と出会い、全員納得の合意形成でチームを組めるコミュニティアプリ — 本当に分かり合える仲間に出会うために。
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## スタイル
+- コミットメッセージの規約: 
+- 命名規則: 
+- ディレクトリ・ファイル構成: 
+- コンポーネントの設計方針: 
+- エラーハンドリング方針: 
+- コメント・ドキュメント言語: 日本語で出力
 
-## What this is
+## コマンド
+- `pnpm install `: 依存パッケージをインストールする。pnpm workspacesを使用中。ルートで実行すれば、各パッケージの依存が解消。
+- `docker compose up --build`: Dockerイメージをビルドしてから開発環境を起動する。よってfrontendコンテナが立ち上がり、localhost:5173にアクセスできる。
+- `pnpm run lint`: ESLintでコードの解析を行、混在的バグやエラー、規約違反を検出する。
+- `pnpm run format:check`: Prettierでフォーマットが規約通りか確認する。
+- `npx vue-tsc --noEmit`: Vue用のTypescriptコンパイラでフロントエンドの型チェックのみを行う。
+- `pnpm run build`:  本番用にViteでフロントエンドをビルドする(最適化・バンドルされた静的ファイルを生成)。
 
-Xero Vault: グループを作り、メンバーで目標(Goal)を設定し、達成をYES/NO投票で承認し合うことでスコア・継続ストリークを競うゴール管理アプリ。コンセプトは `docs/vision.md`、ドメインモデルは `docs/domain-model.md`、スコア計算式は `docs/score-design.md` を参照。
+## アーキテクチャ
+### モノレポ構成 (pnpm workspaces)
+- frontend/ — Vue 3 + Vite SPA
+- packages/shared/ — zodスキーマ・型定義 (@xerovault/shared)
+- supabase/ — DBスキーマ・RLS・RPC・Edge Functions(旧Expressバックエンドを置換済み、backend/は現存しない)
 
-## Commands
+### 言語・ランタイム
+- Node.js v22 (Docker: node:22-alpine)
+- pnpm 11.7.0 (corepack管理)
+- TypeScript ^5.6.0
 
-Root is a pnpm workspace (`frontend`, `packages/shared`). Run `pnpm install` from the repo root first.
+### フロントエンド
+- Vue 3.5 + Vite 8 + vue-router 4 + Pinia 2(状態管理)
+- Tailwind CSS 3.4 + PostCSS + Autoprefixer
+- ESLint 10 (typescript-eslint, eslint-plugin-vue) + Prettier 3.9
+- vue-tsc(型チェック)
 
-```bash
-# Dev server (frontend only; DB/API are provided by Supabase, no local backend)
-make dev              # docker compose up --build → http://localhost:5173
-make stop / make restart / make clean
+### バックエンド/インフラ
+- Supabase(Auth・Postgres・RLS・RPC・Edge Functions・pg_cron)。専用バックエンドサーバーは無し
+- Supabase CLI ^2.109.1
+- Resend(通知メール送信用API)
 
-# From frontend/ directly (or `pnpm --filter xerovault-frontend <script>` from root)
-pnpm dev
-pnpm build            # vue-tsc && vite build — this is the type-check step, there is no separate typecheck script
-pnpm lint
-pnpm format / pnpm format:check
-```
+### 開発/CI
+- Docker Compose(make devでfrontendコンテナ起動、ポート5173)
+- GitHub Actions CI(.github/workflows/ci.yml): shared側tsc --noEmit、frontend側 lint/format:check/vue-tsc/build
+- .devcontainer/devcontainer.json は旧Python/Expressバックエンド向けの設定が残っており、現状の構成と食い違っている(要整理)
 
-There is no test suite/runner in this repo (no `*.test.*`/`*.spec.*` files, no test script). Treat `pnpm build` (type-checking) and `pnpm lint` as the correctness gates.
-
-Supabase CLI (`supabase`, devDependency in `frontend/`) is used to push migrations and deploy Edge Functions — see README for the full manual setup (Resend API key, Vault secrets, pg_cron). Applying a new file in `supabase/migrations/` requires running it against the linked Supabase project; there is no local Supabase stack wired up in docker-compose.
-
-## Architecture
-
-**No custom backend.** This used to be an Express+Prisma app; that layer was fully migrated into Postgres. All business logic (validation, authorization, score/streak calculation) now lives in `SECURITY DEFINER` RPC functions defined in `supabase/migrations/`. The frontend talks to Supabase directly via `@supabase/supabase-js` — there are no `insert`/`update`/`delete` RLS policies on the app tables; writes only happen through `supabase.rpc(...)`. Reads are allowed via RLS SELECT policies (and, for `profiles`, column-level grants — see below).
-
-- `frontend/` — Vue 3 + Vite SPA, Pinia (setup-store style, see `frontend/src/stores/*.ts`) for state, Tailwind for styling, `vue-router` with a global `beforeEach` guard (`frontend/src/router/index.ts`) that redirects to `/auth/login` unless `meta.public` is set.
-  - `src/lib/rpc.ts` — thin wrapper around `supabase.rpc()` that throws on `{ error }` instead of returning it. Nearly all data mutations/reads that aren't plain `select` go through this.
-  - `src/lib/supabase.ts` — the single Supabase client instance, configured from `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`.
-  - `src/stores/*.ts` — one Pinia store per domain entity (`goal`, `group`, `vote`, `message`, `notification`, `auth`, `ui`), each calling specific RPC function names (e.g. `get_goals`, `create_goal`, `cast_vote`). When adding a new store action, check whether the matching RPC already exists in `supabase/migrations/` before assuming one needs to be written.
-  - `src/composables/use*Events.ts` — Supabase Realtime (`postgres_changes`) subscriptions scoped to one entity (e.g. `useGoalEvents(goalId, { onVote, onMessage })`), cleaned up via `onUnmounted`. Follow this pattern for new realtime subscriptions rather than subscribing ad hoc inside components.
-- `packages/shared/` (`@xerovault/shared`) — zod schemas + inferred types (`createGoalSchema`/`CreateGoalInput`, etc.) plus plain TS interfaces (`Goal`, `Group`, ...) shared between form validation and store/RPC response typing. One file per domain entity, re-exported from `src/index.ts`. When an RPC's return shape changes, update the matching interface here.
-- `supabase/migrations/` — numbered, sequential SQL migrations (schema, RLS policies, RPC functions). This is the source of truth for business rules — read the relevant migration before changing behavior that looks like it "should" be in the frontend (validation, scoring, permissions). Notable ones:
-  - `0001_init.sql` — schema + initial RLS/RPCs (`is_group_member`, `cast_vote`/`cancel_vote`, `recalc_group_score`, `create_invite`/`join_group`).
-  - Security-sensitive column-level grant pattern (see `0010_in_app_notifications.sql`/`0014_profiles_update_column_grant.sql`): RLS alone only restricts by row, not column, so `profiles` has table-level SELECT/UPDATE revoked from `authenticated`/`anon` and only specific columns granted back (e.g. `grant update (name, notifications_enabled) on public.profiles to authenticated`). If you add a client-writable/readable column to `profiles` (or any table where not all columns should be client-exposed), use this revoke-then-grant-columns pattern, not a blanket table grant.
-- `supabase/functions/` — Deno Edge Functions:
-  - `notify-digest/` — daily email digest (pending votes, approaching/expired deadlines), invoked by `pg_cron` + `pg_net`.
-  - `unsubscribe/` — no-login one-tap unsubscribe from digest email links.
-
-## Domain model
-
-- `profiles` — account, auto-created via trigger on `auth.users` insert.
-- `groups` — a team sharing goals; holds `score`/`streak`.
-- `group_members` — group↔user join table (owner tracked separately via `groups.owner_id`).
-- `goals` — a goal is "concrete" (`is_concrete`, generated column) iff it has both `deadline` and `assignee_id`; concrete goals score higher and can reach `status: 'missed'`. Vague goals only ever go `pending`→`completed`.
-- `goal_votes` / `votes` — split into two tables on purpose: `goal_votes` is a persistent "voting slot" (one per goal×voter), `votes` holds the actual YES/NO value and is deleted on vote cancellation while the slot stays. Don't collapse these without checking `docs/domain-model.md`'s "未解決の設計課題" section — it's a known, intentionally-deferred simplification.
-- `messages` — comments on a goal.
-
-Scoring/streak: see `docs/score-design.md` for the full formula (concrete-goal points, vague-goal points, full-participation bonus, missed-goal penalty, streak bonus) and its known limitations (missed-status is lazily recalculated only when someone votes; no `pg_cron` sweep exists yet).
-
-## Conventions
-
-- Commit messages and in-code comments are written in Japanese in this repo; match that when editing existing files.
-- Comments in migrations tend to explain *why* a security/behavior change was made (see `0014_profiles_update_column_grant.sql`) — keep that standard for new migrations touching RLS/grants.
-- ESLint: `@typescript-eslint/no-unused-vars` is a warning (prefix intentionally-unused args with `_`); `vue/multi-word-component-names` is off, so single-word component names are fine.
+## 規約
+- PR/ブランチ運用: mainへの直push禁止、ブランチ命名規則、レビュー必須の有無
+- テスト方針: テストの有無・要否(このプロジェクトは現状テストコマンドが見当たらないので「テストは書かない/書く場合は〇〇」など明記すると良い)
+- RLS/セキュリティのルール: Supabaseを使っているので「新規テーブルには必ずRLSを設定する」「RPCは〇〇の権限チェックを必須とする」など、直近の脆弱性修正コミット(fix: profiles.UPDATEが...)を踏まえたルール化
+- マイグレーション運用: supabase/migrations/の命名規則(00XX_説明.sql)、ローカルでの検証手順
+- 環境変数・シークレット管理: .envの扱い、Resend APIキーなどの管理方法
+- 依存追加のルール: 新規パッケージ追加時の判断基準(軽量なものを優先する等)
