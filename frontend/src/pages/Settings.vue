@@ -37,11 +37,19 @@
           アバターは名前から自動生成されます（画像アップロードには対応していません）
         </p>
       </div>
-      <form class="flex gap-2" @submit.prevent="handleSaveName">
-        <BaseInput v-model="form.name" placeholder="名前" class="flex-1" />
-        <BaseButton type="submit" :disabled="savingName">
-          {{ savingName ? '保存中...' : '保存' }}
-        </BaseButton>
+      <form class="space-y-2" @submit.prevent="handleSaveProfile">
+        <BaseInput v-model="form.name" placeholder="名前" />
+        <BaseTextarea
+          v-model="form.bio"
+          placeholder="自己紹介(160文字まで・任意)"
+          rows="3"
+          maxlength="160"
+        />
+        <div class="flex justify-end">
+          <BaseButton type="submit" :disabled="savingName">
+            {{ savingName ? '保存中...' : '保存' }}
+          </BaseButton>
+        </div>
       </form>
     </BaseCard>
 
@@ -74,12 +82,13 @@ import { rpc } from '@/lib/rpc'
 import Avatar from '@/components/ui/Avatar.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
+import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 
 const authStore = useAuthStore()
 const groupStore = useGroupStore()
 
-const form = ref({ name: '', notificationsEnabled: true })
+const form = ref({ name: '', notificationsEnabled: true, bio: '' })
 const savingName = ref(false)
 const savingNotifications = ref(false)
 const stats = ref<UserStats | null>(null)
@@ -111,23 +120,26 @@ onMounted(async () => {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('notifications_enabled')
+    .select('notifications_enabled, bio')
     .eq('id', authStore.user.id)
     .single()
-  if (!error && data) form.value.notificationsEnabled = data.notifications_enabled
+  if (!error && data) {
+    form.value.notificationsEnabled = data.notifications_enabled
+    form.value.bio = data.bio ?? ''
+  }
 
   stats.value = await rpc<UserStats>('get_my_stats')
   plan.value = await rpc<typeof plan.value>('get_user_plan', { p_user_id: authStore.user.id })
   if (!groupStore.groups.length) await groupStore.fetchMyGroups()
 })
 
-async function handleSaveName() {
+async function handleSaveProfile() {
   if (!authStore.user) return
   savingName.value = true
   try {
     const { error } = await supabase
       .from('profiles')
-      .update({ name: form.value.name || null })
+      .update({ name: form.value.name || null, bio: form.value.bio || null })
       .eq('id', authStore.user.id)
     if (error) throw new Error(error.message)
     await authStore.fetchProfile(authStore.user.id)

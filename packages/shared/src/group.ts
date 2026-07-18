@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { UserSummary } from './user'
+import type { UserSummary, GroupMember } from './user'
 
 export const createGroupSchema = z.object({
   name: z.string().min(1).max(50),
@@ -46,7 +46,7 @@ export interface Group {
   updatedAt: string
   lastActivityAt: string
   owner: UserSummary
-  members: UserSummary[]
+  members: GroupMember[]
   // グループ一覧・詳細取得時のみ含まれる（作成直後のレスポンスには含まれない）
   _count?: { goals: number }
 }

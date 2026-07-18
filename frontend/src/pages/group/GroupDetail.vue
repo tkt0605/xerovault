@@ -119,6 +119,30 @@
         </div>
       </div>
 
+      <!-- メンバー -->
+      <div class="mb-6">
+        <h2 class="mb-3 font-semibold text-ink">メンバー</h2>
+        <div class="space-y-2">
+          <div
+            v-for="m in group.members"
+            :key="m.id"
+            class="flex items-start gap-3 rounded-control bg-paper-sunken p-3"
+          >
+            <Avatar :name="m.name ?? m.email" :size="36" />
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5">
+                <p class="truncate text-sm font-semibold text-ink">{{ m.name ?? m.email }}</p>
+                <Badge v-if="m.id === group.owner.id" variant="info">オーナー</Badge>
+              </div>
+              <p v-if="m.bio" class="mt-0.5 text-xs text-ink-soft">{{ m.bio }}</p>
+              <p class="mt-1 text-xs text-ink-faint">
+                {{ m.completedGoalsCount }}件達成 · {{ formatLastActive(m.lastActiveAt) }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ゴール一覧 -->
       <div class="mb-4 flex items-center justify-between">
         <h2 class="font-semibold text-ink">ゴール一覧</h2>
@@ -255,7 +279,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useGroupStore } from '@/stores/group'
 import { useGoalStore } from '@/stores/goal'
 import { parseTags } from '@/lib/tags'
-import { isStagnant } from '@/lib/activity'
+import { isStagnant, formatLastActive } from '@/lib/activity'
 import GoalCard from '@/components/goal/GoalCard.vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import Icon from '@/components/ui/Icon.vue'
