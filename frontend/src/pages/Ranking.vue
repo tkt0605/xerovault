@@ -48,6 +48,7 @@
               <Icon name="flame" :size="11" />{{ g.streak }}
             </span>
           </div>
+          <p v-if="g.description" class="truncate text-xs text-ink-soft">{{ g.description }}</p>
           <p class="text-xs text-ink-faint">
             {{ g._count.members }}人 · {{ g._count.goals }}ゴール<span v-if="g.tags.length">
               · {{ g.tags.map((t) => `#${t}`).join(' ') }}</span

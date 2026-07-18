@@ -3,6 +3,7 @@ import type { UserSummary } from './user'
 export interface RankingGroup {
   id: string
   name: string
+  description: string | null
   tags: string[]
   score: number
   streak: number

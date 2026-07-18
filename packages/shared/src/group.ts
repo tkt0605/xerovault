@@ -5,12 +5,14 @@ export const createGroupSchema = z.object({
   name: z.string().min(1).max(50),
   tags: z.array(z.string().trim().min(1).max(30)).max(10).default([]),
   isPublic: z.boolean().default(false),
+  description: z.string().trim().max(200).optional(),
 })
 export type CreateGroupInput = z.infer<typeof createGroupSchema>
 
 export const updateGroupSchema = z.object({
   name: z.string().min(1).max(50).optional(),
   tags: z.array(z.string().trim().min(1).max(30)).max(10).optional(),
+  description: z.string().trim().max(200).optional(),
 })
 export type UpdateGroupInput = z.infer<typeof updateGroupSchema>
 
@@ -37,6 +39,7 @@ export interface ScoreBreakdown {
 export interface Group {
   id: string
   name: string
+  description: string | null
   tags: string[]
   isPublic: boolean
   score: number

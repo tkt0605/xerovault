@@ -26,6 +26,9 @@
                   <Icon name="edit" :size="15" />
                 </button>
               </div>
+              <p v-if="group.description" class="mt-0.5 text-sm text-ink-soft">
+                {{ group.description }}
+              </p>
               <p v-if="group.tags.length" class="mt-0.5 text-sm text-ink-soft">
                 {{ group.tags.map((t) => `#${t}`).join(' ') }}
               </p>
@@ -283,6 +286,12 @@
           <h2 class="mb-4 font-serif text-lg font-medium text-ink">グループを編集</h2>
           <form class="space-y-3" @submit.prevent="handleEditGroup">
             <BaseInput v-model="editForm.name" placeholder="グループ名 *" required />
+            <BaseTextarea
+              v-model="editForm.description"
+              placeholder="グループの説明（任意・200文字まで）"
+              rows="2"
+              maxlength="200"
+            />
             <BaseInput v-model="editForm.tagsInput" placeholder="タグ（カンマ区切りで複数入力可・任意）" />
             <div class="flex gap-2 pt-2">
               <BaseButton
@@ -394,7 +403,7 @@ function isSharedTag(tag: string): boolean {
 }
 const showEditGroup = ref(false)
 const savingGroup = ref(false)
-const editForm = ref({ name: '', tagsInput: '' })
+const editForm = ref({ name: '', description: '', tagsInput: '' })
 
 const showBreakdown = ref(false)
 const breakdown = ref<ScoreBreakdown | null>(null)
@@ -462,7 +471,11 @@ async function handleRemoveMember(memberId: string) {
 
 function openEditDialog() {
   if (!group.value) return
-  editForm.value = { name: group.value.name, tagsInput: group.value.tags.join(', ') }
+  editForm.value = {
+    name: group.value.name,
+    description: group.value.description ?? '',
+    tagsInput: group.value.tags.join(', '),
+  }
   showEditGroup.value = true
 }
 
@@ -471,6 +484,7 @@ async function handleEditGroup() {
   try {
     group.value = await groupStore.updateGroup(route.params.id as string, {
       name: editForm.value.name,
+      description: editForm.value.description,
       tags: parseTags(editForm.value.tagsInput),
     })
     showEditGroup.value = false

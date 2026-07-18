@@ -24,6 +24,7 @@ export const useGroupStore = defineStore('group', () => {
       p_name: data.name,
       p_tags: data.tags ?? [],
       p_is_public: data.isPublic ?? false,
+      p_description: data.description ?? null,
     })
     groups.value.unshift(g)
     return g
@@ -34,6 +35,7 @@ export const useGroupStore = defineStore('group', () => {
       p_group_id: groupId,
       p_name: data.name ?? null,
       p_tags: data.tags ?? null,
+      p_description: data.description ?? null,
     })
     if (current.value?.id === groupId) current.value = g
     groups.value = groups.value.map((x) => (x.id === g.id ? g : x))

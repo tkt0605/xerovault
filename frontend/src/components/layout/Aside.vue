@@ -68,6 +68,12 @@
             <h2 class="mb-4 font-serif text-lg font-medium text-ink">グループを作成</h2>
             <form class="space-y-3" @submit.prevent="handleCreate">
               <BaseInput v-model="form.name" placeholder="グループ名 *" required />
+              <BaseTextarea
+                v-model="form.description"
+                placeholder="グループの説明（任意・200文字まで）"
+                rows="2"
+                maxlength="200"
+              />
               <BaseInput v-model="form.tagsInput" placeholder="タグ（カンマ区切りで複数入力可・任意）" />
               <label class="flex cursor-pointer items-center gap-2 text-sm text-ink-soft">
                 <input v-model="form.isPublic" type="checkbox" class="rounded" />
@@ -123,6 +129,7 @@ import Icon from '@/components/ui/Icon.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
+import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 
 const auth = useAuthStore()
 const ui = useUiStore()
@@ -131,7 +138,7 @@ const route = useRoute()
 const router = useRouter()
 const creating = ref(false)
 const error = ref('')
-const form = ref({ name: '', tagsInput: '', isPublic: false })
+const form = ref({ name: '', description: '', tagsInput: '', isPublic: false })
 
 onMounted(() => groupStore.fetchMyGroups())
 
@@ -141,11 +148,12 @@ async function handleCreate() {
   try {
     const g = await groupStore.createGroup({
       name: form.value.name,
+      description: form.value.description,
       tags: parseTags(form.value.tagsInput),
       isPublic: form.value.isPublic,
     })
     ui.showCreateGroupDialog = false
-    form.value = { name: '', tagsInput: '', isPublic: false }
+    form.value = { name: '', description: '', tagsInput: '', isPublic: false }
     router.push(`/group/${g.id}`)
   } catch (e: unknown) {
     error.value = e instanceof Error ? e.message : 'グループの作成に失敗しました'

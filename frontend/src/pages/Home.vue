@@ -75,6 +75,7 @@
             >
           </div>
         </div>
+        <p v-if="g.description" class="mb-2 truncate text-xs text-ink-soft">{{ g.description }}</p>
         <div class="flex items-center gap-4 text-xs text-ink-faint">
           <span>{{ g.members.length }}人</span>
           <span>{{ g._count?.goals ?? 0 }}ゴール</span>
