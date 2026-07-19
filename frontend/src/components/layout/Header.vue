@@ -66,7 +66,7 @@
               class="truncate text-sm"
               :class="n.readAt ? 'text-ink-soft' : 'font-medium text-ink'"
             >
-              [{{ n.groupName }}] {{ n.goalHeader || n.goalDescription }}
+              [{{ n.groupName }}] {{ notificationBody(n) }}
             </span>
             <span class="text-[11px] text-ink-faint">{{ formatDate(n.sentAt) }}</span>
           </button>
@@ -105,6 +105,14 @@ const KIND_LABEL: Record<NotificationKind, string> = {
   pending_vote: '投票のお願い',
   deadline_approaching: '締切間近',
   missed: '期限切れ',
+  reply: '返信',
+}
+
+function notificationBody(n: NotificationItem): string {
+  if (n.kind === 'reply') {
+    return `${n.replierName ?? '誰か'}さんから返信: ${n.replyText ?? ''}`
+  }
+  return n.goalHeader || n.goalDescription || ''
 }
 
 onMounted(() => {
@@ -123,7 +131,11 @@ async function toggleNotifications() {
 function goToNotification(n: NotificationItem) {
   showNotifications.value = false
   notification.markRead(n.id)
-  router.push(`/group/${n.groupId}/goal/${n.goalId}`)
+  if (n.kind === 'reply') {
+    router.push(`/group/${n.groupId}?section=posts`)
+  } else {
+    router.push(`/group/${n.groupId}/goal/${n.goalId}`)
+  }
 }
 
 function formatDate(d: string) {

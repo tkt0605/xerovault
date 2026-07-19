@@ -146,7 +146,7 @@
 
       <!-- ようこそ掲示板 -->
       <div v-if="activeSection === 'posts'" class="mb-6">
-        <h2 class="mb-3 font-semibold text-ink">ようこそ掲示板</h2>
+        <h2 class="mb-3 font-semibold text-ink">スレッド</h2>
         <form class="mb-3 flex gap-2" @submit.prevent="handlePost">
           <BaseInput
             v-model="postText"
@@ -465,9 +465,10 @@ type SectionKey = 'posts' | 'members' | 'goals'
 const sections: { key: SectionKey; label: string; icon: IconName }[] = [
   { key: 'goals', label: 'ゴール一覧', icon: 'target' },
   { key: 'members', label: 'メンバー', icon: 'users' },
-  { key: 'posts', label: '掲示板', icon: 'send' },
+  { key: 'posts', label: 'スレッド', icon: 'send' },
 ]
-const activeSection = ref<SectionKey>('goals')
+const initialSection = sections.find((s) => s.key === route.query.section)?.key ?? 'goals'
+const activeSection = ref<SectionKey>(initialSection)
 function toggleSection(key: SectionKey): void {
   activeSection.value = key
 }
