@@ -44,7 +44,7 @@
         <BaseTextarea
           v-model="form.bio"
           placeholder="自己紹介(160文字まで・任意)"
-          rows="3"
+          rows="5"
           maxlength="160"
         />
         <TagAutocompleteInput
@@ -58,7 +58,7 @@
         </div>
       </form>
 
-      <div class="mt-3 rounded-control bg-paper-sunken p-3">
+      <!-- <div class="mt-3 rounded-control bg-paper-sunken p-3">
         <p class="mb-1 text-xs font-semibold text-ink-faint">他のメンバーに表示される内容</p>
         <p class="text-xs" :class="form.bio ? 'text-ink-soft' : 'italic text-ink-faint'">
           {{ form.bio || '自己紹介はまだありません' }}
@@ -69,7 +69,7 @@
           </template>
           <span v-else class="text-xs italic text-ink-faint">興味タグ未設定</span>
         </div>
-      </div>
+      </div> -->
     </BaseCard>
 
     <BaseCard>
