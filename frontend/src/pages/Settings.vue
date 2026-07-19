@@ -6,7 +6,9 @@
       <h2 class="mb-3 font-semibold text-ink">実績</h2>
       <div class="grid grid-cols-2 gap-3 text-center">
         <div class="rounded-control bg-paper-sunken p-3">
-          <p class="font-serif text-2xl font-medium text-accent">{{ stats?.completedGoalsCount ?? '-' }}</p>
+          <p class="font-serif text-2xl font-medium text-accent">
+            {{ stats?.completedGoalsCount ?? '-' }}
+          </p>
           <p class="mt-0.5 text-xs text-ink-faint">達成したゴール</p>
         </div>
         <div class="rounded-control bg-paper-sunken p-3">
@@ -126,7 +128,7 @@ const planLimitLabels: Record<typeof plan.value, string> = {
   enterprise: '無制限',
 }
 const ownedGroupCount = computed(
-  () => groupStore.groups.filter((g) => g.owner.id === authStore.user?.id).length,
+  () => groupStore.groups.filter((g) => g.owner.id === authStore.user?.id).length
 )
 
 const participationRate = computed(() => {
