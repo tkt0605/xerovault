@@ -50,16 +50,20 @@
               class="absolute right-0 top-full z-10 mt-2 w-56 rounded-surface border border-line bg-paper-raised p-3 text-left shadow-card"
             >
               <div v-if="breakdown" class="space-y-1 text-xs text-ink-soft">
-                <div class="flex justify-between"><span>基本</span><span>{{ breakdown.base }}</span></div>
                 <div class="flex justify-between">
-                  <span>達成による加点</span><span class="text-good">+{{ breakdown.completedPoints }}</span>
+                  <span>基本</span><span>{{ breakdown.base }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>達成による加点</span
+                  ><span class="text-good">+{{ breakdown.completedPoints }}</span>
                 </div>
                 <div v-if="breakdown.missedCount > 0" class="flex justify-between">
                   <span>未達成（{{ breakdown.missedCount }}件）</span
                   ><span class="text-bad">-{{ breakdown.missedPenalty }}</span>
                 </div>
                 <div v-if="breakdown.streakBonus > 0" class="flex justify-between">
-                  <span>連続達成ボーナス</span><span class="text-good">+{{ breakdown.streakBonus }}</span>
+                  <span>連続達成ボーナス</span
+                  ><span class="text-good">+{{ breakdown.streakBonus }}</span>
                 </div>
                 <div
                   class="mt-1.5 flex justify-between border-t border-line pt-1.5 font-semibold text-ink"
@@ -191,7 +195,9 @@
                     <p class="truncate text-xs font-semibold text-ink">
                       {{ r.author.name ?? r.author.email }}
                     </p>
-                    <span class="text-xs text-ink-faint">{{ formatRelativeTime(r.createdAt) }}</span>
+                    <span class="text-xs text-ink-faint">{{
+                      formatRelativeTime(r.createdAt)
+                    }}</span>
                   </div>
                   <p class="whitespace-pre-wrap text-xs text-ink-soft">{{ r.text }}</p>
                 </div>
@@ -235,7 +241,11 @@
               </p>
               <div class="mt-1 flex flex-wrap items-center gap-1">
                 <template v-if="m.interestTags.length">
-                  <Badge v-for="t in m.interestTags" :key="t" :variant="isSharedTag(t) ? 'good' : 'info'">
+                  <Badge
+                    v-for="t in m.interestTags"
+                    :key="t"
+                    :variant="isSharedTag(t) ? 'good' : 'info'"
+                  >
                     #{{ t }}
                   </Badge>
                 </template>
@@ -319,7 +329,10 @@
 
     <!-- グループ編集ダイアログ（オーナーのみ） -->
     <Teleport to="body">
-      <div v-if="showEditGroup" class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4">
+      <div
+        v-if="showEditGroup"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+      >
         <BaseCard class="w-full max-w-md shadow-modal">
           <h2 class="mb-4 font-serif text-lg font-medium text-ink">グループを編集</h2>
           <form class="space-y-3" @submit.prevent="handleEditGroup">
@@ -389,7 +402,9 @@
                 class="flex items-center gap-2 rounded-control px-2 py-1.5 hover:bg-paper-sunken"
               >
                 <Avatar :name="m.name ?? '(不明)'" :size="24" />
-                <span class="min-w-0 flex-1 truncate text-sm text-ink-soft">{{ m.name ?? '(不明)' }}</span>
+                <span class="min-w-0 flex-1 truncate text-sm text-ink-soft">{{
+                  m.name ?? '(不明)'
+                }}</span>
                 <button
                   class="shrink-0 text-xs text-ink-faint underline transition-colors hover:text-ink"
                   @click="handleUnban(m.id)"

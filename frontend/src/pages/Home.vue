@@ -19,7 +19,10 @@
       </div>
     </div>
 
-    <div v-if="!groupStore.groups.length" class="rounded-surface border border-line bg-paper-raised p-8 text-center">
+    <div
+      v-if="!groupStore.groups.length"
+      class="rounded-surface border border-line bg-paper-raised p-8 text-center"
+    >
       <Icon name="target" :size="32" class="mx-auto mb-4 text-accent" />
       <h2 class="mb-2 font-serif text-lg font-medium text-ink">Xerovaultへようこそ</h2>
       <p class="mx-auto mb-6 max-w-sm text-sm text-ink-soft">

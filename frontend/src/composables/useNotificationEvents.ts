@@ -7,7 +7,12 @@ export function useNotificationEvents(userId: string, onInsert: () => void): voi
     .channel(`notification:${userId}`)
     .on(
       'postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'notification_log', filter: `user_id=eq.${userId}` },
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notification_log',
+        filter: `user_id=eq.${userId}`,
+      },
       () => onInsert()
     )
     .subscribe()

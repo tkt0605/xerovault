@@ -62,7 +62,10 @@
             >
               {{ KIND_LABEL[n.kind] }}
             </span>
-            <span class="truncate text-sm" :class="n.readAt ? 'text-ink-soft' : 'font-medium text-ink'">
+            <span
+              class="truncate text-sm"
+              :class="n.readAt ? 'text-ink-soft' : 'font-medium text-ink'"
+            >
               [{{ n.groupName }}] {{ n.goalHeader || n.goalDescription }}
             </span>
             <span class="text-[11px] text-ink-faint">{{ formatDate(n.sentAt) }}</span>

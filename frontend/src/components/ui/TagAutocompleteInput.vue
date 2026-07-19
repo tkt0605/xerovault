@@ -55,9 +55,7 @@ const suggestions = computed(() => {
       .map((t) => t.trim())
       .filter(Boolean)
   )
-  return allTags.value
-    .filter((t) => t.tag.includes(fragment) && !selected.has(t.tag))
-    .slice(0, 8)
+  return allTags.value.filter((t) => t.tag.includes(fragment) && !selected.has(t.tag)).slice(0, 8)
 })
 
 function selectSuggestion(tag: string): void {

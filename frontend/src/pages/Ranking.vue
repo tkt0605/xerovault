@@ -15,7 +15,10 @@
     </button>
     <div v-else class="mb-4" />
 
-    <p v-if="!groups.length" class="rounded-surface border border-line bg-paper-raised p-6 text-center text-sm text-ink-faint">
+    <p
+      v-if="!groups.length"
+      class="rounded-surface border border-line bg-paper-raised p-6 text-center text-sm text-ink-faint"
+    >
       該当する公開グループはありません
     </p>
     <div v-else class="space-y-2">

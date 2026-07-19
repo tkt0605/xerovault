@@ -173,12 +173,20 @@
 
     <!-- ゴール編集ダイアログ -->
     <Teleport to="body">
-      <div v-if="showEditGoal" class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4">
+      <div
+        v-if="showEditGoal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+      >
         <BaseCard class="w-full max-w-md shadow-modal">
           <h2 class="mb-4 font-serif text-lg font-medium text-ink">ゴールを編集</h2>
           <form class="space-y-3" @submit.prevent="handleEditGoal">
             <BaseInput v-model="editForm.header" placeholder="タイトル（任意）" />
-            <BaseTextarea v-model="editForm.description" placeholder="ゴールの内容 *" required rows="3" />
+            <BaseTextarea
+              v-model="editForm.description"
+              placeholder="ゴールの内容 *"
+              required
+              rows="3"
+            />
             <BaseInput v-model="editForm.deadline" type="datetime-local" />
             <select
               v-model="editForm.assigneeId"
