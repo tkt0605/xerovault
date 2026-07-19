@@ -49,3 +49,15 @@ jobs:
       - run: pnpm run format:check
       - run: npx vue-tsc --noEmit
       - run: pnpm run build
+
+  supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
+
+      - run: supabase start
+      - run: supabase test db supabase/tests/database --local
