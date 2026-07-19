@@ -6,5 +6,7 @@ export interface GroupPost {
   createdAt: string
   groupId: string
   authorId: string
+  parentPostId: string | null
   author: UserSummary
+  replies: GroupPost[]
 }

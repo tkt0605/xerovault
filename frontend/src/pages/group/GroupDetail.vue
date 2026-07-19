@@ -161,18 +161,56 @@
           <div
             v-for="p in groupPostStore.posts"
             :key="p.id"
-            class="flex gap-3 rounded-control bg-paper-sunken p-3"
+            class="rounded-control bg-paper-sunken p-3"
           >
-            <Avatar :name="p.author.name ?? p.author.email" :size="32" />
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-1.5">
-                <p class="truncate text-sm font-semibold text-ink">
-                  {{ p.author.name ?? p.author.email }}
-                </p>
-                <span class="text-xs text-ink-faint">{{ formatRelativeTime(p.createdAt) }}</span>
+            <div class="flex gap-3">
+              <Avatar :name="p.author.name ?? p.author.email" :size="32" />
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5">
+                  <p class="truncate text-sm font-semibold text-ink">
+                    {{ p.author.name ?? p.author.email }}
+                  </p>
+                  <span class="text-xs text-ink-faint">{{ formatRelativeTime(p.createdAt) }}</span>
+                </div>
+                <p class="mt-0.5 whitespace-pre-wrap text-sm text-ink-soft">{{ p.text }}</p>
+                <button
+                  type="button"
+                  class="mt-1 text-xs text-ink-faint transition-colors hover:text-ink"
+                  @click="toggleReply(p.id)"
+                >
+                  返信
+                </button>
               </div>
-              <p class="mt-0.5 whitespace-pre-wrap text-sm text-ink-soft">{{ p.text }}</p>
             </div>
+
+            <div v-if="p.replies.length" class="ml-11 mt-2 space-y-2 border-l-2 border-line pl-3">
+              <div v-for="r in p.replies" :key="r.id" class="flex gap-2">
+                <Avatar :name="r.author.name ?? r.author.email" :size="24" />
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5">
+                    <p class="truncate text-xs font-semibold text-ink">
+                      {{ r.author.name ?? r.author.email }}
+                    </p>
+                    <span class="text-xs text-ink-faint">{{ formatRelativeTime(r.createdAt) }}</span>
+                  </div>
+                  <p class="whitespace-pre-wrap text-xs text-ink-soft">{{ r.text }}</p>
+                </div>
+              </div>
+            </div>
+
+            <form
+              v-if="replyingTo === p.id"
+              class="ml-11 mt-2 flex gap-2"
+              @submit.prevent="handleReply(p.id)"
+            >
+              <BaseInput
+                v-model="replyText"
+                placeholder="返信する(280文字まで)"
+                maxlength="280"
+                class="flex-1"
+              />
+              <BaseButton type="submit" size="sm" :disabled="!replyText.trim()">送信</BaseButton>
+            </form>
           </div>
         </div>
       </div>
@@ -384,6 +422,8 @@ const addingGoal = ref(false)
 const goalForm = ref({ header: '', description: '', deadline: '', assigneeId: '' })
 const postText = ref('')
 const posting = ref(false)
+const replyingTo = ref<string | null>(null)
+const replyText = ref('')
 
 type SectionKey = 'posts' | 'members' | 'goals'
 const sections: { key: SectionKey; label: string; icon: IconName }[] = [
@@ -449,6 +489,18 @@ async function handlePost() {
   } finally {
     posting.value = false
   }
+}
+
+function toggleReply(postId: string): void {
+  replyingTo.value = replyingTo.value === postId ? null : postId
+  replyText.value = ''
+}
+
+async function handleReply(postId: string) {
+  if (!replyText.value.trim()) return
+  await groupPostStore.createPost(route.params.id as string, replyText.value, postId)
+  replyText.value = ''
+  replyingTo.value = null
 }
 
 async function handleInvite() {
