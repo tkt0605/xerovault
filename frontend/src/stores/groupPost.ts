@@ -1,34 +1,44 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { GroupPost } from '@xerovault/shared'
+import type { GroupThread, ThreadMessage } from '@xerovault/shared'
 import { rpc } from '@/lib/rpc'
 
 export const useGroupPostStore = defineStore('groupPost', () => {
-  const posts = ref<GroupPost[]>([])
+  const threads = ref<GroupThread[]>([])
+  const messages = ref<ThreadMessage[]>([])
 
-  async function fetchPosts(groupId: string): Promise<GroupPost[]> {
-    posts.value = await rpc<GroupPost[]>('get_group_posts', { p_group_id: groupId })
-    return posts.value
+  async function fetchThreads(groupId: string): Promise<GroupThread[]> {
+    threads.value = await rpc<GroupThread[]>('get_group_posts', { p_group_id: groupId })
+    return threads.value
   }
 
-  async function createPost(
-    groupId: string,
-    text: string,
-    parentPostId?: string
-  ): Promise<GroupPost> {
-    const post = await rpc<GroupPost>('create_group_post', {
+  async function createThread(groupId: string, text: string): Promise<ThreadMessage> {
+    const thread = await rpc<ThreadMessage>('create_group_post', {
       p_group_id: groupId,
       p_text: text,
-      p_parent_post_id: parentPostId ?? null,
     })
-    if (parentPostId) {
-      const parent = posts.value.find((p) => p.id === parentPostId)
-      if (parent) parent.replies = [...parent.replies, post]
-    } else {
-      posts.value.unshift(post)
-    }
-    return post
+    threads.value.unshift({ ...thread, replyCount: 0, lastMessageAt: thread.createdAt })
+    return thread
   }
 
-  return { posts, fetchPosts, createPost }
+  async function fetchMessages(threadId: string): Promise<ThreadMessage[]> {
+    messages.value = await rpc<ThreadMessage[]>('get_thread_messages', { p_post_id: threadId })
+    return messages.value
+  }
+
+  async function sendMessage(
+    groupId: string,
+    threadId: string,
+    text: string
+  ): Promise<ThreadMessage> {
+    const message = await rpc<ThreadMessage>('create_group_post', {
+      p_group_id: groupId,
+      p_text: text,
+      p_parent_post_id: threadId,
+    })
+    messages.value.push(message)
+    return message
+  }
+
+  return { threads, messages, fetchThreads, createThread, fetchMessages, sendMessage }
 })

@@ -132,7 +132,7 @@ function goToNotification(n: NotificationItem) {
   showNotifications.value = false
   notification.markRead(n.id)
   if (n.kind === 'reply') {
-    router.push(`/group/${n.groupId}?section=posts`)
+    router.push(`/group/${n.groupId}/thread/${n.postId}`)
   } else {
     router.push(`/group/${n.groupId}/goal/${n.goalId}`)
   }

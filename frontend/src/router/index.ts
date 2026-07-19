@@ -28,6 +28,10 @@ const router = createRouter({
       meta: { public: true },
     },
     { path: '/group/:id/goal/:goalId', component: () => import('@/pages/group/GoalDetail.vue') },
+    {
+      path: '/group/:id/thread/:threadId',
+      component: () => import('@/pages/group/ThreadDetail.vue'),
+    },
     { path: '/ranking', component: () => import('@/pages/Ranking.vue'), meta: { public: true } },
   ],
 })

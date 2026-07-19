@@ -144,80 +144,41 @@
         </button>
       </div>
 
-      <!-- ようこそ掲示板 -->
+      <!-- スレッド一覧 -->
       <div v-if="activeSection === 'posts'" class="mb-6">
-        <h2 class="mb-3 font-semibold text-ink">スレッド</h2>
-        <form class="mb-3 flex gap-2" @submit.prevent="handlePost">
-          <BaseInput
-            v-model="postText"
-            placeholder="ひとこと挨拶してみましょう(280文字まで)"
-            maxlength="280"
-            class="flex-1"
-          />
-          <BaseButton type="submit" :disabled="posting || !postText.trim()">
-            {{ posting ? '投稿中...' : '投稿' }}
+        <div class="mb-3 flex items-center justify-between">
+          <h2 class="font-semibold text-ink">スレッド</h2>
+          <BaseButton size="sm" @click="showNewThread = true">
+            <Icon name="plus" :size="13" />新規スレッド
           </BaseButton>
-        </form>
-        <div v-if="!groupPostStore.posts.length" class="py-6 text-center text-xs text-ink-faint">
-          まだ投稿がありません。最初のひとことを送ってみましょう
+        </div>
+        <div v-if="!groupPostStore.threads.length" class="py-6 text-center text-xs text-ink-faint">
+          まだスレッドがありません。最初のひとことを送ってみましょう
         </div>
         <div v-else class="space-y-2">
-          <div
-            v-for="p in groupPostStore.posts"
-            :key="p.id"
-            class="rounded-control bg-paper-sunken p-3"
+          <button
+            v-for="t in groupPostStore.threads"
+            :key="t.id"
+            type="button"
+            class="flex w-full items-center gap-3 rounded-control bg-paper-sunken p-3 text-left transition-colors hover:bg-paper-raised"
+            @click="router.push(`/group/${group.id}/thread/${t.id}`)"
           >
-            <div class="flex gap-3">
-              <Avatar :name="p.author.name ?? p.author.email" :size="32" />
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-1.5">
-                  <p class="truncate text-sm font-semibold text-ink">
-                    {{ p.author.name ?? p.author.email }}
-                  </p>
-                  <span class="text-xs text-ink-faint">{{ formatRelativeTime(p.createdAt) }}</span>
-                </div>
-                <p class="mt-0.5 whitespace-pre-wrap text-sm text-ink-soft">{{ p.text }}</p>
-                <button
-                  type="button"
-                  class="mt-1 text-xs text-ink-faint transition-colors hover:text-ink"
-                  @click="toggleReply(p.id)"
-                >
-                  返信
-                </button>
+            <Avatar :name="t.author.name ?? t.author.email" :size="36" />
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5">
+                <p class="truncate text-sm font-semibold text-ink">
+                  {{ t.author.name ?? t.author.email }}
+                </p>
+                <span class="text-xs text-ink-faint">{{
+                  formatRelativeTime(t.lastMessageAt)
+                }}</span>
               </div>
+              <p class="mt-0.5 truncate text-sm text-ink-soft">{{ t.text }}</p>
             </div>
-
-            <div v-if="p.replies.length" class="ml-11 mt-2 space-y-2 border-l-2 border-line pl-3">
-              <div v-for="r in p.replies" :key="r.id" class="flex gap-2">
-                <Avatar :name="r.author.name ?? r.author.email" :size="24" />
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-1.5">
-                    <p class="truncate text-xs font-semibold text-ink">
-                      {{ r.author.name ?? r.author.email }}
-                    </p>
-                    <span class="text-xs text-ink-faint">{{
-                      formatRelativeTime(r.createdAt)
-                    }}</span>
-                  </div>
-                  <p class="whitespace-pre-wrap text-xs text-ink-soft">{{ r.text }}</p>
-                </div>
-              </div>
-            </div>
-
-            <form
-              v-if="replyingTo === p.id"
-              class="ml-11 mt-2 flex gap-2"
-              @submit.prevent="handleReply(p.id)"
-            >
-              <BaseInput
-                v-model="replyText"
-                placeholder="返信する(280文字まで)"
-                maxlength="280"
-                class="flex-1"
-              />
-              <BaseButton type="submit" size="sm" :disabled="!replyText.trim()">送信</BaseButton>
-            </form>
-          </div>
+            <span v-if="t.replyCount > 0" class="shrink-0 text-xs text-ink-faint">
+              {{ t.replyCount }}件の返信
+            </span>
+          </button>
         </div>
       </div>
 
@@ -226,7 +187,7 @@
         <h2 class="mb-3 font-semibold text-ink">メンバー</h2>
         <div class="space-y-2">
           <div
-            v-for="m in group.members"
+            v-for="m in sortedMembers"
             :key="m.id"
             class="flex items-start gap-3 rounded-control bg-paper-sunken p-3"
           >
@@ -282,6 +243,43 @@
         </div>
       </div>
     </template>
+
+    <!-- 新規スレッド作成ダイアログ -->
+    <Teleport to="body">
+      <div
+        v-if="showNewThread"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+      >
+        <BaseCard class="w-full max-w-md shadow-modal">
+          <h2 class="mb-4 font-serif text-lg font-medium text-ink">新規スレッド</h2>
+          <form class="space-y-3" @submit.prevent="handleCreateThread">
+            <BaseInput
+              v-model="newThreadText"
+              placeholder="ひとこと挨拶してみましょう(280文字まで)"
+              maxlength="280"
+              required
+            />
+            <div class="flex gap-2 pt-2">
+              <BaseButton
+                type="button"
+                variant="ghost"
+                class="flex-1 justify-center"
+                @click="showNewThread = false"
+              >
+                キャンセル
+              </BaseButton>
+              <BaseButton
+                type="submit"
+                :disabled="creatingThread || !newThreadText.trim()"
+                class="flex-1 justify-center"
+              >
+                {{ creatingThread ? '作成中...' : '作成' }}
+              </BaseButton>
+            </div>
+          </form>
+        </BaseCard>
+      </div>
+    </Teleport>
 
     <!-- ゴール追加ダイアログ -->
     <Teleport to="body">
@@ -456,10 +454,9 @@ const inviteUrl = ref('')
 const showAddGoal = ref(false)
 const addingGoal = ref(false)
 const goalForm = ref({ header: '', description: '', deadline: '', assigneeId: '' })
-const postText = ref('')
-const posting = ref(false)
-const replyingTo = ref<string | null>(null)
-const replyText = ref('')
+const showNewThread = ref(false)
+const newThreadText = ref('')
+const creatingThread = ref(false)
 
 type SectionKey = 'posts' | 'members' | 'goals'
 const sections: { key: SectionKey; label: string; icon: IconName }[] = [
@@ -474,6 +471,15 @@ function toggleSection(key: SectionKey): void {
 }
 
 const isOwner = computed(() => group.value?.owner.id === authStore.user?.id)
+const sortedMembers = computed(() => {
+  if (!group.value) return []
+  const ownerId = group.value.owner.id
+  return [...group.value.members].sort((a, b) => {
+    if (a.id === ownerId) return -1
+    if (b.id === ownerId) return 1
+    return 0
+  })
+})
 const isMember = computed(
   () => group.value?.members.some((m) => m.id === authStore.user?.id) ?? false
 )
@@ -506,7 +512,7 @@ onMounted(async () => {
   const id = route.params.id as string
   group.value = await groupStore.fetchGroup(id)
   await goalStore.fetchGoals(id)
-  await groupPostStore.fetchPosts(id)
+  await groupPostStore.fetchThreads(id)
 
   if (authStore.user) {
     const { data } = await supabase
@@ -528,27 +534,17 @@ async function handleJoin() {
   }
 }
 
-async function handlePost() {
-  if (!postText.value.trim()) return
-  posting.value = true
+async function handleCreateThread() {
+  if (!newThreadText.value.trim()) return
+  creatingThread.value = true
   try {
-    await groupPostStore.createPost(route.params.id as string, postText.value)
-    postText.value = ''
+    const thread = await groupPostStore.createThread(route.params.id as string, newThreadText.value)
+    newThreadText.value = ''
+    showNewThread.value = false
+    router.push(`/group/${route.params.id}/thread/${thread.id}`)
   } finally {
-    posting.value = false
+    creatingThread.value = false
   }
-}
-
-function toggleReply(postId: string): void {
-  replyingTo.value = replyingTo.value === postId ? null : postId
-  replyText.value = ''
-}
-
-async function handleReply(postId: string) {
-  if (!replyText.value.trim()) return
-  await groupPostStore.createPost(route.params.id as string, replyText.value, postId)
-  replyText.value = ''
-  replyingTo.value = null
 }
 
 async function handleInvite() {
