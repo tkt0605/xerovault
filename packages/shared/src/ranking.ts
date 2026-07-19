@@ -8,7 +8,7 @@ export interface RankingGroup {
   score: number
   streak: number
   createdAt: string
-  owner: UserSummary
+  owner: Omit<UserSummary, 'email'>
   _count: { members: number; goals: number }
 }
 
