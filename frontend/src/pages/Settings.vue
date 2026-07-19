@@ -57,19 +57,6 @@
           </BaseButton>
         </div>
       </form>
-
-      <!-- <div class="mt-3 rounded-control bg-paper-sunken p-3">
-        <p class="mb-1 text-xs font-semibold text-ink-faint">他のメンバーに表示される内容</p>
-        <p class="text-xs" :class="form.bio ? 'text-ink-soft' : 'italic text-ink-faint'">
-          {{ form.bio || '自己紹介はまだありません' }}
-        </p>
-        <div class="mt-1 flex flex-wrap items-center gap-1">
-          <template v-if="previewTags.length">
-            <Badge v-for="t in previewTags" :key="t">#{{ t }}</Badge>
-          </template>
-          <span v-else class="text-xs italic text-ink-faint">興味タグ未設定</span>
-        </div>
-      </div> -->
     </BaseCard>
 
     <BaseCard>
@@ -100,7 +87,6 @@ import { supabase } from '@/lib/supabase'
 import { rpc } from '@/lib/rpc'
 import { parseTags } from '@/lib/tags'
 import Avatar from '@/components/ui/Avatar.vue'
-import Badge from '@/components/ui/Badge.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseTextarea from '@/components/ui/BaseTextarea.vue'
@@ -135,8 +121,6 @@ const participationRate = computed(() => {
   if (!stats.value || stats.value.totalVotableGoals === 0) return null
   return Math.round((stats.value.votedGoalsCount / stats.value.totalVotableGoals) * 100)
 })
-
-const previewTags = computed(() => parseTags(form.value.tagsInput))
 
 onMounted(async () => {
   if (!authStore.user) return
