@@ -85,7 +85,7 @@
           <button
             v-if="isOwner"
             class="text-xs text-ink-faint transition-colors hover:text-ink"
-            @click="showManageMembers = true"
+            @click="openManageMembers"
           >
             管理
           </button>
@@ -379,6 +379,27 @@
               </button>
             </div>
           </div>
+
+          <template v-if="bannedMembers.length">
+            <h3 class="mb-2 mt-4 text-xs font-medium text-ink-faint">除名済み(再参加不可)</h3>
+            <div class="max-h-40 space-y-1 overflow-y-auto">
+              <div
+                v-for="m in bannedMembers"
+                :key="m.id"
+                class="flex items-center gap-2 rounded-control px-2 py-1.5 hover:bg-paper-sunken"
+              >
+                <Avatar :name="m.name ?? '(不明)'" :size="24" />
+                <span class="min-w-0 flex-1 truncate text-sm text-ink-soft">{{ m.name ?? '(不明)' }}</span>
+                <button
+                  class="shrink-0 text-xs text-ink-faint underline transition-colors hover:text-ink"
+                  @click="handleUnban(m.id)"
+                >
+                  解除
+                </button>
+              </div>
+            </div>
+          </template>
+
           <div class="flex justify-end pt-4">
             <BaseButton variant="ghost" @click="showManageMembers = false">閉じる</BaseButton>
           </div>
@@ -391,7 +412,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { ScoreBreakdown } from '@xerovault/shared'
+import type { ScoreBreakdown, BannedMember } from '@xerovault/shared'
 import { useAuthStore } from '@/stores/auth'
 import { useGroupStore } from '@/stores/group'
 import { useGoalStore } from '@/stores/goal'
@@ -453,6 +474,17 @@ const showBreakdown = ref(false)
 const breakdown = ref<ScoreBreakdown | null>(null)
 
 const showManageMembers = ref(false)
+const bannedMembers = ref<BannedMember[]>([])
+
+async function openManageMembers() {
+  showManageMembers.value = true
+  bannedMembers.value = await groupStore.fetchBannedMembers(route.params.id as string)
+}
+
+async function handleUnban(userId: string) {
+  await groupStore.unbanMember(route.params.id as string, userId)
+  bannedMembers.value = bannedMembers.value.filter((m) => m.id !== userId)
+}
 
 onMounted(async () => {
   const id = route.params.id as string
@@ -520,9 +552,10 @@ async function toggleBreakdown() {
 }
 
 async function handleRemoveMember(memberId: string) {
-  if (!confirm('このメンバーをグループから除名しますか?')) return
+  if (!confirm('このメンバーをグループから除名しますか?再参加もできなくなります。')) return
   await groupStore.removeMember(route.params.id as string, memberId)
   group.value = groupStore.current
+  bannedMembers.value = await groupStore.fetchBannedMembers(route.params.id as string)
 }
 
 function openEditDialog() {

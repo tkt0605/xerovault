@@ -11,3 +11,10 @@ export interface GroupMember extends UserSummary {
   completedGoalsCount: number
   lastActiveAt: string | null
 }
+
+export interface BannedMember {
+  id: string
+  name: string | null
+  avatar: string | null
+  bannedAt: string
+}

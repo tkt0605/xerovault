@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Group, CreateGroupInput, UpdateGroupInput, ScoreBreakdown } from '@xerovault/shared'
+import type {
+  Group,
+  CreateGroupInput,
+  UpdateGroupInput,
+  ScoreBreakdown,
+  BannedMember,
+} from '@xerovault/shared'
 import { rpc } from '@/lib/rpc'
 
 export type { Group }
@@ -66,6 +72,14 @@ export const useGroupStore = defineStore('group', () => {
     return await rpc<ScoreBreakdown>('get_score_breakdown', { p_group_id: groupId })
   }
 
+  async function fetchBannedMembers(groupId: string): Promise<BannedMember[]> {
+    return await rpc<BannedMember[]>('get_banned_members', { p_group_id: groupId })
+  }
+
+  async function unbanMember(groupId: string, userId: string): Promise<void> {
+    await rpc('unban_member', { p_group_id: groupId, p_user_id: userId })
+  }
+
   return {
     groups,
     current,
@@ -77,5 +91,7 @@ export const useGroupStore = defineStore('group', () => {
     joinGroup,
     removeMember,
     fetchScoreBreakdown,
+    fetchBannedMembers,
+    unbanMember,
   }
 })
