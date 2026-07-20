@@ -42,7 +42,7 @@
 ### 開発/CI
 - Docker Compose(make devでfrontendコンテナ起動、ポート5173)
 - GitHub Actions CI(.github/workflows/ci.yml): shared側tsc --noEmit、frontend側 lint/format:check/vue-tsc/build
-- .devcontainer/devcontainer.json は旧Python/Expressバックエンド向けの設定が残っており、現状の構成と食い違っている(要整理)
+- .devcontainer/devcontainer.json はfrontendサービス(Node/pnpm)向けに整理済み
 
 ## 規約
 - PR/ブランチ運用: mainへの直push禁止、ブランチ命名規則、レビュー必須の有無
