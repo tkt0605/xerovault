@@ -97,16 +97,13 @@ function isMine(msg: ThreadMessage): boolean {
   return msg.authorId === authStore.user?.id
 }
 
-// URLのthreadIdはスレッド内の任意のメッセージid(ルートでも返信でも良い)。
-// get_thread_messagesが内部でルートへ解決するため、リアルタイム購読や
-// 送信先には、取得結果から分かる実際のルートid(rootMessage.id)を使う。
-const requestedId = route.params.threadId as string
+// URLのthreadIdは常にスレッドのルートid(get_group_postsの一覧・
+// get_my_notificationsの通知のいずれも、ルートidを返す設計に揃えてある)。
+const currentThreadId = route.params.threadId as string
+useThreadEvents(currentThreadId, () => groupPostStore.fetchMessages(currentThreadId))
 
 onMounted(async () => {
-  await groupPostStore.fetchMessages(requestedId)
-  if (rootMessage.value) {
-    useThreadEvents(rootMessage.value.id, () => groupPostStore.fetchMessages(rootMessage.value!.id))
-  }
+  await groupPostStore.fetchMessages(currentThreadId)
   await nextTick()
   scrollToBottom()
 })
@@ -122,8 +119,8 @@ function scrollToBottom() {
 
 async function handleSend() {
   const text = newMessage.value.trim()
-  if (!text || !rootMessage.value) return
+  if (!text) return
   newMessage.value = ''
-  await groupPostStore.sendMessage(route.params.id as string, rootMessage.value.id, text)
+  await groupPostStore.sendMessage(route.params.id as string, currentThreadId, text)
 }
 </script>
