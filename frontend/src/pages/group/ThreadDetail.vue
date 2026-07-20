@@ -14,8 +14,11 @@
           スレッド一覧へ
         </button>
         <h1 class="truncate font-serif text-lg font-medium text-ink">
-          {{ rootMessage.author.name ?? rootMessage.author.email }}のスレッド
+          {{ rootMessage.text }}
         </h1>
+        <p class="mt-0.5 text-xs text-ink-faint">
+          {{ rootMessage.author.name ?? rootMessage.author.email }}が開始
+        </p>
       </div>
 
       <!-- メッセージ -->
