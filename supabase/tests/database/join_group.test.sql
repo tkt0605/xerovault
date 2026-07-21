@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap;
 
-select plan(5);
+select plan(6);
 
 -- テスト用ユーザー(handle_new_userトリガーでprofilesも自動作成される)
 insert into auth.users (id, email, encrypted_password, email_confirmed_at, aud, role)
@@ -26,9 +26,29 @@ select set_config(
   true
 );
 
-select lives_ok(
+select throws_ok(
   format('select public.join_group(%L::uuid, null)', :'jgpub_id'),
-  '公開グループはトークンなしで参加できる'
+  '22023',
+  '無効なトークンです',
+  '公開グループもトークンなしでは参加できない(0031でクローズドβ向けに0017の自己参加バイパスを閉じた)'
+);
+
+-- オーナーとして招待トークンを発行してから参加する
+select set_config(
+  'request.jwt.claims',
+  json_build_object('sub', '00000000-0000-0000-0000-000000000001', 'role', 'authenticated')::text,
+  true
+);
+select public.create_invite(:'jgpub_id'::uuid, 3600) as jgpub_token \gset
+
+select set_config(
+  'request.jwt.claims',
+  json_build_object('sub', '00000000-0000-0000-0000-000000000002', 'role', 'authenticated')::text,
+  true
+);
+select lives_ok(
+  format('select public.join_group(%L::uuid, %L)', :'jgpub_id', :'jgpub_token'),
+  '公開グループも有効なトークンがあれば参加できる'
 );
 
 select ok(
@@ -40,7 +60,7 @@ select ok(
 );
 
 select throws_ok(
-  format('select public.join_group(%L::uuid, null)', :'jgpub_id'),
+  format('select public.join_group(%L::uuid, %L)', :'jgpub_id', :'jgpub_token'),
   '23505',
   'すでに参加しています',
   'すでに参加済みの場合は再度参加できない'
@@ -60,6 +80,7 @@ select set_config(
   true
 );
 select public.remove_member(:'jgpub_id'::uuid, '00000000-0000-0000-0000-000000000002');
+select public.create_invite(:'jgpub_id'::uuid, 3600) as jgpub_token2 \gset
 
 select set_config(
   'request.jwt.claims',
@@ -67,10 +88,10 @@ select set_config(
   true
 );
 select throws_ok(
-  format('select public.join_group(%L::uuid, null)', :'jgpub_id'),
+  format('select public.join_group(%L::uuid, %L)', :'jgpub_id', :'jgpub_token2'),
   '42501',
   'このグループには参加できません',
-  '除名されたユーザーは公開グループに再参加できない(0026_group_bansの回帰テスト)'
+  '除名されたユーザーは有効なトークンがあっても公開グループに再参加できない(0026_group_bansの回帰テスト)'
 );
 
 select * from finish();

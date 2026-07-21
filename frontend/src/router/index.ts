@@ -27,12 +27,19 @@ const router = createRouter({
       component: () => import('@/pages/group/JoinGroup.vue'),
       meta: { public: true },
     },
+    {
+      path: '/group/:id/request',
+      component: () => import('@/pages/group/RequestJoin.vue'),
+      meta: { public: true },
+    },
     { path: '/group/:id/goal/:goalId', component: () => import('@/pages/group/GoalDetail.vue') },
     {
       path: '/group/:id/thread/:threadId',
       component: () => import('@/pages/group/ThreadDetail.vue'),
     },
-    { path: '/ranking', component: () => import('@/pages/Ranking.vue'), meta: { public: true } },
+    // クローズドβ期間中はグループ発見導線として隠す(Aside.vueのナビリンクも削除済み)。
+    // 復活させる場合はここのコメントを外すこと
+    // { path: '/ranking', component: () => import('@/pages/Ranking.vue'), meta: { public: true } },
   ],
 })
 

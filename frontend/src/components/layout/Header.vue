@@ -106,11 +106,23 @@ const KIND_LABEL: Record<NotificationKind, string> = {
   deadline_approaching: '締切間近',
   missed: '期限切れ',
   reply: '返信',
+  join_request: '参加リクエスト',
+  join_approved: '参加承認',
+  join_rejected: '参加見送り',
 }
 
 function notificationBody(n: NotificationItem): string {
   if (n.kind === 'reply') {
     return `${n.replierName ?? '誰か'}さんから返信: ${n.replyText ?? ''}`
+  }
+  if (n.kind === 'join_request') {
+    return `${n.requesterName ?? '誰か'}さんが参加をリクエストしました${n.joinRequestMessage ? `: ${n.joinRequestMessage}` : ''}`
+  }
+  if (n.kind === 'join_approved') {
+    return '参加リクエストが承認されました'
+  }
+  if (n.kind === 'join_rejected') {
+    return '参加リクエストは見送られました'
   }
   return n.goalHeader || n.goalDescription || ''
 }
@@ -133,6 +145,12 @@ function goToNotification(n: NotificationItem) {
   notification.markRead(n.id)
   if (n.kind === 'reply') {
     router.push(`/group/${n.groupId}/thread/${n.postId}`)
+  } else if (n.kind === 'join_request') {
+    router.push(`/group/${n.groupId}?section=members`)
+  } else if (n.kind === 'join_approved') {
+    router.push(`/group/${n.groupId}`)
+  } else if (n.kind === 'join_rejected') {
+    router.push('/')
   } else {
     router.push(`/group/${n.groupId}/goal/${n.goalId}`)
   }

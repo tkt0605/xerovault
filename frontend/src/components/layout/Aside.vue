@@ -25,15 +25,8 @@
           <Icon name="home" :size="15" />
           ホーム
         </RouterLink>
-        <RouterLink
-          to="/ranking"
-          class="flex items-center gap-2.5 rounded-control px-3 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-paper-raised hover:text-ink"
-          :class="{ 'bg-paper-raised text-ink shadow-card': route.path === '/ranking' }"
-          @click="ui.closeAsideOnMobile()"
-        >
-          <Icon name="ranking" :size="15" />
-          ランキング
-        </RouterLink>
+        <!-- クローズドβ期間中はランキング(グループ発見導線)を隠す。
+             復活させる場合はrouter/index.tsの/rankingルートも合わせて戻すこと -->
         <button
           class="flex w-full items-center gap-2.5 rounded-control px-3 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-paper-raised hover:text-ink"
           @click="ui.openCreateGroupDialog()"

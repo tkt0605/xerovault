@@ -11,11 +11,11 @@
 
 ## フェーズ1: ①招待制クローズドβをゴール管理アプリとして実装
 
-- [ ] `supabase/migrations/0017_public_group_self_join.sql` によりトークンなしで参加できる公開グループ導線(`is_public = true`)を閉じる(β期間中はグループ作成時のデフォルトを非公開にする)
-- [ ] `0016_public_tag_discovery.sql` の `get_rankings`/`get_public_tag_stats` によるランキング画面からの公開グループ発見導線を、β期間中は一時的に隠す
-- [ ] 招待の入り口に「選ばれた感」を出すUI/導線を追加する(現状 `create_invite`/`join_group` はトークン発行のみで、ウェイトリストや審査制のUIは存在しない)
-- [ ] 最初のクローズドβ対象クラスタを1つ確定する(タカトさん自身が原体験を持つジャンル: 読書メモ/ガジェットレビュー/個人開発者コミュニティ等)、10〜20人規模で招待
-- [ ] 成功指標(投稿頻度・リピート率)を計測できる状態にする — `frontend/src/lib/activity.ts` や `0018_member_activity.sql` の活動記録をダッシュボード化できないか検討(フォロワー数などの見た目の指標は追わない)
+- [x] `supabase/migrations/0017_public_group_self_join.sql` によりトークンなしで参加できる公開グループ導線(`is_public = true`)を閉じる(`0031_close_public_group_self_join.sql`で対応。グループ作成時のデフォルトは元々非公開だったため変更不要)
+- [x] `0016_public_tag_discovery.sql` の `get_rankings`/`get_public_tag_stats` によるランキング画面からの公開グループ発見導線を、β期間中は一時的に隠す(Aside.vue/router/Home.vueから導線を削除。DB側のRPCは復活しやすいよう残置)
+- [x] 招待の入り口に「選ばれた感」を出すUI/導線を追加する(`0032_group_join_requests.sql`で申請制ウェイトリストを実装。`/group/:id/request`から申請 → オーナーが承認/却下 → 通知)
+- [x] 最初のクローズドβ対象クラスタを確定: **個人開発者コミュニティ**。招待する具体的な10〜20人の選定・声かけはユーザー(タカトさん)側のタスクとして残る
+- [x] 成功指標(投稿頻度・リピート率)を計測できる状態にする(`0033_group_activity_stats.sql`の`get_group_activity_stats`でグループ内メンバーにも「活動」タブとして表示)
 
 ## フェーズ2: ②ビルダー発信のための素材化
 

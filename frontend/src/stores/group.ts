@@ -6,6 +6,9 @@ import type {
   UpdateGroupInput,
   ScoreBreakdown,
   BannedMember,
+  JoinRequestTarget,
+  GroupJoinRequest,
+  GroupActivityStats,
 } from '@xerovault/shared'
 import { rpc } from '@/lib/rpc'
 
@@ -80,6 +83,30 @@ export const useGroupStore = defineStore('group', () => {
     await rpc('unban_member', { p_group_id: groupId, p_user_id: userId })
   }
 
+  async function fetchJoinRequestTarget(groupId: string): Promise<JoinRequestTarget> {
+    return await rpc<JoinRequestTarget>('get_group_join_request_target', { p_group_id: groupId })
+  }
+
+  async function createJoinRequest(groupId: string, message: string): Promise<void> {
+    await rpc('create_join_request', { p_group_id: groupId, p_message: message || null })
+  }
+
+  async function fetchJoinRequests(groupId: string): Promise<GroupJoinRequest[]> {
+    return await rpc<GroupJoinRequest[]>('get_group_join_requests', { p_group_id: groupId })
+  }
+
+  async function approveJoinRequest(requestId: string): Promise<void> {
+    await rpc('approve_join_request', { p_request_id: requestId })
+  }
+
+  async function rejectJoinRequest(requestId: string): Promise<void> {
+    await rpc('reject_join_request', { p_request_id: requestId })
+  }
+
+  async function fetchActivityStats(groupId: string): Promise<GroupActivityStats> {
+    return await rpc<GroupActivityStats>('get_group_activity_stats', { p_group_id: groupId })
+  }
+
   return {
     groups,
     current,
@@ -93,5 +120,11 @@ export const useGroupStore = defineStore('group', () => {
     fetchScoreBreakdown,
     fetchBannedMembers,
     unbanMember,
+    fetchJoinRequestTarget,
+    createJoinRequest,
+    fetchJoinRequests,
+    approveJoinRequest,
+    rejectJoinRequest,
+    fetchActivityStats,
   }
 })

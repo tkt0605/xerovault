@@ -103,13 +103,21 @@
             招待リンク作成
           </BaseButton>
           <BaseButton
+            v-if="isOwner"
+            variant="outline"
+            size="sm"
+            :class="{ 'ml-auto': group.isPublic }"
+            @click="copyRequestLink"
+          >
+            参加リクエストリンク
+          </BaseButton>
+          <BaseButton
             v-if="!isMember && group.isPublic"
             size="sm"
             class="ml-auto"
-            :disabled="joining"
-            @click="handleJoin"
+            @click="router.push(`/group/${group.id}/request`)"
           >
-            {{ joining ? '参加中...' : '参加する' }}
+            参加をリクエストする
           </BaseButton>
         </div>
         <div
@@ -123,6 +131,13 @@
           >
             <Icon name="copy" :size="12" />コピー
           </button>
+        </div>
+        <div
+          v-if="requestUrl"
+          class="mt-3 flex items-center gap-2 rounded-control bg-paper-sunken p-3 text-xs text-ink-soft"
+        >
+          <span class="min-w-0 flex-1 break-all">{{ requestUrl }}</span>
+          <span class="shrink-0 text-accent">コピーしました</span>
         </div>
       </div>
 
@@ -218,6 +233,47 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- 活動 -->
+      <div v-if="activeSection === 'activity'" class="mb-6">
+        <h2 class="mb-3 font-semibold text-ink">活動</h2>
+        <div v-if="!activityStats" class="py-6 text-center text-xs text-ink-faint">
+          読み込み中...
+        </div>
+        <template v-else>
+          <div class="mb-4 rounded-control bg-paper-sunken p-3">
+            <p class="text-xs text-ink-faint">
+              リピート率(直近{{
+                activityStats.weeklyPostCounts.length
+              }}週間のうち2週以上投稿した人の割合)
+            </p>
+            <p class="mt-1 font-serif text-2xl font-medium text-accent">
+              {{ Math.round(activityStats.repeatRate * 100) }}%
+            </p>
+          </div>
+          <p class="mb-2 text-xs text-ink-faint">週次投稿数</p>
+          <div class="space-y-1.5">
+            <div
+              v-for="w in activityStats.weeklyPostCounts"
+              :key="w.weekStart"
+              class="flex items-center gap-2"
+            >
+              <span class="w-16 shrink-0 text-xs text-ink-faint">{{
+                formatWeek(w.weekStart)
+              }}</span>
+              <div class="h-3 flex-1 overflow-hidden rounded-full bg-paper-sunken">
+                <div
+                  class="h-full rounded-full bg-accent"
+                  :style="{
+                    width: `${maxWeeklyCount > 0 ? (w.count / maxWeeklyCount) * 100 : 0}%`,
+                  }"
+                />
+              </div>
+              <span class="w-6 shrink-0 text-right text-xs text-ink-soft">{{ w.count }}</span>
+            </div>
+          </div>
+        </template>
       </div>
 
       <!-- ゴール一覧 -->
@@ -371,6 +427,40 @@
       >
         <BaseCard class="w-full max-w-md shadow-modal">
           <h2 class="mb-4 font-serif text-lg font-medium text-ink">メンバー管理</h2>
+
+          <template v-if="joinRequests.length">
+            <h3 class="mb-2 text-xs font-medium text-ink-faint">参加リクエスト</h3>
+            <div class="mb-4 max-h-60 space-y-2 overflow-y-auto">
+              <div
+                v-for="r in joinRequests"
+                :key="r.id"
+                class="rounded-control bg-paper-sunken p-2"
+              >
+                <div class="flex items-center gap-2">
+                  <Avatar :name="r.user.name ?? r.user.email" :size="28" />
+                  <span class="min-w-0 flex-1 truncate text-sm text-ink">{{
+                    r.user.name ?? r.user.email
+                  }}</span>
+                  <button
+                    class="shrink-0 text-xs font-medium text-accent hover:underline"
+                    @click="handleApproveRequest(r.id)"
+                  >
+                    承認
+                  </button>
+                  <button
+                    class="shrink-0 text-xs text-ink-faint underline transition-colors hover:text-bad"
+                    @click="handleRejectRequest(r.id)"
+                  >
+                    却下
+                  </button>
+                </div>
+                <p v-if="r.message" class="mt-1 truncate pl-9 text-xs text-ink-soft">
+                  {{ r.message }}
+                </p>
+              </div>
+            </div>
+          </template>
+
           <div class="max-h-80 space-y-1 overflow-y-auto">
             <div
               v-for="m in group?.members"
@@ -425,7 +515,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { ScoreBreakdown, BannedMember } from '@xerovault/shared'
+import type {
+  ScoreBreakdown,
+  BannedMember,
+  GroupJoinRequest,
+  GroupActivityStats,
+} from '@xerovault/shared'
 import { useAuthStore } from '@/stores/auth'
 import { useGroupStore } from '@/stores/group'
 import { useGoalStore } from '@/stores/goal'
@@ -451,6 +546,7 @@ const goalStore = useGoalStore()
 const groupPostStore = useGroupPostStore()
 const group = ref(groupStore.current)
 const inviteUrl = ref('')
+const requestUrl = ref('')
 const showAddGoal = ref(false)
 const addingGoal = ref(false)
 const goalForm = ref({ header: '', description: '', deadline: '', assigneeId: '' })
@@ -458,16 +554,28 @@ const showNewThread = ref(false)
 const newThreadText = ref('')
 const creatingThread = ref(false)
 
-type SectionKey = 'posts' | 'members' | 'goals'
+type SectionKey = 'posts' | 'members' | 'goals' | 'activity'
 const sections: { key: SectionKey; label: string; icon: IconName }[] = [
   { key: 'goals', label: 'ゴール一覧', icon: 'target' },
   { key: 'members', label: 'メンバー', icon: 'users' },
   { key: 'posts', label: 'スレッド', icon: 'send' },
+  { key: 'activity', label: '活動', icon: 'ranking' },
 ]
 const initialSection = sections.find((s) => s.key === route.query.section)?.key ?? 'goals'
 const activeSection = ref<SectionKey>(initialSection)
-function toggleSection(key: SectionKey): void {
+const activityStats = ref<GroupActivityStats | null>(null)
+const maxWeeklyCount = computed(() =>
+  Math.max(0, ...(activityStats.value?.weeklyPostCounts.map((w) => w.count) ?? [0]))
+)
+function formatWeek(weekStart: string): string {
+  const d = new Date(weekStart)
+  return `${d.getMonth() + 1}/${d.getDate()}`
+}
+async function toggleSection(key: SectionKey): Promise<void> {
   activeSection.value = key
+  if (key === 'activity' && !activityStats.value) {
+    activityStats.value = await groupStore.fetchActivityStats(route.params.id as string)
+  }
 }
 
 const isOwner = computed(() => group.value?.owner.id === authStore.user?.id)
@@ -483,7 +591,6 @@ const sortedMembers = computed(() => {
 const isMember = computed(
   () => group.value?.members.some((m) => m.id === authStore.user?.id) ?? false
 )
-const joining = ref(false)
 const myInterestTags = ref<string[]>([])
 function isSharedTag(tag: string): boolean {
   return myInterestTags.value.includes(tag)
@@ -497,15 +604,28 @@ const breakdown = ref<ScoreBreakdown | null>(null)
 
 const showManageMembers = ref(false)
 const bannedMembers = ref<BannedMember[]>([])
+const joinRequests = ref<GroupJoinRequest[]>([])
 
 async function openManageMembers() {
   showManageMembers.value = true
   bannedMembers.value = await groupStore.fetchBannedMembers(route.params.id as string)
+  joinRequests.value = await groupStore.fetchJoinRequests(route.params.id as string)
 }
 
 async function handleUnban(userId: string) {
   await groupStore.unbanMember(route.params.id as string, userId)
   bannedMembers.value = bannedMembers.value.filter((m) => m.id !== userId)
+}
+
+async function handleApproveRequest(requestId: string) {
+  await groupStore.approveJoinRequest(requestId)
+  joinRequests.value = joinRequests.value.filter((r) => r.id !== requestId)
+  group.value = await groupStore.fetchGroup(route.params.id as string)
+}
+
+async function handleRejectRequest(requestId: string) {
+  await groupStore.rejectJoinRequest(requestId)
+  joinRequests.value = joinRequests.value.filter((r) => r.id !== requestId)
 }
 
 onMounted(async () => {
@@ -522,17 +642,11 @@ onMounted(async () => {
       .single()
     myInterestTags.value = data?.interest_tags ?? []
   }
-})
 
-async function handleJoin() {
-  joining.value = true
-  try {
-    group.value = await groupStore.joinGroup(route.params.id as string)
-    await goalStore.fetchGoals(route.params.id as string)
-  } finally {
-    joining.value = false
+  if (activeSection.value === 'activity') {
+    activityStats.value = await groupStore.fetchActivityStats(id)
   }
-}
+})
 
 async function handleCreateThread() {
   if (!newThreadText.value.trim()) return
@@ -554,6 +668,12 @@ async function handleInvite() {
 
 function copyInvite() {
   navigator.clipboard.writeText(inviteUrl.value)
+}
+
+function copyRequestLink() {
+  const id = route.params.id as string
+  requestUrl.value = `${window.location.origin}/group/${id}/request`
+  navigator.clipboard.writeText(requestUrl.value)
 }
 
 async function toggleBreakdown() {

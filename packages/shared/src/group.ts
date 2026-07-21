@@ -36,6 +36,26 @@ export interface ScoreBreakdown {
   total: number
 }
 
+export interface JoinRequestTarget {
+  id: string
+  name: string
+  description: string | null
+  tags: string[]
+  myRequestStatus: 'pending' | 'approved' | 'rejected' | null
+}
+
+export interface GroupJoinRequest {
+  id: string
+  user: UserSummary
+  message: string | null
+  createdAt: string
+}
+
+export interface GroupActivityStats {
+  weeklyPostCounts: { weekStart: string; count: number }[]
+  repeatRate: number
+}
+
 export interface Group {
   id: string
   name: string
