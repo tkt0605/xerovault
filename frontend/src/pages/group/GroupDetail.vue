@@ -120,17 +120,26 @@
             参加をリクエストする
           </BaseButton>
         </div>
-        <div
-          v-if="inviteUrl"
-          class="mt-3 flex items-center gap-2 rounded-control bg-paper-sunken p-3 text-xs text-ink-soft"
-        >
-          <span class="min-w-0 flex-1 break-all">{{ inviteUrl }}</span>
-          <button
-            class="flex shrink-0 items-center gap-1 text-accent hover:underline"
-            @click="copyInvite"
+        <div v-if="invites.length" class="mt-3 space-y-2">
+          <div
+            v-for="inv in invites"
+            :key="inv.id"
+            class="flex items-center gap-2 rounded-control bg-paper-sunken p-3 text-xs text-ink-soft"
           >
-            <Icon name="copy" :size="12" />コピー
-          </button>
+            <span class="min-w-0 flex-1 break-all">{{ inv.url }}</span>
+            <button
+              class="flex shrink-0 items-center gap-1 text-accent hover:underline"
+              @click="copyInvite(inv.url)"
+            >
+              <Icon name="copy" :size="12" />コピー
+            </button>
+            <button
+              class="shrink-0 text-ink-faint underline transition-colors hover:text-bad"
+              @click="handleRevokeInvite(inv.id)"
+            >
+              失効
+            </button>
+          </div>
         </div>
         <div
           v-if="requestUrl"
@@ -527,6 +536,7 @@ import { useGoalStore } from '@/stores/goal'
 import { useGroupPostStore } from '@/stores/groupPost'
 import { parseTags } from '@/lib/tags'
 import { isStagnant, formatLastActive, formatRelativeTime } from '@/lib/activity'
+import { copyToClipboard } from '@/utils/clipboard'
 import { supabase } from '@/lib/supabase'
 import GoalCard from '@/components/goal/GoalCard.vue'
 import Avatar from '@/components/ui/Avatar.vue'
@@ -545,7 +555,7 @@ const groupStore = useGroupStore()
 const goalStore = useGoalStore()
 const groupPostStore = useGroupPostStore()
 const group = ref(groupStore.current)
-const inviteUrl = ref('')
+const invites = ref<{ id: string; url: string; expiresAt: string }[]>([])
 const requestUrl = ref('')
 const showAddGoal = ref(false)
 const addingGoal = ref(false)
@@ -646,6 +656,10 @@ onMounted(async () => {
   if (activeSection.value === 'activity') {
     activityStats.value = await groupStore.fetchActivityStats(id)
   }
+
+  if (isOwner.value && !group.value.isPublic) {
+    invites.value = await groupStore.fetchInvites(id)
+  }
 })
 
 async function handleCreateThread() {
@@ -663,17 +677,23 @@ async function handleCreateThread() {
 
 async function handleInvite() {
   const id = route.params.id as string
-  inviteUrl.value = await groupStore.createInvite(id)
+  const invite = await groupStore.createInvite(id)
+  invites.value.unshift(invite)
 }
 
-function copyInvite() {
-  navigator.clipboard.writeText(inviteUrl.value)
+function copyInvite(url: string) {
+  copyToClipboard(url)
+}
+
+async function handleRevokeInvite(inviteId: string) {
+  await groupStore.revokeInvite(inviteId)
+  invites.value = invites.value.filter((inv) => inv.id !== inviteId)
 }
 
 function copyRequestLink() {
   const id = route.params.id as string
   requestUrl.value = `${window.location.origin}/group/${id}/request`
-  navigator.clipboard.writeText(requestUrl.value)
+  copyToClipboard(requestUrl.value)
 }
 
 async function toggleBreakdown() {

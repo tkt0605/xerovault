@@ -9,6 +9,7 @@ import type {
   JoinRequestTarget,
   GroupJoinRequest,
   GroupActivityStats,
+  GroupInvite,
 } from '@xerovault/shared'
 import { rpc } from '@/lib/rpc'
 
@@ -51,11 +52,37 @@ export const useGroupStore = defineStore('group', () => {
     return g
   }
 
-  // 招待リンクを発行する（トークンは平文。有効期限はSupabase側のRPCで検証する）
-  async function createInvite(groupId: string): Promise<string> {
-    const token = await rpc<string>('create_invite', { p_group_id: groupId, p_expire_in: 3600 })
+  // 招待コードを1件発行する（既存の他コードは失効しない。有効期限はSupabase側のRPCで検証する）
+  async function createInvite(
+    groupId: string,
+    expireIn = 3600
+  ): Promise<{ id: string; url: string; expiresAt: string }> {
+    const invite = await rpc<GroupInvite>('create_invite', {
+      p_group_id: groupId,
+      p_expire_in: expireIn,
+    })
     const origin = window.location.origin
-    return `${origin}/group/${groupId}/join?token=${encodeURIComponent(token)}`
+    return {
+      id: invite.id,
+      url: `${origin}/group/${groupId}/join?token=${encodeURIComponent(invite.token)}`,
+      expiresAt: invite.expiresAt,
+    }
+  }
+
+  async function fetchInvites(
+    groupId: string
+  ): Promise<{ id: string; url: string; expiresAt: string }[]> {
+    const list = await rpc<GroupInvite[]>('get_group_invites', { p_group_id: groupId })
+    const origin = window.location.origin
+    return list.map((inv) => ({
+      id: inv.id,
+      url: `${origin}/group/${groupId}/join?token=${encodeURIComponent(inv.token)}`,
+      expiresAt: inv.expiresAt,
+    }))
+  }
+
+  async function revokeInvite(inviteId: string): Promise<void> {
+    await rpc('revoke_invite', { p_invite_id: inviteId })
   }
 
   async function joinGroup(groupId: string, token?: string): Promise<Group> {
@@ -115,6 +142,8 @@ export const useGroupStore = defineStore('group', () => {
     createGroup,
     updateGroup,
     createInvite,
+    fetchInvites,
+    revokeInvite,
     joinGroup,
     removeMember,
     fetchScoreBreakdown,

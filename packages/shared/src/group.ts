@@ -51,6 +51,13 @@ export interface GroupJoinRequest {
   createdAt: string
 }
 
+export interface GroupInvite {
+  id: string
+  token: string
+  expiresAt: string
+  createdAt: string
+}
+
 export interface GroupActivityStats {
   weeklyPostCounts: { weekStart: string; count: number }[]
   repeatRate: number
@@ -64,7 +71,6 @@ export interface Group {
   isPublic: boolean
   score: number
   streak: number
-  joinToken: string | null
   createdAt: string
   updatedAt: string
   lastActivityAt: string
