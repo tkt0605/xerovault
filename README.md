@@ -1,4 +1,4 @@
-# Xero Vault
+# Sodalis
 
 グループを作り、メンバーで目標(Goal)を設定し、達成をYES/NO投票で承認し合うことでスコア・継続ストリークを競うゴール管理アプリ。詳しいコンセプトは [docs/vision.md](docs/vision.md)、ドメインモデルは [docs/domain-model.md](docs/domain-model.md) を参照。
 
@@ -32,7 +32,7 @@
 2. Edge Functionのシークレットを設定する。
 
    ```bash
-   supabase secrets set RESEND_API_KEY=re_xxxxx NOTIFY_FROM_EMAIL="Xerovault <notify@yourdomain.com>"
+   supabase secrets set RESEND_API_KEY=re_xxxxx NOTIFY_FROM_EMAIL="Sodalis <notify@yourdomain.com>"
    ```
 
 3. Edge Functionをデプロイする(notify-digestとunsubscribeの2つ)。
