@@ -93,11 +93,19 @@
           >
             管理
           </button>
+          <select
+            v-if="isOwner && !group.isPublic"
+            v-model.number="inviteExpireIn"
+            class="ml-auto rounded-control border border-line bg-paper-raised px-2 py-1 text-xs text-ink-soft"
+          >
+            <option :value="3600">1時間で失効</option>
+            <option :value="86400">24時間で失効</option>
+            <option :value="259200">72時間で失効</option>
+          </select>
           <BaseButton
             v-if="isOwner && !group.isPublic"
             variant="outline"
             size="sm"
-            class="ml-auto"
             @click="handleInvite"
           >
             招待リンク作成
@@ -127,6 +135,7 @@
             class="flex items-center gap-2 rounded-control bg-paper-sunken p-3 text-xs text-ink-soft"
           >
             <span class="min-w-0 flex-1 break-all">{{ inv.url }}</span>
+            <span class="shrink-0 text-ink-faint">{{ formatExpiresIn(inv.expiresAt) }}</span>
             <button
               class="flex shrink-0 items-center gap-1 text-accent hover:underline"
               @click="copyInvite(inv.url)"
@@ -556,6 +565,7 @@ const goalStore = useGoalStore()
 const groupPostStore = useGroupPostStore()
 const group = ref(groupStore.current)
 const invites = ref<{ id: string; url: string; expiresAt: string }[]>([])
+const inviteExpireIn = ref(259200)
 const requestUrl = ref('')
 const showAddGoal = ref(false)
 const addingGoal = ref(false)
@@ -677,8 +687,16 @@ async function handleCreateThread() {
 
 async function handleInvite() {
   const id = route.params.id as string
-  const invite = await groupStore.createInvite(id)
+  const invite = await groupStore.createInvite(id, inviteExpireIn.value)
   invites.value.unshift(invite)
+}
+
+function formatExpiresIn(iso: string): string {
+  const ms = new Date(iso).getTime() - Date.now()
+  if (ms <= 0) return '期限切れ'
+  const hours = Math.ceil(ms / (60 * 60 * 1000))
+  if (hours < 24) return `残り${hours}時間`
+  return `残り${Math.ceil(hours / 24)}日`
 }
 
 function copyInvite(url: string) {
