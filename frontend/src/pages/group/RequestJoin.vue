@@ -44,13 +44,22 @@
           {{ target.tags.map((t) => `#${t}`).join(' ') }}
         </p>
         <form class="space-y-3 text-left" @submit.prevent="handleSubmit">
+          <label for="join-request-message" class="block text-sm font-medium text-ink">
+            志望動機
+          </label>
           <BaseTextarea
+            id="join-request-message"
             v-model="message"
-            placeholder="自己紹介や参加したい理由(任意・200文字まで)"
+            placeholder="このグループでどんな目標に取り組みたいか教えてください(200文字まで)"
             rows="3"
             maxlength="200"
+            required
           />
-          <BaseButton type="submit" :disabled="submitting" class="w-full justify-center">
+          <BaseButton
+            type="submit"
+            :disabled="submitting || !message.trim()"
+            class="w-full justify-center"
+          >
             {{ submitting ? '送信中...' : '参加をリクエストする' }}
           </BaseButton>
         </form>
