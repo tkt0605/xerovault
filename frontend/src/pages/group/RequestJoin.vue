@@ -14,6 +14,27 @@
         </div>
         <p class="mb-1 text-lg font-semibold text-ink">参加が承認されています</p>
         <p class="mb-6 text-sm text-ink-soft">{{ target?.name }}</p>
+        <img
+          v-if="cardDataUrl"
+          :src="cardDataUrl"
+          alt="Xerovault招待シェアカード"
+          class="mb-4 w-full rounded-control border border-line shadow-card"
+        />
+        <div class="mb-6 flex flex-col gap-2">
+          <BaseButton class="w-full justify-center" @click="downloadCard">
+            <Icon name="download" :size="16" />
+            画像を保存
+          </BaseButton>
+          <a :href="shareIntentUrl" target="_blank" rel="noopener noreferrer">
+            <BaseButton variant="ghost" class="w-full justify-center">
+              <Icon name="share" :size="16" />
+              Xでシェア
+            </BaseButton>
+          </a>
+          <p class="text-xs text-ink-faint">
+            Xの投稿画面には画像は自動添付されません。保存した画像を投稿に添付してください。
+          </p>
+        </div>
         <RouterLink :to="`/group/${route.params.id}`">
           <BaseButton>グループを開く</BaseButton>
         </RouterLink>
@@ -69,11 +90,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { JoinRequestTarget } from '@xerovault/shared'
 import { useGroupStore } from '@/stores/group'
 import { useAuthStore } from '@/stores/auth'
+import { generateShareCardDataUrl } from '@/utils/shareCard'
 import Icon from '@/components/ui/Icon.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -91,6 +113,14 @@ const status = ref<'pending' | 'approved' | 'rejected' | null>(null)
 const message = ref('')
 const submitting = ref(false)
 const submitted = ref(false)
+const cardDataUrl = ref('')
+
+const shareIntentUrl = computed(() => {
+  const text = target.value
+    ? `Xerovaultのクローズドβ「${target.value.name}」への参加が承認されました。`
+    : 'Xerovaultのクローズドβへの参加が承認されました。'
+  return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`
+})
 
 onMounted(async () => {
   await auth.restoreSession()
@@ -101,12 +131,23 @@ onMounted(async () => {
   try {
     target.value = await groupStore.fetchJoinRequestTarget(route.params.id as string)
     status.value = target.value.myRequestStatus
+    if (status.value === 'approved') {
+      cardDataUrl.value = generateShareCardDataUrl(target.value.name)
+    }
   } catch (e: unknown) {
     error.value = e instanceof Error ? e.message : 'グループが見つかりませんでした'
   } finally {
     loading.value = false
   }
 })
+
+function downloadCard() {
+  if (!cardDataUrl.value) return
+  const a = document.createElement('a')
+  a.href = cardDataUrl.value
+  a.download = 'xerovault-invite.png'
+  a.click()
+}
 
 async function handleSubmit() {
   submitting.value = true
