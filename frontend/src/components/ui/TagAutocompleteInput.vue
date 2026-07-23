@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import type { TagSuggestion } from '@xerovault/shared'
+import type { TagSuggestion } from '@sodalis/shared'
 import { rpc } from '@/lib/rpc'
 import BaseInput from './BaseInput.vue'
 

@@ -3,7 +3,7 @@
     class="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-paper-raised px-6 py-3"
   >
     <!-- <RouterLink to="/" class="font-serif text-lg font-medium tracking-tight text-ink">
-      Xerovault
+      Sodalis
     </RouterLink> -->
     <div>
       <button
@@ -87,7 +87,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import type { NotificationItem, NotificationKind } from '@xerovault/shared'
+import type { NotificationItem, NotificationKind } from '@sodalis/shared'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import { useNotificationStore } from '@/stores/notification'

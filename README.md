@@ -5,7 +5,7 @@
 ## 構成(pnpm workspaces モノレポ)
 
 - `frontend/` – Vue 3 + Vite SPA。Pinia でステート管理、Tailwind CSS でスタイリング。データ・認証は Supabase(`@supabase/supabase-js`)に直接アクセスする。
-- `packages/shared/` – zod スキーマ・API型定義(`@xerovault/shared`)。フロントのフォームバリデーション・型として使用。
+- `packages/shared/` – zod スキーマ・API型定義(`@sodalis/shared`)。フロントのフォームバリデーション・型として使用。
 - `supabase/migrations/` – Postgresスキーマ・RLSポリシー・RPC関数(スコア計算・投票処理など、旧Expressバックエンドが担っていたロジック)。
 - `supabase/functions/notify-digest/` – 投票待ち・締切接近・期限切れをまとめてメール通知するEdge Function(pg_cron + pg_netから毎日1回呼び出される)。
 - `supabase/functions/unsubscribe/` – ダイジェストメール本文のリンクから、ログイン不要でワンタップ配信停止するためのEdge Function。

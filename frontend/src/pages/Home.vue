@@ -10,7 +10,7 @@
       class="rounded-surface border border-line bg-paper-raised p-8 text-center"
     >
       <Icon name="target" :size="32" class="mx-auto mb-4 text-accent" />
-      <h2 class="mb-2 font-serif text-lg font-medium text-ink">Xerovaultへようこそ</h2>
+      <h2 class="mb-2 font-serif text-lg font-medium text-ink">Sodalisへようこそ</h2>
       <p class="mx-auto mb-6 max-w-sm text-sm text-ink-soft">
         グループで目標(ゴール)を立て、達成したかどうかをメンバー同士の投票で確認し合います。自己申告では終わらない、正直な達成管理です。
       </p>

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Message } from '@xerovault/shared'
+import type { Message } from '@sodalis/shared'
 import { rpc } from '@/lib/rpc'
 
 export type { Message }

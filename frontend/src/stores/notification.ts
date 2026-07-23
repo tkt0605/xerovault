@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { NotificationItem } from '@xerovault/shared'
+import type { NotificationItem } from '@sodalis/shared'
 import { rpc } from '@/lib/rpc'
 
 export const useNotificationStore = defineStore('notification', () => {

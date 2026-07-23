@@ -220,7 +220,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { Message } from '@xerovault/shared'
+import type { Message } from '@sodalis/shared'
 import { useAuthStore } from '@/stores/auth'
 import { useGoalStore } from '@/stores/goal'
 import { useVoteStore } from '@/stores/vote'

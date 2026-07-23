@@ -538,7 +538,7 @@ import type {
   BannedMember,
   GroupJoinRequest,
   GroupActivityStats,
-} from '@xerovault/shared'
+} from '@sodalis/shared'
 import { useAuthStore } from '@/stores/auth'
 import { useGroupStore } from '@/stores/group'
 import { useGoalStore } from '@/stores/goal'

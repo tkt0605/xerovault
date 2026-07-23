@@ -25,7 +25,7 @@ export function generateShareCardDataUrl(groupName: string): string {
 
   ctx.fillStyle = cssVar('--accent')
   ctx.font = `600 28px ${SANS_FONT_STACK}`
-  ctx.fillText('Xerovault クローズドβに招待されました', 80, 140)
+  ctx.fillText('Sodalis クローズドβに招待されました', 80, 140)
 
   ctx.fillStyle = cssVar('--ink')
   ctx.font = `500 56px ${SERIF_FONT_STACK}`
@@ -45,7 +45,7 @@ export function generateShareCardDataUrl(groupName: string): string {
 
   ctx.fillStyle = cssVar('--ink-faint')
   ctx.font = `400 22px ${SANS_FONT_STACK}`
-  ctx.fillText('xerovault', 80, 540)
+  ctx.fillText('sodalis', 80, 540)
 
   return canvas.toDataURL('image/png')
 }

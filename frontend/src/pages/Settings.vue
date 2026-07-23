@@ -80,7 +80,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import type { UserStats } from '@xerovault/shared'
+import type { UserStats } from '@sodalis/shared'
 import { useAuthStore } from '@/stores/auth'
 import { useGroupStore } from '@/stores/group'
 import { supabase } from '@/lib/supabase'

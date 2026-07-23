@@ -74,7 +74,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { ThreadMessage } from '@xerovault/shared'
+import type { ThreadMessage } from '@sodalis/shared'
 import { useAuthStore } from '@/stores/auth'
 import { useGroupPostStore } from '@/stores/groupPost'
 import { formatRelativeTime } from '@/lib/activity'

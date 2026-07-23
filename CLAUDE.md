@@ -1,4 +1,4 @@
-# Xerovault
+# Sodalis
 グループ内で立てた目標を、メンバー全員の投票による合意形成で達成扱いにする、正直な目標管理・アカウンタビリティアプリ。自己申告に頼らず、曖昧な目標を許さない(詳細は`docs/vision.md`)。
 ※ タグベースの「共通の趣味嗜好を持つ仲間探し」ではない(フェーズ0で軸を確定済み、`docs/rebuild.md`参照)。タグは現状シンプルな完全一致フィルタとしてのみ機能する。
 
@@ -21,7 +21,7 @@
 ## アーキテクチャ
 ### モノレポ構成 (pnpm workspaces)
 - frontend/ — Vue 3 + Vite SPA
-- packages/shared/ — zodスキーマ・型定義 (@xerovault/shared)
+- packages/shared/ — zodスキーマ・型定義 (@sodalis/shared)
 - supabase/ — DBスキーマ・RLS・RPC・Edge Functions(旧Expressバックエンドを置換済み、backend/は現存しない)
 
 ### 言語・ランタイム

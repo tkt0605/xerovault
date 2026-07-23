@@ -1,5 +1,5 @@
 {
-  "name": "xerovault-frontend",
+  "name": "sodalis-frontend",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.5",
-    "@xerovault/shared": "workspace:*",
+    "@sodalis/shared": "workspace:*",
     "pinia": "^2.2.0",
     "vue": "^3.5.0",
     "vue-router": "^4.4.0"

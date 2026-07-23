@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Goal, CreateGoalInput, UpdateGoalInput } from '@xerovault/shared'
+import type { Goal, CreateGoalInput, UpdateGoalInput } from '@sodalis/shared'
 import { rpc } from '@/lib/rpc'
 
 export type { Goal }

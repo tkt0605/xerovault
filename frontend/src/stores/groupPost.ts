@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { GroupThread, ThreadMessage } from '@xerovault/shared'
+import type { GroupThread, ThreadMessage } from '@sodalis/shared'
 import { rpc } from '@/lib/rpc'
 
 export const useGroupPostStore = defineStore('groupPost', () => {

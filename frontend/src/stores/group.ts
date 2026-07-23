@@ -10,7 +10,7 @@ import type {
   GroupJoinRequest,
   GroupActivityStats,
   GroupInvite,
-} from '@xerovault/shared'
+} from '@sodalis/shared'
 import { rpc } from '@/lib/rpc'
 
 export type { Group }

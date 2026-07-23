@@ -17,7 +17,7 @@
         <img
           v-if="cardDataUrl"
           :src="cardDataUrl"
-          alt="Xerovault招待シェアカード"
+          alt="Sodalis招待シェアカード"
           class="mb-4 w-full rounded-control border border-line shadow-card"
         />
         <div class="mb-6 flex flex-col gap-2">
@@ -92,7 +92,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { JoinRequestTarget } from '@xerovault/shared'
+import type { JoinRequestTarget } from '@sodalis/shared'
 import { useGroupStore } from '@/stores/group'
 import { useAuthStore } from '@/stores/auth'
 import { generateShareCardDataUrl } from '@/utils/shareCard'
@@ -117,8 +117,8 @@ const cardDataUrl = ref('')
 
 const shareIntentUrl = computed(() => {
   const text = target.value
-    ? `Xerovaultのクローズドβ「${target.value.name}」への参加が承認されました。`
-    : 'Xerovaultのクローズドβへの参加が承認されました。'
+    ? `Sodalisのクローズドβ「${target.value.name}」への参加が承認されました。`
+    : 'Sodalisのクローズドβへの参加が承認されました。'
   return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`
 })
 
@@ -145,7 +145,7 @@ function downloadCard() {
   if (!cardDataUrl.value) return
   const a = document.createElement('a')
   a.href = cardDataUrl.value
-  a.download = 'xerovault-invite.png'
+  a.download = 'sodalis-invite.png'
   a.click()
 }
 

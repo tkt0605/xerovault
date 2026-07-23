@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { VoteStatus, CastVoteResponse, CancelVoteResponse } from '@xerovault/shared'
+import type { VoteStatus, CastVoteResponse, CancelVoteResponse } from '@sodalis/shared'
 import { rpc } from '@/lib/rpc'
 
 export type { VoteStatus }

@@ -69,7 +69,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { RankingGroup } from '@xerovault/shared'
+import type { RankingGroup } from '@sodalis/shared'
 import { rpc } from '@/lib/rpc'
 import Icon from '@/components/ui/Icon.vue'
 import Avatar from '@/components/ui/Avatar.vue'

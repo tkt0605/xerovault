@@ -24,7 +24,7 @@ interface Candidate {
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const resendApiKey = Deno.env.get('RESEND_API_KEY')!
-const fromEmail = Deno.env.get('NOTIFY_FROM_EMAIL') ?? 'Xerovault <notify@xerovault.app>'
+const fromEmail = Deno.env.get('NOTIFY_FROM_EMAIL') ?? 'Sodalis <notify@sodalis.app>'
 
 const KIND_LABEL: Record<Kind, string> = {
   pending_vote: '投票のお願い',
@@ -92,7 +92,7 @@ async function sendDigestEmail(items: Candidate[]) {
     body: JSON.stringify({
       from: fromEmail,
       to: email,
-      subject: 'Xerovault: 本日のサマリー',
+      subject: 'Sodalis: 本日のサマリー',
       html: renderDigestHtml(name, sections, items[0].unsubscribe_token),
     }),
   })

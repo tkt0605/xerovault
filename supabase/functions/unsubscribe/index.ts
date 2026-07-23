@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
 function page(message: string, status = 200) {
   const html = `<!doctype html>
 <html lang="ja">
-<head><meta charset="utf-8"><title>Xerovault</title></head>
+<head><meta charset="utf-8"><title>Sodalis</title></head>
 <body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; color: #333;">
   <p>${message}</p>
 </body>

@@ -12,7 +12,7 @@
     <aside class="flex h-screen w-64 flex-col overflow-y-auto border-r border-line bg-paper-sunken">
       <div class="p-3">
         <div class="flex items-center gap-3">
-          <span class="font-serif text-lg font-medium tracking-tight text-ink">Xerovault</span>
+          <span class="font-serif text-lg font-medium tracking-tight text-ink">Sodalis</span>
         </div>
       </div>
       <nav class="flex-1 space-y-1 p-3">
